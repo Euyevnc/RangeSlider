@@ -1,0 +1,16 @@
+.RangeSlider{
+    &_orient_vertical{
+
+    }
+    &_orient_horizontal{
+        width: 100%;
+        & .RangeSlider__line{
+            width: 100%;
+            position: relative;
+        }
+        & .RangeSlider__tumbler{
+            display: inline-block;
+            position: absolute;   
+        }
+    }
+}

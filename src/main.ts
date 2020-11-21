@@ -6,67 +6,77 @@ function CreateSlider(options:object){
     
     let clModel = class{
         type: string;
-        start: number;
-        end: number;
+        private _start: number;
+        private _end: number;
         range: number;
         origin: number;
-        dataupdateReact: Function;
+        step:number;
         value: Array<number>;
-        constructor({type= "range", range = 100,  start = 0, end=null, origin = 0}){
+        set start(prc:number){
+            this._start = Math.min(this.end, Math.max(prc, 0) )
+        }
+        get start(){
+            return this._start
+        }
+        set end(prc:number){
+            this._end = Math.max(this.start, Math.min(prc, this.range) )
+        }
+        get end(){
+            return this._end
+        }
+
+
+        updated: Function;
+        
+        constructor({type= "range", range = 100,  start = 0, end=null, origin = 0, step=1}){
             this.type = type
-            this.start = Math.max(start - origin, 0)
-            this.end = (end === null ? range : (end-origin))
+            this._start = Math.max(start - origin, 0)
+            this._end = (end === null ? range : (end-origin))
             this.range = range
             this.origin = origin
+            this.step = step
             this.value = [this.start + this.origin, this.end + this.origin]
             
         }
-        dataupdate({startPrc=this.start/this.range*100, endPrc=this.end/this.range*100}):void{
-            this.start = Math.round(Math.min(this.end, this.range/100*startPrc ) )
-            this.end = Math.round(Math.max(this.start,this.range/100*endPrc ) )
+        update({startPrc=this.start, endPrc=this.end, direct=false}):void{
+            if(direct){
+                this._end = this.range/100*endPrc
+                this._start =this.range/100*startPrc 
+
+            }
+            else{
+                let newStart = this.range/100*startPrc
+                let newEnd = this.range/100*endPrc
+                if((newEnd - this.end) >= this.step*0.7 || (this.end - newEnd) >= this.step*0.7 || newEnd==this.range){
+                    this.end = Math.round(newEnd/this.step)*this.step
+                }
+                if((newStart - this.start) >= this.step*0.7 || (this.start - newStart) >= this.step*0.7 || newStart==0){
+                    this.start = Math.round(newStart/this.step)*this.step
+                    console.log(startPrc, this.start)
+                }
+            }
+       
             this.value = [this.start + this.origin, this.end + this.origin]
-
-            console.log(this.start, this.end)
-
-            this.dataupdateReact(100/this.range*this.start, 100/this.range*this.end)
+            this.updated(100/this.range*this.start, 100/this.range*this.end)
         }
     }
 
 
     let ClPresenter = class{
-        setDate: Function;
-        viewUpdate: Function;
+        callToModel: Function;
+        callToView: Function;
         constructor(){ 
           
         }
-        tumblerListener(e: MouseEvent): void{
-            let target = e.target as HTMLElement
-            const mousePosition = e.clientX;
+        shiftReac(params: object){
+            this.callToModel(params)
 
-            let demTumbler:number = target.getBoundingClientRect().x + target.getBoundingClientRect().width/2
-            let demSlider:number = target.closest(".RangeSlider").getBoundingClientRect().x;
-        
-            root.onmousemove = ev=>{
-                let lineSize = root.clientWidth - ( +(getComputedStyle(root).paddingLeft.slice(0, -2) ) +  +(getComputedStyle(root).paddingRight.slice(0, -2)) )
-                let bias =( (ev.clientX - mousePosition)+(demTumbler-demSlider) )/lineSize * 100
-                if (target.classList.contains("RangeSlider__tumbler_type_main") ){
-                    this.setDate({startPrc: Math.max(bias, 0)})
-                }
-                else(this.setDate({endPrc:Math.min(bias, 100)}))
-            }
-            document.onmouseup = e=>{
-                root.onmousemove = null;
-                document.onmouseup = null;
-            }
         }
-        updateProxy(firCoor:number, secCoor:number){
-            let lineSize = root.clientWidth - ( +(getComputedStyle(root).paddingLeft.slice(0, -2) ) +  +(getComputedStyle(root).paddingRight.slice(0, -2)) );
-            let firOffset = (lineSize/100 * firCoor);
-            let secOffset = (lineSize/100 * secCoor);
-            this.viewUpdate(firOffset, secOffset)
+        updateReact(firCoor:number, secCoor:number){
+            this.callToView(firCoor, secCoor)
+
         }
     }
-
 
     let clView = class{
         origin: number;
@@ -77,58 +87,64 @@ function CreateSlider(options:object){
         start:number;
         end: number;
 
-        tumblerSize: string;
-        tumblerBackground: string;
-        tumblerRadius: string;
-        lineHeight: string;
-        lineBackground: string;
-        lineRadius: string;
+        tumbler: {tumblerSize:string;tumblerBackground:string;tumblerRadius:string}
+        line: {lineHeight: string;lineBackground: string; lineRadius: string}
 
-        clickReact: EventListener;
-        constructor({orient = "horizontal", range = 100, origin = 0, start = 0, end = null, tumblerSize="16px", lineHeight="12px", 
-                    tumblerBackground="darkblue", lineBackground="blue", selectedBackGround="blue", lineRadius="10px", tumblerRadius="50%"}){
+        tumblerShifted: Function;
+
+        constructor({orient = "horizontal", range = 100, origin = 0, start = 0, end = null, tumblerSize="16px", tumblerBackground="darkblue", 
+                    tumblerRadius="50%", lineHeight="12px", lineBackground="blue", selectedBackGround="blue", lineRadius="10px"}){
             this.root = root
             this.orient = orient
             this.range = range
             this.origin = origin
             this.start = Math.max(start - origin, 0)
             this.end = (end === null ? range : (end-origin))
-            
-            //styles
-            this.tumblerSize = tumblerSize
-            this.tumblerRadius = tumblerRadius
-            this.tumblerBackground=tumblerBackground
-            this.lineHeight = lineHeight
-            this.lineBackground = lineBackground
-            this.lineRadius = lineRadius
+            this.tumbler = {tumblerSize: tumblerSize,tumblerBackground:tumblerBackground,tumblerRadius:tumblerRadius}
+            this.line = {lineHeight: lineHeight,lineBackground: lineBackground, lineRadius: lineRadius}
+    
         }
-        create(): HTMLElement{
+        tumblerListener(e: MouseEvent): void{
+            root.onmousemove = ev=>{
+                let tumbler = <HTMLElement>e.target;
+                let line= root.querySelector(".RangeSlider")
+                let bias = (ev.clientX - line.getBoundingClientRect().x)/line.getBoundingClientRect().width * 100
+                if ( tumbler.classList.contains("RangeSlider__tumbler_type_main") ){
+                    this.tumblerShifted({startPrc: bias})
+                }
+                else(this.tumblerShifted({endPrc: bias }) )
+                
+            }
+            document.onmouseup = e=>{
+                root.onmousemove = null;
+                document.onmouseup = null;
+            }
+        }
+        render(): HTMLElement{
             this.root.innerHTML = `<div class='RangeSlider RangeSlider_orient_${this.orient}'><div class='RangeSlider__line'>   <span ondragstart="return false;" ondrop="return false;" class='RangeSlider__tumbler_type_main RangeSlider__tumbler'>
                                     </span> <span ondragstart="return false;" ondrop="return false;" class='RangeSlider__tumbler'></span>   </div>  <div class='RangeSlider__meaning'></div> </div></div>`;
             this.root.querySelectorAll(".RangeSlider__tumbler").forEach(el=>{ 
                 let elem = (el as HTMLElement)
-                elem.style.height = this.tumblerSize 
-                elem.style.width = this.tumblerSize 
-                elem.style.background = this.tumblerBackground
-                elem.style.borderRadius = this.tumblerRadius
+                elem.style.height = this.tumbler.tumblerSize 
+                elem.style.width = this.tumbler.tumblerSize 
+                elem.style.background = this.tumbler.tumblerBackground
+                elem.style.borderRadius = this.tumbler.tumblerRadius
                 elem.style.transform = "translateX(-50%)"
-                elem.style.marginTop =  `calc((-${this.tumblerSize} + ${this.lineHeight})/2)`
+                elem.style.marginTop =  `calc((-${this.tumbler.tumblerSize} + ${this.line.lineHeight})/2)`
             
-                elem.onmousedown = this.clickReact
+                elem.onmousedown = this.tumblerListener.bind(this)
             } );
             let line = root.querySelector(".RangeSlider__line") as HTMLElement
-            line.style.height = this.lineHeight
-            line.style.background = this.lineBackground
-            line.style.borderRadius = this.lineRadius
+            line.style.height = this.line.lineHeight
+            line.style.background = this.line.lineBackground
+            line.style.borderRadius = this.line.lineRadius
 
-
-            let lineSize = root.clientWidth - ( +(getComputedStyle(root).paddingLeft.slice(0, -2) ) +  +(getComputedStyle(root).paddingRight.slice(0, -2)) );
-            this.viewUpdate(lineSize/this.range * this.start, lineSize/this.range * this.end)
+            this.viewUpdate(100/this.range * this.start, 100/this.range * this.end)
             return root.querySelector(".RangeSlider")
         }
-        viewUpdate(firOffset:number, secOffset:number){ 
-            (this.root.querySelector(".RangeSlider__tumbler_type_main") as HTMLElement).style.left = firOffset + "px";
-            (this.root.querySelector(".RangeSlider__tumbler:last-child") as HTMLElement).style.left = secOffset  + "px"
+        viewUpdate(firPos:number, secPos:number){ 
+            (this.root.querySelector(".RangeSlider__tumbler_type_main") as HTMLElement).style.left = firPos + "%";
+            (this.root.querySelector(".RangeSlider__tumbler:last-child") as HTMLElement).style.left = secPos  + "%"
         }
     }
 
@@ -140,35 +156,30 @@ function CreateSlider(options:object){
         View: new clView(options),
 
         init: function(){
-            const clickReact= this.Presenter.tumblerListener.bind(this.Presenter)
-            const setDate= this.Model.dataupdate.bind(this.Model)
-            const updateReact= this.Presenter.updateProxy.bind(this.Presenter)
-            const viewUpdate= this.View.viewUpdate.bind(this.View)
 
-            this.View.clickReact = clickReact
-            this.Presenter.setDate = setDate
-            this.Model.dataupdateReact = updateReact
-            this.Presenter.viewUpdate = viewUpdate
+            this.View.tumblerShifted = this.Presenter.shiftReac.bind(this.Presenter)
+            this.Presenter.callToModel = this.Model.update.bind(this.Model)
+            this.Model.updated = this.Presenter.updateReact.bind(this.Presenter)
+            this.Presenter.callToView = this.View.viewUpdate.bind(this.View)
 
-            this.View.create()  
+            this.View.render()  
         },
         getValue(){
             console.log(`Selected range: ${this.Model.value[0]} — ${this.Model.value[1]}`)
             return this.Model.value
         },
         setValue(start:number, end:number){
-            this.Presenter.setDate({startPrc: start/this.Model.range * 100, endPrc: end/this.Model.range*100})
+            this.Presenter.shiftReac({startPrc: start/this.Model.range * 100, endPrc: end/this.Model.range*100, direct: true})
+            
         },
     }
     return RangeSlider
     
 }
 let elem = document.querySelector(".wrapper>div")
-let slider = CreateSlider.call(elem, {type: "range",start:20, end : 80} )
+let slider = CreateSlider.call(elem, {type: "range",start:20, end : 80, step: 5} )
 
 slider.init()
-
-slider.setValue(25, 76)
 
 slider.getValue()
 

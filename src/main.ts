@@ -4,7 +4,7 @@ import "./main.scss"
 function CreateSlider(options:object){  
     const root = this as HTMLElement
     
-    let clModel = class{
+    const clModel = class{
         type: string;
         private _start: number;
         private _end: number;
@@ -40,9 +40,9 @@ function CreateSlider(options:object){
         }
         update({startPrc=this.start, endPrc=this.end, direct=false}):void{
             if(direct){
-                this._end = this.range/100*endPrc
-                this._start =this.range/100*startPrc 
-
+                this._end = 100/this.range*(endPrc-this.origin)
+                this._start =100/this.range*(startPrc-this.origin )
+                //Prc я обозначаю "проценты", но не в случае выше. Тут абсолютные значения будут поступать через прямой ввод
             }
             else{
                 let newStart = this.range/100*startPrc
@@ -52,7 +52,6 @@ function CreateSlider(options:object){
                 }
                 if((newStart - this.start) >= this.step*0.7 || (this.start - newStart) >= this.step*0.7 || newStart==0){
                     this.start = Math.round(newStart/this.step)*this.step
-                    console.log(startPrc, this.start)
                 }
             }
        
@@ -62,7 +61,7 @@ function CreateSlider(options:object){
     }
 
 
-    let ClPresenter = class{
+    const ClPresenter = class{
         callToModel: Function;
         callToView: Function;
         constructor(){ 
@@ -78,73 +77,115 @@ function CreateSlider(options:object){
         }
     }
 
-    let clView = class{
+    const clView = class{
+        element: HTMLElement;
         origin: number;
         size: number;
         range: number;
-        root: HTMLElement;
         orient: string;
         start:number;
         end: number;
-
-        tumbler: {tumblerSize:string;tumblerBackground:string;tumblerRadius:string}
-        line: {lineHeight: string;lineBackground: string; lineRadius: string}
-
         tumblerShifted: Function;
+        tumbler: {html: string; elements:NodeListOf<Element>;  size: string; color: string; roundness: string; borders: string; tumblerListener: EventListener};
+        line: {height: string; color: string; roundness: string; borders: string; element: HTMLElement}
+        selected : {color: string; height: string;}
 
-        constructor({orient = "horizontal", range = 100, origin = 0, start = 0, end = null, tumblerSize="16px", tumblerBackground="darkblue", 
-                    tumblerRadius="50%", lineHeight="12px", lineBackground="blue", selectedBackGround="blue", lineRadius="10px"}){
-            this.root = root
+        LineClass = class{
+            element: HTMLElement;
+            height: string;
+            color: string;
+            roundness: string;
+            borders: string;
+            constructor({height= "12px",color = "blue", roundness="10px"}){
+                this.height = height;
+                this.color = color
+                this.roundness = roundness
+            }
+        }
+        TumblerClass = class{
+            html: string;
+            elements: NodeListOf<HTMLElement>
+            size: string;
+            color: string;
+            roundness: string;
+            borders: string;
+
+            tumblerShifted:Function; //Чтобы TS не выдавал ошибку. tumblerListener на самом-то деле будет запускаться в контесте View. Из-за данных. 
+            
+            constructor({ size="16px", color="darkblue", roundness="50%", borders = "none"}){
+                this.html = `<span ondragstart="return false;" ondrop="return false;" class='RangeSlider__tumbler
+                            '> </span>`
+                this.size = size;
+                this.color = color;
+                this.roundness = roundness;
+
+            }
+            tumblerListener(e: MouseEvent): void{
+                root.onmousemove = ev=>{
+                    let tumbler = <HTMLElement>e.target;
+                    let line= root.querySelector(".RangeSlider")
+                    let bias = (ev.clientX - line.getBoundingClientRect().x)/line.getBoundingClientRect().width * 100
+                    if ( tumbler.nextSibling){
+                        this.tumblerShifted({startPrc: bias})
+                    }
+                    else(this.tumblerShifted({endPrc: bias }) )
+                    
+                }
+                document.onmouseup = e=>{
+                    root.onmousemove = null;
+                    document.onmouseup = null;
+                }
+            }
+        };
+
+        constructor({orient = "horizontal", range = 100, origin = 0, start = 0, end = null, tumblerSize="16px", tumblerColor="darkblue", 
+                    tumblerRoundness="50%", tumblerBorders = "none", lineHeight="12px", lineColor="blue",  lineRoundness="10px", selectedBackGround="blue",}){
+            
+            this.element
             this.orient = orient
             this.range = range
             this.origin = origin
             this.start = Math.max(start - origin, 0)
             this.end = (end === null ? range : (end-origin))
-            this.tumbler = {tumblerSize: tumblerSize,tumblerBackground:tumblerBackground,tumblerRadius:tumblerRadius}
-            this.line = {lineHeight: lineHeight,lineBackground: lineBackground, lineRadius: lineRadius}
-    
-        }
-        tumblerListener(e: MouseEvent): void{
-            root.onmousemove = ev=>{
-                let tumbler = <HTMLElement>e.target;
-                let line= root.querySelector(".RangeSlider")
-                let bias = (ev.clientX - line.getBoundingClientRect().x)/line.getBoundingClientRect().width * 100
-                if ( tumbler.classList.contains("RangeSlider__tumbler_type_main") ){
-                    this.tumblerShifted({startPrc: bias})
-                }
-                else(this.tumblerShifted({endPrc: bias }) )
-                
-            }
-            document.onmouseup = e=>{
-                root.onmousemove = null;
-                document.onmouseup = null;
-            }
+           
+            this.tumbler = new this.TumblerClass({size:tumblerSize ,color:tumblerColor,roundness:tumblerRoundness, borders: tumblerBorders})
+            this.tumbler.tumblerListener = this.tumbler.tumblerListener.bind(this)
+            
+            this.line = new this.LineClass({height: lineHeight,color: lineColor, roundness: lineRoundness})
+            
         }
         render(): HTMLElement{
-            this.root.innerHTML = `<div class='RangeSlider RangeSlider_orient_${this.orient}'><div class='RangeSlider__line'>   <span ondragstart="return false;" ondrop="return false;" class='RangeSlider__tumbler_type_main RangeSlider__tumbler'>
-                                    </span> <span ondragstart="return false;" ondrop="return false;" class='RangeSlider__tumbler'></span>   </div>  <div class='RangeSlider__meaning'></div> </div></div>`;
-            this.root.querySelectorAll(".RangeSlider__tumbler").forEach(el=>{ 
-                let elem = (el as HTMLElement)
-                elem.style.height = this.tumbler.tumblerSize 
-                elem.style.width = this.tumbler.tumblerSize 
-                elem.style.background = this.tumbler.tumblerBackground
-                elem.style.borderRadius = this.tumbler.tumblerRadius
-                elem.style.transform = "translateX(-50%)"
-                elem.style.marginTop =  `calc((-${this.tumbler.tumblerSize} + ${this.line.lineHeight})/2)`
+            root.innerHTML = `<div class='RangeSlider RangeSlider_orient_${this.orient}'><div class='RangeSlider__line'>${this.tumbler.html}${this.tumbler.html}</div>  <div class='RangeSlider__meaning'></div> </div></div>`;
             
-                elem.onmousedown = this.tumblerListener.bind(this)
+            this.element = root.querySelector(".RangeSlider")
+            
+            this.line.element = this.element.querySelector(".RangeSlider__line") as HTMLElement
+            
+            this.tumbler.elements = this.element.querySelectorAll(".RangeSlider__tumbler") 
+
+            this.tumbler.elements.forEach(el=>{ 
+                let elem = (el as HTMLElement)
+                elem.style.height = this.tumbler.size 
+                elem.style.width = this.tumbler.size 
+                elem.style.background = this.tumbler.color
+                elem.style.borderRadius = this.tumbler.roundness
+                elem.style. border = this.tumbler.borders
+                elem.style.transform = "translateX(-50%)"
+                elem.style.marginTop =  `calc((-${this.tumbler.size} + ${this.line.height})/2)`
+               
+
+                elem.onmousedown = e=>{this.tumbler.tumblerListener(e)}
             } );
-            let line = root.querySelector(".RangeSlider__line") as HTMLElement
-            line.style.height = this.line.lineHeight
-            line.style.background = this.line.lineBackground
-            line.style.borderRadius = this.line.lineRadius
+            this.line.element.style.height = this.line.height
+            this.line.element.style.background = this.line.color
+            this.line.element.style.borderRadius = this.line.roundness
 
             this.viewUpdate(100/this.range * this.start, 100/this.range * this.end)
-            return root.querySelector(".RangeSlider")
+            return this.element
         }
         viewUpdate(firPos:number, secPos:number){ 
-            (this.root.querySelector(".RangeSlider__tumbler_type_main") as HTMLElement).style.left = firPos + "%";
-            (this.root.querySelector(".RangeSlider__tumbler:last-child") as HTMLElement).style.left = secPos  + "%"
+            (this.element.querySelector(".RangeSlider__tumbler:first-child") as HTMLElement).style.left = firPos + "%";
+            (this.element.querySelector(".RangeSlider__tumbler:last-child") as HTMLElement).style.left = secPos  + "%"
         }
     }
 

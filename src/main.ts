@@ -18,8 +18,8 @@ function CreateSlider(options:object){
         get start(){
             return this._start
         }
-        set end(prc:number){
-            this._end = Math.max(this.start, Math.min(prc, this.range) )
+        set end(num:number){
+            this._end = Math.max(this.start, Math.min(num, this.range) )
         }
         get end(){
             return this._end
@@ -38,10 +38,10 @@ function CreateSlider(options:object){
             this.value = [this.start + this.origin, this.end + this.origin]
             
         }
-        update({startPrc=this.start, endPrc=this.end, direct=false}):void{
+        update({startPrc=100/this.range*this.start, endPrc=100/this.range*this.end, direct=false}):void{
             if(direct){
-                this._end = 100/this.range*(endPrc-this.origin)
-                this._start =100/this.range*(startPrc-this.origin )
+                this.end = this.range/100*endPrc
+                this.start =this.range/100*startPrc
                 //Prc я обозначаю "проценты", но не в случае выше. Тут абсолютные значения будут поступать через прямой ввод
             }
             else{
@@ -87,17 +87,17 @@ function CreateSlider(options:object){
         end: number;
         tumblerShifted: Function;
         tumbler: {html: string; elements:NodeListOf<Element>;  size: string; color: string; roundness: string; borders: string; tumblerListener: EventListener};
-        line: {height: string; color: string; roundness: string; borders: string; element: HTMLElement}
-        selected : {color: string; height: string;}
+        line: {element: HTMLElement; weight: string; color: string; roundness: string; borders: string;}
+        selected : {html: string; element: HTMLElement; color: string; weight: string;}
 
         LineClass = class{
             element: HTMLElement;
-            height: string;
+            weight: string;
             color: string;
             roundness: string;
             borders: string;
-            constructor({height= "12px",color = "blue", roundness="10px"}){
-                this.height = height;
+            constructor({weight= "12px",color = "blue", roundness="10px"}){
+                this.weight = weight;
                 this.color = color
                 this.roundness = roundness
             }
@@ -137,9 +137,21 @@ function CreateSlider(options:object){
                 }
             }
         };
+        SelectedClass = class{
+            element: HTMLElement;
+            html: string;
+            color: string;
+            weight: string;
+            constructor({color="darkblue", weight="14px"}){
+                this.html = "<div class='RangeSlider__selected'></div>"
+                this.color = color;
+                this.weight = weight;
+                
+            }
+        }
 
-        constructor({orient = "horizontal", range = 100, origin = 0, start = 0, end = null, tumblerSize="16px", tumblerColor="darkblue", 
-                    tumblerRoundness="50%", tumblerBorders = "none", lineHeight="12px", lineColor="blue",  lineRoundness="10px", selectedBackGround="blue",}){
+        constructor({orient = "horizontal", range = 100, origin = 0, start = 0, end = null, tumblerSize="20px", tumblerColor="darkblue", 
+                    tumblerRoundness="50%", tumblerBorders = "none", lineWeight="12px", lineColor="grey",  lineRoundness="10px", selectedBackground="blue", selectedWeight = "16px"}){
             
             this.element
             this.orient = orient
@@ -151,18 +163,16 @@ function CreateSlider(options:object){
             this.tumbler = new this.TumblerClass({size:tumblerSize ,color:tumblerColor,roundness:tumblerRoundness, borders: tumblerBorders})
             this.tumbler.tumblerListener = this.tumbler.tumblerListener.bind(this)
             
-            this.line = new this.LineClass({height: lineHeight,color: lineColor, roundness: lineRoundness})
+            this.line = new this.LineClass({weight: lineWeight,color: lineColor, roundness: lineRoundness})
+
+            this.selected = new this.SelectedClass({weight: selectedWeight, color: selectedBackground})
             
         }
         render(): HTMLElement{
-            root.innerHTML = `<div class='RangeSlider RangeSlider_orient_${this.orient}'><div class='RangeSlider__line'>${this.tumbler.html}${this.tumbler.html}</div>  <div class='RangeSlider__meaning'></div> </div></div>`;
-            
+            root.innerHTML = `<div class='RangeSlider RangeSlider_orient_${this.orient}'><div class='RangeSlider__line'> ${this.selected.html}  ${this.tumbler.html}${this.tumbler.html}</div>  <div class='RangeSlider__meaning'></div> </div></div>`;
             this.element = root.querySelector(".RangeSlider")
             
-            this.line.element = this.element.querySelector(".RangeSlider__line") as HTMLElement
-            
             this.tumbler.elements = this.element.querySelectorAll(".RangeSlider__tumbler") 
-
             this.tumbler.elements.forEach(el=>{ 
                 let elem = (el as HTMLElement)
                 elem.style.height = this.tumbler.size 
@@ -171,21 +181,30 @@ function CreateSlider(options:object){
                 elem.style.borderRadius = this.tumbler.roundness
                 elem.style. border = this.tumbler.borders
                 elem.style.transform = "translateX(-50%)"
-                elem.style.marginTop =  `calc((-${this.tumbler.size} + ${this.line.height})/2)`
-               
-
+                elem.style.marginTop =  `calc((-${this.tumbler.size} + ${this.line.weight})/2)`
                 elem.onmousedown = e=>{this.tumbler.tumblerListener(e)}
             } );
-            this.line.element.style.height = this.line.height
-            this.line.element.style.background = this.line.color
-            this.line.element.style.borderRadius = this.line.roundness
+
+            let line = this.line.element = this.element.querySelector(".RangeSlider__line") as HTMLElement
+            line.style.height = this.line.weight
+            line.style.background = this.line.color
+            line.style.borderRadius = this.line.roundness
+
+            let selected = this.selected.element = this.element.querySelector(".RangeSlider__selected")
+            selected.style.marginTop =  `calc((-${this.selected.weight} + ${this.line.weight})/2)`
+            selected.style.height = this.selected.weight
+            selected.style.background = this.selected.color
+            
 
             this.viewUpdate(100/this.range * this.start, 100/this.range * this.end)
             return this.element
         }
         viewUpdate(firPos:number, secPos:number){ 
-            (this.element.querySelector(".RangeSlider__tumbler:first-child") as HTMLElement).style.left = firPos + "%";
-            (this.element.querySelector(".RangeSlider__tumbler:last-child") as HTMLElement).style.left = secPos  + "%"
+            (this.tumbler.elements[0]as HTMLElement).style.left = firPos + "%";
+            (this.tumbler.elements[1]as HTMLElement).style.left = secPos  + "%"
+            this.selected.element.style.left = firPos + "%"
+            this.selected.element.style.right = 100 - secPos + "%"
+
         }
     }
 
@@ -210,7 +229,7 @@ function CreateSlider(options:object){
             return this.Model.value
         },
         setValue(start:number, end:number){
-            this.Presenter.shiftReac({startPrc: start/this.Model.range * 100, endPrc: end/this.Model.range*100, direct: true})
+            this.Presenter.shiftReac({startPrc: (start-this.Model.origin)/this.Model.range * 100, endPrc: (end-this.Model.origin)/this.Model.range*100, direct: true})
             
         },
     }
@@ -218,11 +237,13 @@ function CreateSlider(options:object){
     
 }
 let elem = document.querySelector(".wrapper>div")
+let elem2 = document.querySelector(".wrapper-two>div")
+
 let slider = CreateSlider.call(elem, {type: "range",start:20, end : 80, step: 5} )
+let slider2 = CreateSlider.call(elem2, {type: "range", origin: 10, range: 90, start:20, end :80, step: 5} )
 
 slider.init()
-
-slider.getValue()
+slider2.init()
 
 
 

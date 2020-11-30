@@ -102,45 +102,116 @@ function CreateSlider(options:object){
         range: number;
         start:number;
         end: number;
+
+        tumbler: {html: string; elements:NodeListOf<Element>;orient: string; type: string; size: string; color: string; roundness: string; borders: string; onclick: EventListener; onfocus: EventListener; render: Function};
+        line: {element: HTMLElement;orient: string; weight: string; color: string; roundness: string; borders: string; render: Function}
+        selected : {html: string; element: HTMLElement; orient: string; color: string; weight: string;roundness: string; render: Function}
+
         tumblerShifted: Function;
-        tumbler: {html: string; elements:NodeListOf<Element>;  size: string; color: string; roundness: string; borders: string; onclick: EventListener; onfocus: EventListener};
-        line: {element: HTMLElement; weight: string; color: string; roundness: string; borders: string;}
-        selected : {html: string; element: HTMLElement; color: string; weight: string;}
 
         LineClass = class{
             element: HTMLElement;
+            orient: string;
             weight: string;
             color: string;
             roundness: string;
             borders: string;
-            constructor(data: {weight: string,color: string, roundness: string}){
+            constructor(data: {orient: string, weight: string,color: string, roundness: string}){
+                this.orient = data.orient
                 this.weight = data.weight;
                 this.color = data.color
                 this.roundness = data.roundness
+            }
+            render(){
+                let line = this.element = root.querySelector(".RangeSlider__line") as HTMLElement
+                if(this.orient == "vertical") line.style.width = this.weight
+                else line.style.height = this.weight
+                line.style.background = this.color
+                line.style.borderRadius = this.roundness
             }
         }
         TumblerClass = class{
             html: string;
             elements: NodeListOf<HTMLElement>
+            orient: string;
+            type: string;
             size: string;
             color: string;
             roundness: string;
             borders: string;
 
-            tumblerShifted:Function; 
-            orient: string; 
-            //Чтобы TS не выдавал ошибку. onclick на самом-то деле будет запускаться в контесте View. . 
-            //Хотелось листенер поместить в ползунок, но ориентацию и коллбэк ему по-сути знать не нужно
-
-
-            constructor(data: { size:string, color:string, roundness:string, borders :string}){
+            onclick: EventListener;
+            onfocus: EventListener;
+           
+            constructor(data: {orient:string, type:string, size:string, color:string, roundness:string, borders :string}){
                 this.html = `<span tabindex= "1"; class='RangeSlider__tumbler'> </span>`
+                this.orient = data.orient
+                this.type = data.type
                 this.size = data.size;
                 this.color = data.color;
                 this.roundness = data.roundness;
 
             }
-            onclick(e: MouseEvent): void{
+            render(){
+                this.elements = root.querySelectorAll(".RangeSlider__tumbler") 
+                this.elements.forEach((el, i)=>{ 
+                    let elem = (el as HTMLElement)
+                    elem.style.height = this.size 
+                    elem.style.width = this.size 
+                    elem.style.background = this.color
+                    elem.style.borderRadius = this.roundness
+                    elem.style. border = this.borders
+                    elem.style.transform = this.orient == "vertical" ? "translateY(50%)" : "translateX(-50%)"
+                    if(this.orient == "vertical") elem.style.marginLeft =  `calc( (-${this.size} + ${elem.parentElement.style.width}) /2)`
+                    else elem.style.marginTop = `calc((-${this.size} + ${elem.parentElement.style.height})/2)`
+                    if(this.type === "point" && i===0) elem.style.display = "none"
+                    elem.onmousedown = this.onclick
+                    elem.onfocus = this.onfocus
+                } );
+            }
+        };
+        SelectedClass = class{
+            element: HTMLElement;
+            html: string;
+            orient: string;
+            color: string;
+            weight: string;
+            roundness: string;
+            constructor(data: {roundness: string, orient: string,color: string, weight:string}){
+                this.html = "<div class='RangeSlider__selected'></div>"
+                this.orient = data.orient
+                this.color = data.color;
+                this.weight = data.weight;
+                this.roundness = data.roundness;
+                
+            }
+            render(){
+                let selected = this.element = root.querySelector(".RangeSlider__selected")
+                if(this.orient == "vertical") selected.style.marginLeft =  `calc( (-${this.weight} + ${selected.parentElement.style.width}) /2)`
+                else selected.style.marginTop = `calc( (-${this.weight} + ${selected.parentElement.style.height}) /2)`
+                if(this.orient == "vertical") selected.style.width = this.weight
+                else selected.style.height = this.weight
+                selected.style.background = this.color
+                selected.style.borderRadius = this.roundness
+            }
+        }
+
+        constructor({orient = "horizontal",type= "range",tumblerSize="20px", tumblerColor="darkblue", tumblerRoundness="50%", tumblerBorders = "none", 
+                    lineWeight="12px", lineColor="grey",  lineRoundness="10px", selectedBackground="blue", selectedWeight = "16px"}){
+            this.element
+            this.orient = orient
+            this.type = type
+           
+            this.tumbler = new this.TumblerClass({orient: orient, type: type, size:tumblerSize ,color:tumblerColor,roundness:tumblerRoundness, borders: tumblerBorders})
+
+            this.line = new this.LineClass({orient: orient, weight: lineWeight,color: lineColor, roundness: lineRoundness})
+
+            this.selected = new this.SelectedClass({roundness: lineRoundness, orient: orient, weight: selectedWeight, color: selectedBackground})
+        }
+        render(): HTMLElement{
+            root.innerHTML =  `<div class='RangeSlider RangeSlider_orient_${this.orient}'><div class='RangeSlider__line'> ${this.selected.html}${this.tumbler.html}${this.tumbler.html}</div> <div class='RangeSlider__meaning'></div> </div></div>`;
+        
+            this.tumbler.onclick = e =>{
                 e.preventDefault()
                 root.onmousemove = ev=>{
                     let tumbler = <HTMLElement>e.target;
@@ -149,20 +220,17 @@ function CreateSlider(options:object){
                                 (ev.clientY - line.getBoundingClientRect().y)/line.getBoundingClientRect().height * 100
                                 :
                                 (ev.clientX - line.getBoundingClientRect().x)/line.getBoundingClientRect().width * 100 
-                                
-                                 
-                    if ( tumbler.nextSibling){
+                    if (tumbler.nextSibling){
                         this.tumblerShifted({startPrc: bias})
                     }
                     else(this.tumblerShifted({endPrc: bias }) )
-                    
                 }
                 document.onmouseup = e=>{
                     root.onmousemove = null;
                     document.onmouseup = null;
                 }
             }
-            onfocus(ev:FocusEvent ):void{
+            this.tumbler.onfocus = ev=>{
                 let first = Boolean((<HTMLElement>ev.target).nextSibling)
                 document.onkeydown = e=>{
                     if(first){
@@ -187,74 +255,21 @@ function CreateSlider(options:object){
                     document.onkeydown = null;
                 }
             }
-        };
-        SelectedClass = class{
-            element: HTMLElement;
-            html: string;
-            color: string;
-            weight: string;
-            constructor(data: {color: string, weight:string}){
-                this.html = "<div class='RangeSlider__selected'></div>"
-                this.color = data.color;
-                this.weight = data.weight;
-                
-            }
-        }
-
-        constructor({orient = "horizontal",type= "range",tumblerSize="20px", tumblerColor="darkblue", tumblerRoundness="50%", tumblerBorders = "none", 
-                    lineWeight="12px", lineColor="grey",  lineRoundness="10px", selectedBackground="blue", selectedWeight = "16px"}){
-            this.element
-            this.orient = orient
-            this.type = type
-           
-            this.tumbler = new this.TumblerClass({size:tumblerSize ,color:tumblerColor,roundness:tumblerRoundness, borders: tumblerBorders})
-            this.tumbler.onclick = this.tumbler.onclick.bind(this)
-            this.tumbler.onfocus = this.tumbler.onfocus.bind(this)
-
-            this.line = new this.LineClass({weight: lineWeight,color: lineColor, roundness: lineRoundness})
-
-            this.selected = new this.SelectedClass({weight: selectedWeight, color: selectedBackground})
-        }
-        render(): HTMLElement{
-            root.innerHTML =  `<div class='RangeSlider RangeSlider_orient_${this.orient}'><div class='RangeSlider__line'> ${this.selected.html}  ${this.tumbler.html}${this.tumbler.html}</div>  <div class='RangeSlider__meaning'></div> </div></div>`;
-            this.element = root.querySelector(".RangeSlider")
             
-            this.tumbler.elements = this.element.querySelectorAll(".RangeSlider__tumbler") 
-            this.tumbler.elements.forEach((el, i)=>{ 
-                let elem = (el as HTMLElement)
-                elem.style.height = this.tumbler.size 
-                elem.style.width = this.tumbler.size 
-                elem.style.background = this.tumbler.color
-                elem.style.borderRadius = this.tumbler.roundness
-                elem.style. border = this.tumbler.borders
-                elem.style.transform = this.orient == "vertical" ? "translateY(50%)" : "translateX(-50%)"
-                if(this.orient == "vertical") elem.style.marginLeft =  `calc((-${this.tumbler.size} + ${this.line.weight})/2)`
-                else elem.style.marginTop =  `calc((-${this.tumbler.size} + ${this.line.weight})/2)`
+            this.line.render()
 
-                if(this.type === "point" && i===0) elem.style.display = "none"
-                elem.onmousedown = e=>{this.tumbler.onclick(e)}
-                elem.onfocus = e => {this.tumbler.onfocus(e)}
-            } );
+            this.tumbler.render()
 
-            let line = this.line.element = this.element.querySelector(".RangeSlider__line") as HTMLElement
-            if(this.orient == "vertical") line.style.width = this.line.weight
-            else line.style.height = this.line.weight
-            line.style.background = this.line.color
-            line.style.borderRadius = this.line.roundness
-
-            let selected = this.selected.element = this.element.querySelector(".RangeSlider__selected")
-            if(this.orient == "vertical") selected.style.marginLeft =  `calc((-${this.selected.weight} + ${this.line.weight})/2)`
-            else selected.style.marginTop =  `calc((-${this.selected.weight} + ${this.line.weight})/2)`
-            if(this.orient == "vertical") selected.style.width = this.selected.weight
-            else selected.style.height = this.selected.weight
-            selected.style.background = this.selected.color
-            selected.style.borderRadius = this.line.roundness
+            this.selected.render()
             
-
             if (this.type == "point") this.tumblerShifted({startPrc: 0})
             else this.tumblerShifted({})
+
+            this.element = root.querySelector(".RangeSlider")
             return this.element
         }
+
+
         viewUpdate(firPos:number, secPos:number){
             if(this.orient == "vertical"){
                 (this.tumbler.elements[0]as HTMLElement).style.bottom = firPos + "%";

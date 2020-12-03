@@ -27,7 +27,7 @@ function CreateSlider(options:object){
 
         updated: Function;
         
-        constructor({ range = 100,  start = 0, end=null, origin = 0, step=1}){
+        constructor({ origin = 0, range = 100,  start = 0, end=null, step=1}){
             this._start = Math.max(start - origin, 0) 
             this._end = end === null ? range : Math.min(range, Math.max(this.start, end-origin) ) 
             this.range = range
@@ -97,6 +97,7 @@ function CreateSlider(options:object){
         element: HTMLElement;
         orient: string;
         type: string;
+        meaning: boolean;
         origin: number;
         size: number;
         range: number;
@@ -106,8 +107,91 @@ function CreateSlider(options:object){
         tumbler: {html: string; elements:NodeListOf<Element>;orient: string; type: string; size: string; color: string; roundness: string; borders: string; onclick: EventListener; onfocus: EventListener; render: Function};
         line: {element: HTMLElement;orient: string; weight: string; color: string; roundness: string; borders: string; render: Function}
         selected : {html: string; element: HTMLElement; orient: string; color: string; weight: string;roundness: string; render: Function}
+        meanings : {element: HTMLElement; orient: string; origin: number; range: number; interval: number;length:string; fontSize:string; color:string; colorActive:string; scale: number; render: Function; update: Function }
 
         tumblerShifted: Function;
+
+
+        meaningsClass = class{
+            element: HTMLElement; 
+            orient: string;
+            origin: number; 
+            range: number; 
+            interval: number;
+            length: string;
+            fontSize:string
+            color:string
+            colorActive:string
+            scale: number
+
+            constructor(data:{orient: string; origin: number; range: number; interval: number;length:string; fontSize:string; color: string; colorActive:string;scale: number; }){
+                this.orient = data.orient
+                this.origin = data.origin 
+                this.range = data.range 
+                this.interval = data.interval
+                this.length = data.length
+                this.fontSize = data.fontSize
+                this.color = data.color
+                this.colorActive = data.colorActive
+                this.scale = data.scale || 1
+            }
+            render(){
+                let container = this.element =  root.querySelector(".RangeSlider__meanings")
+                let intervals = this.range/ this.interval 
+                
+                let flexcont = document.createElement("div")
+                flexcont.classList.add("Meaninigs__mainline")
+
+                container.append(flexcont)
+                
+                let cell = document.createElement("span")
+                cell.classList.add("Meaninigs__cell")
+                cell.style.width = 100/intervals + "%"
+                cell.style.borderLeft = `1px solid ${this.color}`
+                cell.style.height = this.length;
+                cell.style.color = this.color
+                cell.style.fontSize = this.fontSize
+                
+                let createCell = (int:number)=>{
+                    let currentCell = (cell.cloneNode(true) as HTMLSpanElement)
+                    currentCell.classList.add(`Meaninigs__cell_meaning_${int}`)
+
+                    let amountCont = document.createElement("span")
+                    amountCont.innerHTML = int.toString()
+                    currentCell.append(amountCont)
+                    
+                    flexcont.append(currentCell)
+                }
+
+                createCell(this.origin)
+
+                for( let i=1; i<intervals; i++){
+                    createCell(i*this.interval+this.origin)
+                }
+                createCell(this.range+this.origin)
+            }
+            
+            
+            update(fir: number, sec:number){
+                this.element.querySelectorAll(".Meaninigs__cell").forEach(el=>{
+                    let elem = el as HTMLElement
+                    let amount = +el.querySelector("span").innerHTML
+                   
+                    if( amount>= (this.range/100 *fir + this.origin) && amount<=(this.range/100 *sec + this.origin) ){
+                        elem.style.color = this.colorActive
+                        elem.style.borderLeft = `1px solid ${this.colorActive}`
+                        elem.style.fontSize = `calc( ${this.fontSize}*${this.scale} )`
+                        elem.style.height = `calc( ${this.length}*${this.scale} )`
+                    }
+                    else{
+                        elem.style.color = this.color
+                        elem.style.borderLeft = `1px solid ${this.color}`
+                        elem.style.fontSize = this.fontSize
+                        elem.style.height = this.length
+                    }
+                })
+            }
+        }
 
         LineClass = class{
             element: HTMLElement;
@@ -196,20 +280,23 @@ function CreateSlider(options:object){
             }
         }
 
-        constructor({orient = "horizontal",type= "range",tumblerSize="20px", tumblerColor="darkblue", tumblerRoundness="50%", tumblerBorders = "none", 
-                    lineWeight="12px", lineColor="grey",  lineRoundness="10px", selectedBackground="blue", selectedWeight = "16px"}){
+        constructor({orient = "horizontal",type= "range", origin = 0, range = 100, meanings=true, meaningsInteravl=10,  tumblerSize="20px", tumblerColor="darkblue", tumblerRoundness="50%", tumblerBorders = "none", 
+                    lineWeight="12px", lineColor="grey",  lineRoundness="10px", selectedBackground="blue", selectedWeight = "16px", pointerLength = "0px", fontSize="12px", pointerColor="grey", pointerColorSelect="blue", pointerScale=1.3}){
             this.element
             this.orient = orient
             this.type = type
-           
+            this.meaning = meanings
+
             this.tumbler = new this.TumblerClass({orient: orient, type: type, size:tumblerSize ,color:tumblerColor,roundness:tumblerRoundness, borders: tumblerBorders})
 
             this.line = new this.LineClass({orient: orient, weight: lineWeight,color: lineColor, roundness: lineRoundness})
 
             this.selected = new this.SelectedClass({roundness: lineRoundness, orient: orient, weight: selectedWeight, color: selectedBackground})
+        
+            if(this.meaning) this.meanings = new this.meaningsClass({orient: orient, origin: origin, range: range, interval: meaningsInteravl, color: pointerColor, colorActive: pointerColorSelect, length: pointerLength, fontSize:fontSize,scale: pointerScale })
         }
-        render(): HTMLElement{
-            root.innerHTML =  `<div class='RangeSlider RangeSlider_orient_${this.orient}'><div class='RangeSlider__line'> ${this.selected.html}${this.tumbler.html}${this.tumbler.html}</div> <div class='RangeSlider__meaning'></div> </div></div>`;
+        render():void{
+            root.innerHTML =  `<div class='RangeSlider RangeSlider_orient_${this.orient}'><div class='RangeSlider__line'> ${this.selected.html}${this.tumbler.html}${this.tumbler.html}</div> <div class='RangeSlider__meanings'></div> </div></div>`;
         
             this.tumbler.onclick = e =>{
                 e.preventDefault()
@@ -255,18 +342,16 @@ function CreateSlider(options:object){
                     document.onkeydown = null;
                 }
             }
-            
+            if(this.meaning) this.meanings.render()
+
             this.line.render()
 
             this.tumbler.render()
 
             this.selected.render()
-            
-            if (this.type == "point") this.tumblerShifted({startPrc: 0})
-            else this.tumblerShifted({})
 
             this.element = root.querySelector(".RangeSlider")
-            return this.element
+
         }
 
 
@@ -284,6 +369,7 @@ function CreateSlider(options:object){
                 this.selected.element.style.left = firPos + "%"
                 this.selected.element.style.right = 100 - secPos + "%"
             }
+            if(this.meaning) this.meanings.update(firPos, secPos)
         }
     }
 
@@ -302,6 +388,8 @@ function CreateSlider(options:object){
             this.Presenter.callToView = this.View.viewUpdate.bind(this.View)
 
             this.View.render()  
+            if (this.View.type == "point") this.Presenter.shiftReac({startPrc: 0})
+            else this.Presenter.shiftReac({})
         },
         getValue(){
             console.log(`Selected range: ${this.Model.value[0]} — ${this.Model.value[1]}`)
@@ -319,9 +407,9 @@ let elem = document.querySelector(".wrapper>div")
 let elem2 = document.querySelector(".wrapper-two>div")
 let elem3 = document.querySelector(".wrapper-three>div")
 
-let slider = CreateSlider.call(elem, {type: "range",start:20, end : 80, step: 5} )
-let slider2 = CreateSlider.call(elem2, {type: "point", origin: 10, range: 90, end:10, step: 5} )
-let slider3 = CreateSlider.call(elem3, {type: "point", orient:"vertical", origin: 0, end:5, range: 10} )
+let slider = CreateSlider.call(elem, {type: "range",start:20, end : 80, step: 10} )
+let slider2 = CreateSlider.call(elem2, {type: "point", origin: 10, range: 90, end:10, step: 5, pointerLength:"10px", pointerScale:1} )
+let slider3 = CreateSlider.call(elem3, {type: "point", orient:"vertical", origin: 0, interval: 1, range: 10, end:5} )
 
 slider.init()
 slider2.init()

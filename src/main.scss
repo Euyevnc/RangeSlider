@@ -2,11 +2,27 @@
     &_orient_vertical{
         height: 100%;
         & .RangeSlider__line{
+            display: inline-block;
             height: 100%;
             position: relative;
         }
         & .Meaninigs__mainline{
-
+            height: 100%;
+            width: auto;
+            flex-direction: column-reverse;
+            padding: 0 0 0 5px;
+            
+        }
+        & .RangeSlider__meanings{
+            display: inline-block;
+            height: 100%;
+        }
+        .Meaninigs__cell{
+            &>span{
+                top: 100%;
+                left: 100%;
+                transform: translateY(-50%);
+            }
         }
     }
     &_orient_horizontal{
@@ -15,12 +31,19 @@
             width: 100%;
             position: relative;
         }
+        & .Meaninigs__cell{
+            &>span{
+                top: 100%;
+                transform: translateX(-50%);
+            }
+        }
     }
 }
 .RangeSlider__tumbler{
     position: absolute;   
     display: inline-block;
     z-index: 11;
+    cursor: pointer;
     
 }
 .RangeSlider__selected{  
@@ -45,8 +68,8 @@
     box-sizing: border-box;
     &>span{
         position: absolute;
-        top: 100%;
-        transform: translateX(-50%);
+        cursor: pointer;
+        user-select: none;
     }
 }
 .Meaninigs__cell_meaning_final{

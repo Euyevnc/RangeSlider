@@ -28,7 +28,6 @@ module.exports = (env, options) =>{
 				}
 			}
 		},
-		devtool: 'inline-source-map',
 		devServer: {
 			overlay: true,
 			contentBase:`./`,

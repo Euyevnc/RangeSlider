@@ -1,77 +1,166 @@
 .RangeSlider{
-    &_orient_vertical{
+    &_for_vertical{
         height: 100%;
-        & .RangeSlider__line{
-            display: inline-block;
-            height: 100%;
-            position: relative;
-        }
-        & .Meaninigs__mainline{
-            height: 100%;
-            width: auto;
-            flex-direction: column-reverse;
-            padding: 0 0 0 5px;
-            
-        }
-        & .RangeSlider__meanings{
-            display: inline-block;
-            height: 100%;
-        }
-        .Meaninigs__cell{
-            &>span{
-                top: 100%;
-                left: 100%;
-                transform: translateY(-50%);
-            }
-        }
     }
-    &_orient_horizontal{
+    &_for_horizontal{
         width: 100%;
-        & .RangeSlider__line{
-            width: 100%;
-            position: relative;
-        }
-        & .Meaninigs__cell{
-            &>span{
-                top: 100%;
-                transform: translateX(-50%);
-            }
-        }
     }
 }
-.RangeSlider__tumbler{
-    position: absolute;   
+.RangeSlider__line{
+    background-color: darkgray;
+    border-radius: 10px;
     display: inline-block;
-    z-index: 11;
-    cursor: pointer;
-    
+    position: relative;
+    &_for_vertical{
+        width: 14px;
+        height: 100%;
+    }
+    &_for_horizontal{
+        height: 14px;
+        width: 100%;
+    }
 }
 .RangeSlider__selected{  
     position: absolute;
     display: inline-block;
     z-index: 10;
+    border-radius: 10px;
+    background-color: gray;
+    &_for_vertical{
+        left: 50%;
+        transform: translateX(-50%);
+        width: 16px;
+    }
+    &_for_horizontal{
+        top: 50%;
+        transform: translateY(-50%);
+        height: 16px;
+    }
 }
 .RangeSlider__meanings{
     position: relative;
+    &_for_vertical{
+        display: inline-block;
+        height: 100%;
+    }
+    
 }
 
 .Meaninigs__mainline{
-    width: 100%;
     display: flex;
     justify-content: flex-start;
     align-items: flex-start;
-    padding: 5px 0 0 0;
+    &_for_vertical{
+        height: 100%;
+        flex-direction: column-reverse;
+        padding: 0 0 0 5px;
+        border-bottom:  '1px solid darkgray';
+        width: 10px;
+    }
+    &_for_horizontal{
+        width: 100%;
+        display: flex;
+        padding: 5px 0 0 0;
+        border-left:  '1px solid darkgray';
+        height: 10px;
+    }
 }
 .Meaninigs__cell{
     position: relative;
     flex-shrink: 0;
     box-sizing: border-box;
+    color: darkgray;
+    font-size: 12px;
     &>span{
         position: absolute;
         cursor: pointer;
         user-select: none;
     }
+    &_for_vertical{
+        border-bottom:  1px solid darkgray;
+        width: 10px;
+        &>span{
+            top: 100%;
+            left: 100%;
+            transform: translateY(-50%);
+            padding-left: 5px;
+        }
+    }
+    &_for_horizontal{
+        border-left:  1px solid darkgray;
+        height: 10px;
+        &>span{
+            top: 100%;
+            transform: translateX(-50%);
+        }
+    }
+    &_status_active{
+        border-color: dimgray;
+        color: dimgray;
+        font-size: 15px; 
+        border-width: 1px;
+
+    }
 }
-.Meaninigs__cell_meaning_final{
-    
+.RangeSlider__tumbler{
+    position: absolute;   
+    z-index: 11;
+    cursor: pointer; 
+    box-sizing: border-box;
+    height: 20px;
+    width: 20px;
+    background-color: dimgray;
+    border-radius: 50%;
+    &_for_vertical{
+        left: 50%;
+        transform: translate(-50%, 50%);
+    }
+    &_for_horizontal{
+        top: 50%;
+        transform: translate(-50%, -50%);
+    }
+}
+.RangeSlider__cloud{
+    position: absolute;
+    display: inline-block;
+    border-radius: 30%;
+    border : 2px solid dimgrey;
+    background: darkgray;
+    color: white;
+    box-sizing: border-box;
+    min-width: 30px;
+    height: 30px;
+    text-align: center;
+    line-height: 26px;
+    font-size: 13px;
+   
+    &>div{
+        height: 0px;
+        width: 0px;
+        position: absolute;
+        border : 6px solid dimgrey;
+    }
+    &_for_vertical{
+        right: 130%; 
+        top: 50%;
+        transform: translateY(-50%); 
+        &>div{
+            left: 100%;
+            top: 50%;
+            transform: translateY(-50%);
+            border-color:  transparent transparent transparent dimgray;
+        }
+    }
+    &_for_horizontal{
+        bottom: 130%;  
+        left: 50%;
+        transform: translateX(-50%);
+        &>div{
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border-color:  dimgrey transparent transparent transparent;
+        }
+
+    }
 }

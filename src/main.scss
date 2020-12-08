@@ -37,7 +37,7 @@
         height: 16px;
     }
 }
-.RangeSlider__meanings{
+.RangeSlider__scale{
     position: relative;
     &_for_vertical{
         display: inline-block;
@@ -46,7 +46,7 @@
     
 }
 
-.Meaninigs__mainline{
+.Scale__mainline{
     display: flex;
     justify-content: flex-start;
     align-items: flex-start;
@@ -65,7 +65,7 @@
         height: 10px;
     }
 }
-.Meaninigs__cell{
+.Scale__cell{
     position: relative;
     flex-shrink: 0;
     box-sizing: border-box;

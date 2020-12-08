@@ -8,6 +8,7 @@
     "last 3 version"
   ],
   "scripts": {
+    "test": "jest",
     "dev": "webpack-dev-server --mode development --config ./webpack.config.js --open",
     "build": "webpack --mode production --config ./webpack.config.js"
   },
@@ -16,8 +17,10 @@
   "devDependencies": {
     "@babel/cli": "^7.11.6",
     "@babel/core": "^7.11.6",
+    "@babel/plugin-proposal-class-properties": "^7.12.1",
     "@babel/plugin-transform-runtime": "^7.11.5",
     "@babel/preset-env": "^7.11.5",
+    "@babel/preset-typescript": "^7.12.7",
     "autoprefixer": "^10.0.0",
     "babel-loader": "^8.1.0",
     "copy-webpack-plugin": "^6.1.1",
@@ -37,6 +40,7 @@
     "gulp-uglify": "^3.0.2",
     "gulp-watch": "^5.0.1",
     "html-webpack-plugin": "^4.4.1",
+    "jest": "^26.6.3",
     "mini-css-extract-plugin": "^0.11.2",
     "node-sass": "^4.14.1",
     "path": "^0.12.7",
@@ -59,13 +63,16 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.11.2",
+    "@types/jest": "^26.0.16",
     "@types/lodash": "^4.14.165",
     "bootstrap": "^4.5.2",
+    "chai": "^4.2.0",
     "chart.js": "^2.9.4",
     "fs": "0.0.1-security",
     "jquery": "^3.5.1",
     "jquery-ui": "^1.12.1",
     "material-design-icons": "^3.0.1",
+    "mocha": "^8.2.1",
     "nouislider": "^14.6.2",
     "worker-farm": "^1.7.0"
   }

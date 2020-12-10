@@ -1,0 +1,14 @@
+module.exports = {
+    moduleNameMapper: {
+        "^.*[.](jpg|JPG|gif|GIF|png|PNG|less|LESS|css|CSS|scss|SCSS)$": "../EmptyModule"
+    },
+    moduleFileExtensions: ["js", "jsx", "json", "ts", "tsx"],
+    transformIgnorePatterns: [ "/node_modules/" ],
+    unmockedModulePathPatterns: [
+      "<rootDir>/node_modules/react",
+      "<rootDir>/node_modules/react-dom",
+      "<rootDir>/node_modules/react-addons-test-utils",
+      "<rootDir>/EmptyModule.js"
+    ],
+    preset: 'ts-jest',
+};

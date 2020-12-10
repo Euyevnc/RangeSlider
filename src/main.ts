@@ -1,8 +1,20 @@
 import "./main.scss"
-export default CreateSlider
+import jQuery from "jquery";
 
-function CreateSlider(options:object){  
-    const root = this as HTMLElement
+
+export default (function($){
+    $.fn.RangeSlider = function(options:object) {
+        let sliderObjects: Array<Object> = []
+        this.each((i:number,e:HTMLElement)=> {
+            sliderObjects.push( CreateSlider(e,options) )
+        })
+        if(sliderObjects.length == 1) return sliderObjects[0]
+        else return sliderObjects
+    }
+})(jQuery)
+
+function CreateSlider(e: HTMLElement, options:object){  
+    const root = e
     const ModelClass = class{
         private _start: number;
         private _end: number;
@@ -29,7 +41,6 @@ function CreateSlider(options:object){
         get end(){
             return this._end
         }
-
         updated: Function;
         constructor({type="range", origin = 0, range = 100,  start = 0, end=null, step=1, list=[]}){
             this.type = type
@@ -97,7 +108,6 @@ function CreateSlider(options:object){
             this.updated(100/this.range*this.start, 100/this.range*this.end)
         }
     }
-
     const PresenterClass = class{
         callToModel: Function;
         callToView: Function;
@@ -105,15 +115,13 @@ function CreateSlider(options:object){
         constructor(data:object){ 
 
         }
-        shiftReac(data: {endPos: number, startPos: number, method: string}){            
+        shiftReact(data: {endPos: number, startPos: number, method: string}){            
             this.callToModel(data)
         }
         updateReact(firCoor:number, secCoor:number){
             this.callToView(firCoor, secCoor)
-
         }
     }
-
     const ViewClass = class{
         element: HTMLElement;
         orient: string;
@@ -226,7 +234,6 @@ function CreateSlider(options:object){
                 })
             }
         }
-
         static LineClass = class{
             element: HTMLElement;
             orient: string;
@@ -244,7 +251,6 @@ function CreateSlider(options:object){
             type: string;
             size: number;
             cloud: string;
-
             constructor(data: {orient:string, type:string, cloud: string;}){
                 this.orient = data.orient
                 this.type = data.type
@@ -258,7 +264,6 @@ function CreateSlider(options:object){
                     let cloud: HTMLElement
                     if(this.type === "point" && i===0) elem.style.display = "none"
                     
-                    
                     cloud = document.createElement("div")
                     cloud.classList.add("RangeSlider__cloud")
                     cloud.classList.add(`RangeSlider__cloud_for_${this.orient}`)
@@ -271,7 +276,7 @@ function CreateSlider(options:object){
                     elem.onmousedown = (e: MouseEvent)=>{
                         e.preventDefault()
                         if(this.cloud == "click") cloud.style.display = "block"
-                        root.onmousemove = ev=>{
+                        root.onmousemove = (ev:MouseEvent)=>{
                             let tumbler = <HTMLElement>e.target;
                             let line= root.querySelector(".RangeSlider")
                             let bias = this.orient === "vertical" ? 
@@ -355,7 +360,6 @@ function CreateSlider(options:object){
                 }
             }
         }
-
         constructor({orient = "horizontal",type= "range", origin = 0, range = 100, scale=true, cloud="click", scaleInterval=10, list=[]}){
             this.element
             this.orient = orient
@@ -371,7 +375,6 @@ function CreateSlider(options:object){
         }
         render():void{
             root.innerHTML =  `<div class='RangeSlider RangeSlider_for_${this.orient}'><div class='RangeSlider__line RangeSlider__line_for_${this.orient}'> ${this.selected.html}${this.tumbler.html}${this.tumbler.html}</div> ${this.scale.html} </div></div>`;
-
             this.line.render()
 
             this.scale.render(this.tumblerShifted)
@@ -383,7 +386,6 @@ function CreateSlider(options:object){
 
             this.element = root.querySelector(".RangeSlider")
         }
-
         viewUpdate(firPos:number, secPos:number){
             let firValue = (this.scale.range/100*firPos+ this.scale.origin).toFixed()
             let secValue = (this.scale.range/100*secPos+ this.scale.origin).toFixed()
@@ -398,48 +400,41 @@ function CreateSlider(options:object){
             this.scale.update(firPos, secPos)
         }
     }
-    const RangeSlider = { 
+    const sliderObject = { 
         Model: new ModelClass(options),
         Presenter: new PresenterClass(options),
         View: new ViewClass(options),
 
         init: function(){
-            this.View.tumblerShifted = this.Presenter.shiftReac.bind(this.Presenter)
+            this.View.tumblerShifted = this.Presenter.shiftReact.bind(this.Presenter)
             this.Presenter.callToModel = this.Model.update.bind(this.Model)
             this.Model.updated = this.Presenter.updateReact.bind(this.Presenter)
             this.Presenter.callToView = this.View.viewUpdate.bind(this.View)
 
             this.View.render()  
-            this.Presenter.shiftReac({})
+            this.Presenter.shiftReact({})
         },
         getValue(){
             console.log(`Selected range: ${this.Model.value[0]} — ${this.Model.value[1]}`)
             return this.Model.value
         },
         setValue(start:number, end:number){
-            this.Presenter.shiftReac({startPos: start, endPos: end, method: "direct"})
+            this.Presenter.shiftReact({startPos: start, endPos: end, method: "direct"})
             
         },
     }
-    return RangeSlider
-    
+    return sliderObject 
 }
 
-let elem = document.querySelector(".wrapper>div")
-let elem2 = document.querySelector(".wrapper-two>div")
-let elem3 = document.querySelector(".wrapper-three>div")
-let elem4 = document.querySelector(".wrapper-list>div")
+// let slider = jQuery(".wrapper>div").RangeSlider({type: "range",start:20, end : 80, step: 1, scale:false, cloud: "always"}  )
+// let slider2 = jQuery(".wrapper-two>div").RangeSlider({type: "point", origin: 10, range: 90, end:10, step: 5, scaleInterval: 20})
+// let slider3 = jQuery(".wrapper-three>div").RangeSlider({type: "point", orient:"vertical", origin: 0, scaleInterval: 5, range: 10, end:5} )
+// let slider4 = jQuery(".wrapper-list>div").RangeSlider( {type: "range", list: ["ἄ", "β", "γ", "λ", "Ξ", "ζ", "π", "θ", "ψ"], end: 2, cloud:"none"})
 
-let slider = CreateSlider.call(elem, {type: "range",start:20, end : 80, step: 1, scale:false, cloud: "always"} )
-let slider2 = CreateSlider.call(elem2, {type: "point", origin: 10, range: 90, end:10, step: 5, scaleInterval: 20} )
-let slider3 = CreateSlider.call(elem3, {type: "point", orient:"vertical", origin: 0, scaleInterval: 5, range: 10, end:5} )
-let slider4  = CreateSlider.call(elem4, {type: "range", list: ["ἄ", "β", "γ", "λ", "Ξ", "ζ", "π", "θ", "ψ"], end: 2, cloud:"none"})
-
-slider.init()
-slider2.init()
-slider3.init()
-slider4.init()
-
+// slider.init()
+// slider2.init()
+// slider3.init()
+// slider4.init()
 
 
 

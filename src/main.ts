@@ -25,16 +25,16 @@ function CreateSlider(e: HTMLElement, options:object){
         type: string;
         set start(num:number){
             this.type == "range" ? 
-                this._start = Math.min(this.end-this.step, Math.max(num, 0) )
+                this._start = Math.min(Math.ceil(this.end/this.step)*this.step - this.step, Math.max(num, 0) )
                 :
-                this._start = Math.min(this.end, Math.max(num, 0) )
+                this._start = 0 
         }
         get start(){
             return this._start
         }
         set end(num:number){
             this.type == "range" ? 
-            this._end = Math.max(this.start+this.step, Math.min(num, this.range) )
+            this._end = Math.max(Math.floor(this.start/this.step)*this.step + this.step, Math.min(num, this.range) )
             :
             this._end = Math.max(this.start, Math.min(num, this.range) )
         }
@@ -53,7 +53,7 @@ function CreateSlider(e: HTMLElement, options:object){
                 this.step = 1
             }
             this._start = Math.max(Math.min(start - origin, this.range - this.step), 0) 
-            this._end = end === null ? range : Math.min(range, Math.max(this.start+1, end-origin) ) 
+            this._end = end === null ? range : Math.min(range, Math.max(this.type == "point" ? this.start : this.start+this.step, end-origin) ) 
             this.value = [this.start + this.origin, this.end + this.origin]
         }
         update(data: {startPos: number, endPos: number, method: string}):void{
@@ -65,21 +65,20 @@ function CreateSlider(e: HTMLElement, options:object){
                 }
                 else{
                     if(data.startPos<this.origin) this._start = 0
-                    if(data.startPos>=this.range+this.origin) this._start =  this.range - this.step
-                    if(data.startPos>=data.endPos) this._start = data.endPos - this.origin - this.step
-                    
-                    if(data.endPos>=this.range+this.origin) this._end = this.range
-                    if(data.endPos<=this.origin) this._end = 0 + this.step
-                    if(data.endPos<=data.startPos) this._end = data.startPos + this.step
-                    
+                    else if(data.startPos>=this.range+this.origin) this._start =  this.range - 1
+                    else this._start = data.startPos - this.origin
+                       
+                    if(data.endPos<=this.start+this.origin) this._end = this.start + 1
+                    else if(data.endPos>=this.range+this.origin) this._end = this.range
+                    else this._end = data.endPos - this.origin
                 }
             }
             else if(data.method == "tepping"){
                 if(data.startPos){
-                    this.start += data.startPos*this.step
+                    this.start += this.step*data.startPos
                 }
                 if(data.endPos){
-                    this.end += data.endPos*this.step
+                    this.end += this.step*data.endPos
                 }
             }
             else if(data.method == "scaleClick"){
@@ -91,19 +90,15 @@ function CreateSlider(e: HTMLElement, options:object){
             else{
                 let newStart = this.range/100*data.startPos 
                 let newEnd = this.range/100*data.endPos
-                if((newEnd - this.end) >= this.step*0.7 || (this.end - newEnd) >= this.step*0.7 || newEnd==this.range){
+                if((newEnd - this.end) >= this.step*0.7 || (this.end - newEnd) >= this.step*0.7 || newEnd>=this.range){
                     this.end = Math.round(newEnd/this.step)*this.step
                 }
-                if((newStart - this.start) >= this.step*0.7 || (this.start - newStart) >= this.step*0.7 || newStart==0){
+                if((newStart - this.start) >= this.step*0.7 || (this.start - newStart) >= this.step*0.7 || newStart<=0){
                     this.start = Math.round(newStart/this.step)*this.step
                 }
             }
-            
             if(this.type == "range")  this.value = [this.start + this.origin, this.end + this.origin]
-            else{
-                this.start = 0
-                this.value = [this.end + this.origin]
-            }
+            else this.value = [this.end + this.origin]
 
             this.updated(100/this.range*this.start, 100/this.range*this.end)
         }
@@ -126,7 +121,6 @@ function CreateSlider(e: HTMLElement, options:object){
         element: HTMLElement;
         orient: string;
         type: string;
-        scaleDisplay: boolean;
         origin: number;
         size: number;
         range: number;
@@ -136,7 +130,7 @@ function CreateSlider(e: HTMLElement, options:object){
         tumbler:    {html: string; elements:NodeListOf<Element>;orient: string; type: string; cloud:string; render: Function; update: Function};
         line:       {element: HTMLElement; orient: string; render: Function}
         selected:   {html: string; element: HTMLElement; orient: string; render: Function; update: Function}
-        scale:      {html: string; element: HTMLElement; list: Array<any>; orient: string; origin: number; range: number; 
+        scale:      {html: string; element: HTMLElement; display:boolean; list: Array<any>; orient: string; origin: number; range: number; 
                      interval: number; render: Function; update: Function }
 
         tumblerShifted: Function;
@@ -144,13 +138,15 @@ function CreateSlider(e: HTMLElement, options:object){
         static scaleClass = class{
             html: string;
             element: HTMLElement; 
+            display: boolean;
             list: Array<any>
             orient: string;
             origin: number; 
             range: number; 
             interval: number;
 
-            constructor(data:{list: Array<any>;orient: string; origin: number; range: number; interval: number;}){
+            constructor(data:{list: Array<any>;orient: string; origin: number; range: number; interval: number; display: boolean;}){
+                this.display = data.display
                 this.orient = data.orient
                 this.origin = data.origin 
                 this.range = data.range 
@@ -165,14 +161,14 @@ function CreateSlider(e: HTMLElement, options:object){
             }
             render(callback:Function){
                 let thisList = Boolean(this.list[0])
-                let container = this.element =  root.querySelector(".RangeSlider__scale")
+                this.element =  root.querySelector(".RangeSlider__scale")
                 let intervals = Math.ceil(this.range/ this.interval)
                 
                 let flexcont = document.createElement("div")
                 flexcont.classList.add("Scale__mainline")
                 flexcont.classList.add(`Scale__mainline_for_${this.orient}`)
 
-                container.append(flexcont)
+                this.element.append(flexcont)
                 
                 let cell = document.createElement("span")
                 cell.classList.add("Scale__cell")
@@ -220,6 +216,7 @@ function CreateSlider(e: HTMLElement, options:object){
                         callback({startPos: value, method: "scaleClick"})
                     }
                 }
+                if(!this.display) this.element.style.display = "none"
             }
             update(firPos: number, secPos:number){
                 this.element.querySelectorAll(".Scale__cell").forEach(el=>{
@@ -295,7 +292,7 @@ function CreateSlider(e: HTMLElement, options:object){
                             document.onmouseup = null;
                         }
                     }
-                    elem.onfocus = (e: MouseEvent)=>{
+                    elem.onfocus = (e:Event)=>{
                         if(this.cloud == "click") cloud.style.display = "block"
                         let target = (<HTMLElement>e.target)
                         document.onkeydown = e=>{
@@ -363,22 +360,17 @@ function CreateSlider(e: HTMLElement, options:object){
         constructor({orient = "horizontal",type= "range", origin = 0, range = 100, scale=true, cloud="click", scaleInterval=10, list=[]}){
             this.element
             this.orient = orient
-            this.scaleDisplay = scale
 
             this.tumbler = new ViewClass.TumblerClass({orient: orient, type: type, cloud: cloud})
-
             this.line = new ViewClass.LineClass({orient: orient})
-
             this.selected = new ViewClass.SelectedClass({orient: orient})
-        
-            this.scale = new ViewClass.scaleClass({list: list, orient: orient, origin: origin, range: range, interval: scaleInterval})
+            this.scale = new ViewClass.scaleClass({list: list, display: scale, orient: orient, origin: origin, range: range, interval: scaleInterval})
         }
         render():void{
             root.innerHTML =  `<div class='RangeSlider RangeSlider_for_${this.orient}'><div class='RangeSlider__line RangeSlider__line_for_${this.orient}'> ${this.selected.html}${this.tumbler.html}${this.tumbler.html}</div> ${this.scale.html} </div></div>`;
             this.line.render()
 
             this.scale.render(this.tumblerShifted)
-            if(!this.scaleDisplay) this.scale.element.style.display = "none"
 
             this.tumbler.render(this.tumblerShifted)
 

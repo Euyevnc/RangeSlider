@@ -1,432 +1,239 @@
-import "./main.scss"
 import jQuery from "jquery";
+import "./RangeSlider/RangeSlider"
+import "./main.scss"
+import { Object } from "lodash";
+
+window.addEventListener('DOMContentLoaded', (event) => {
+    let block1 = jQuery(".first_wrapper>.panel")
+    let slider1 = jQuery(".first_wrapper>div:last-child").RangeSlider({type: "range",start:20, end : 80, step: 1, scale:false, cloud: "always"})
+    slider1.init()
+
+    let block2 = jQuery(".second_wrapper>.panel")
+    let slider2 = jQuery(".second_wrapper>div:last-child").RangeSlider({type: "point", origin: 10, range: 90, end:10, step: 5, scaleInterval: 20})
+    slider2.init()
+
+    let block3= jQuery(".third_wrapper>.panel")
+    let slider3 = jQuery(".third_wrapper>div:last-child").RangeSlider({type: "point", orient:"vertical", origin: 0, scaleInterval: 5, range: 10, end:5})
+    slider3.init()
+
+    let block4= jQuery(".fourt_wrapper>.panel")
+    let slider4 = jQuery(".fourt_wrapper>div:last-child").RangeSlider( {type: "range", list: ["ἄ", "β", "γ", "λ", "Ξ", "ζ", "π", "θ", "ψ"], end: 2, cloud:"none"})
+    slider4.init()
+    
+    connectThePanel(block1, slider1)
+    connectThePanel(block2, slider2)
+    connectThePanel(block3, slider3)
+    connectThePanel(block4, slider4)
+});
 
 
-export default (function($){
-    $.fn.RangeSlider = function(options:object) {
-        let sliderObjects: Array<Object> = []
-        this.each((i:number,e:HTMLElement)=> {
-            sliderObjects.push( CreateSlider(e,options) )
-        })
-        if(sliderObjects.length == 1) return sliderObjects[0]
-        else return sliderObjects
+function connectThePanel(panelNode: JQuery, sliderObject:RangeSliderObject){
+    let slider = sliderObject
+    
+    if(slider.View.tumblers.type == "point"){
+        panelNode.find("[name='type'][value='point']").prop('checked', true);
+        panelNode.find("[name='first_pos']").prop("disabled", true)
     }
-})(jQuery)
+    else panelNode.find("[name='type'][value='range']").prop('checked', true);
+    
+    if(slider.View.tumblers.cloud == "always") panelNode.find("[name='cloud'][value='yes']").prop('checked', true);
+    else if(slider.View.tumblers.cloud == "click") panelNode.find("[name='cloud'][value='click']").prop('checked', true);
+    else panelNode.find("[name='cloud'][value='no']").prop('checked', true);
+       
+    if(slider.View.orient == "vertical") panelNode.find("[name='orient'][value='vertical']").prop('checked', true);
+    else panelNode.find("[name='orient'][value='horizontal']").prop('checked', true);
 
-function CreateSlider(e: HTMLElement, options:object){  
-    const root = e
-    const ModelClass = class{
-        private _start: number;
-        private _end: number;
-        range: number;
-        origin: number;
-        step:number;
-        value: Array<number>;
-        type: string;
-        set start(num:number){
-            this.type == "range" ? 
-                this._start = Math.min(Math.ceil(this.end/this.step)*this.step - this.step, Math.max(num, 0) )
-                :
-                this._start = 0 
-        }
-        get start(){
-            return this._start
-        }
-        set end(num:number){
-            this.type == "range" ? 
-            this._end = Math.max(Math.floor(this.start/this.step)*this.step + this.step, Math.min(num, this.range) )
-            :
-            this._end = Math.max(this.start, Math.min(num, this.range) )
-        }
-        get end(){
-            return this._end
-        }
-        updated: Function;
-        constructor({type="range", origin = 0, range = 100,  start = 0, end=null, step=1, list=[]}){
-            this.type = type
-            this.range = range
-            this.origin = origin
-            this.step = step
-            if(list[0]){
-                this.range = list.length - 1
-                this.origin = 0
-                this.step = 1
-            }
-            this._start = Math.max(Math.min(start - origin, this.range - this.step), 0) 
-            this._end = end === null ? range : Math.min(range, Math.max(this.type == "point" ? this.start : this.start+this.step, end-origin) ) 
-            this.value = [this.start + this.origin, this.end + this.origin]
-        }
-        update(data: {startPos: number, endPos: number, method: string}):void{
-            if(data.method == "direct"){
-                if(this.type == "point") {
-                    if(data.startPos<this.origin) this._end = 0
-                    else if(data.startPos> this.range + this.origin) this._end = this.range
-                    else(this._end = data.startPos - this.origin)     
-                }
-                else{
-                    if(data.startPos<this.origin) this._start = 0
-                    else if(data.startPos>=this.range+this.origin) this._start =  this.range - 1
-                    else this._start = data.startPos - this.origin
-                       
-                    if(data.endPos<=this.start+this.origin) this._end = this.start + 1
-                    else if(data.endPos>=this.range+this.origin) this._end = this.range
-                    else this._end = data.endPos - this.origin
-                }
-            }
-            else if(data.method == "tepping"){
-                if(data.startPos){
-                    this.start += this.step*data.startPos
-                }
-                if(data.endPos){
-                    this.end += this.step*data.endPos
-                }
-            }
-            else if(data.method == "scaleClick"){
-                if(this.type == "point" || Math.abs(data.startPos - this.end)<=Math.abs(data.startPos - this.start) ){
-                    this.end = data.startPos
-                }
-                else this.start = data.startPos
+    if(!slider.View.scale.display){
+        panelNode.find("[name='interval']").prop("value", "")
+        panelNode.find("[name='interval']").prop('disabled', true);
+        panelNode.find("[name='scale'][value='no']").prop('checked', true);
+    }
+    else {
+        panelNode.find("[name='scale'][value='yes']").prop('checked', true);
+        panelNode.find("[name='interval']").prop("value", slider.View.scale.interval)
+    }
+    if(!slider.View.scale.list.length){
+        panelNode.find("[name='list']").prop("value", "")
+        panelNode.find("[name='list']").prop('disabled', true);
+    }
+    else{
+        panelNode.find("[name='range']").prop("disabled", true)
+        panelNode.find("[name='step']").prop("disabled", true)
+        panelNode.find("[name='origin']").prop("disabled", true)
+        panelNode.find("[name='interval']").prop("disabled", true)
+        panelNode.find("[name='list']").prop("value", slider.View.scale.list.toString())
+    }
+
+    panelNode.find("[name='origin']").prop("value", slider.Model.origin)
+    panelNode.find("[name='range']").prop("value", slider.Model.range)
+    panelNode.find("[name='step']").prop("value", slider.Model.step)
+
+    panelNode.find("[name='first_pos']").prop("value", slider.getValue()[0])
+    panelNode.find("[name='second_pos']").prop("value", slider.getValue()[1])
+    
+    panelNode.find("[name='type']").each((i, e)=>{
+        e.onchange = (event)=>{
+            if(e.getAttribute("value") == "point"){
+                slider.View.tumblers.type = "point"
+                slider.Model.type = "point"
+                slider.init()
+                panelNode.find("[name='first_pos']").prop("disabled", true)
             }
             else{
-                let newStart = this.range/100*data.startPos 
-                let newEnd = this.range/100*data.endPos
-                if((newEnd - this.end) >= this.step*0.7 || (this.end - newEnd) >= this.step*0.7 || newEnd>=this.range){
-                    this.end = Math.round(newEnd/this.step)*this.step
-                }
-                if((newStart - this.start) >= this.step*0.7 || (this.start - newStart) >= this.step*0.7 || newStart<=0){
-                    this.start = Math.round(newStart/this.step)*this.step
-                }
+                slider.View.tumblers.type = "range"
+                slider.Model.type = "range"
+                slider.init() 
+                panelNode.find("[name='first_pos']").prop("disabled", false)
             }
-            if(this.type == "range")  this.value = [this.start + this.origin, this.end + this.origin]
-            else this.value = [this.end + this.origin]
+            panelNode.find("[name='first_pos']").prop("value", slider.getValue()[0])
+        } 
+    })
+    panelNode.find("[name='scale']").each((i, e)=>{
+        e.onchange = (event)=>{
+            if(e.getAttribute("value") == "yes"){
+                slider.View.scale.display = true
+                slider.init()
+                if(!slider.View.scale.list.length)panelNode.find("[name='interval']").prop('disabled', false);
+                panelNode.find("[name='interval']").prop("value", slider.View.scale.interval)
+            }
+            else{
+                slider.View.scale.display = false
+                slider.init() 
+                panelNode.find("[name='interval']").prop('disabled', true);
+            }
+        }  
+    })
+    panelNode.find("[name='cloud']").each((i, e)=>{
+        e.onchange = (event)=>{
+            if(e.getAttribute("value") == "yes"){
+                slider.View.tumblers.cloud = "always"
+                slider.init()
+            }
+            else if(e.getAttribute("value") == "click"){
+                slider.View.tumblers.cloud = "click"
+                slider.init() 
+            }
+            else{
+                slider.View.tumblers.cloud = "none"
+                slider.init() 
+            }
+        } 
+    })
+    panelNode.find("[name='orient']").each((i, e)=>{
+        e.onchange = (event)=>{
+            let width = panelNode.next().width()
+            let height = panelNode.next().height()
+            if(e.getAttribute("value") == "vertical"){
+                slider.View.orient = "vertical"
+                slider.View.line.orient = "vertical"
+                slider.View.selected.orient = "vertical"
+                slider.View.scale.orient = "vertical"
+                slider.View.tumblers.orient = "vertical"
+                panelNode.next().height(width)
+                panelNode.next().width(height)
+                slider.init()
+            }
+            else{
+                slider.View.orient = "horizontal"
+                slider.View.line.orient = "horizontal"
+                slider.View.selected.orient = "horizontal"
+                slider.View.scale.orient = "horizontal"
+                slider.View.tumblers.orient = "horizontal"
+                panelNode.next().height(width)
+                panelNode.next().width(height)
+                slider.init() 
+            }
+        }  
+    })
 
-            this.updated(100/this.range*this.start, 100/this.range*this.end)
-        }
+    panelNode.find("input[name='origin']").on("change", (e)=>{
+        e.preventDefault()
+        let value = Number((e.target as HTMLInputElement).value)
+        slider.Model.origin = value
+        slider.View.scale.origin = value
+        slider.init()
+    })
+    panelNode.find("input[name='origin']").on("submit", (e)=>{
+        e.preventDefault()
+    })
+
+    panelNode.find("input[name='range']").on("change", (e)=>{
+        e.preventDefault()
+        let value = Math.max(Number((e.target as HTMLInputElement).value), 1);
+        (e.target as HTMLInputElement).value = value.toString()
+        slider.Model.range = value
+        slider.View.scale.range = value
+        slider.init()
+    })
+    panelNode.find("input[name='range']").on("submit", (e)=>{
+        e.preventDefault()
+    })
+    panelNode.find("input[name='interval']").on("change", (e)=>{
+        e.preventDefault()
+        let value = Math.max(Number((e.target as HTMLInputElement).value), 1);
+        (e.target as HTMLInputElement).value = value.toString()
+        slider.View.scale.interval = value
+        slider.init()
+    })
+    panelNode.find("input[name='interval']").on("submit", (e)=>{
+        e.preventDefault()
+    })
+
+    panelNode.find("input[name='list']").on("change", (e)=>{
+        e.preventDefault()
+        let value = (e.target as HTMLInputElement).value.split(",")
+        slider.Model.range = value.length-1
+        slider.View.scale.range = value.length-1
+        slider.View.scale.list = value
+        slider.init()
+        panelNode.find("input[name='range']").prop("value", slider.Model.range)
+        
+    })
+    panelNode.find("input[name='list']").on("submit", (e)=>{
+        e.preventDefault()
+    })
+    panelNode.find("input[name='step']").on("change", (e)=>{
+        e.preventDefault()
+        let value = Math.max(Number((e.target as HTMLInputElement).value), 1);
+        (e.target as HTMLInputElement).value = value.toString()
+        slider.Model.step = value
+        slider.init()
+    })
+    panelNode.find("input[name='list']").on("submit", (e)=>{
+        e.preventDefault()
+    })
+
+    panelNode.find("input[name='first_pos']").on("change", (e)=>{
+        e.preventDefault()
+        let value = Number((e.target as HTMLInputElement).value);
+        slider.setValue(value);
+        (e.target as HTMLInputElement).value = (slider.getValue()[0]).toString()
+    })
+    panelNode.find("input[name='first_pos']").on("submit", (e)=>{
+        e.preventDefault()
+    })
+
+    panelNode.find("input[name='second_pos']").on("change", (e)=>{
+        e.preventDefault()
+        let value = Number((e.target as HTMLInputElement).value);
+        slider.Model.type == "point" ?
+        slider.setValue(value)
+            :
+        slider.setValue(undefined, value);
+
+        (e.target as HTMLInputElement).value = (slider.getValue()[1]).toString()
+    })
+    panelNode.find("input[name='second_pos']").on("submit", (e)=>{
+        e.preventDefault()
+    })
+
+    slider.Presenter.OptionalCallback_toView = ()=>{
+        panelNode.find("input[name='first_pos']").prop("value", slider.getValue()[0])
+        panelNode.find("input[name='second_pos']").prop("value", slider.getValue()[1])
     }
-    const PresenterClass = class{
-        callToModel: Function;
-        callToView: Function;
-
-        constructor(data:object){ 
-
-        }
-        shiftReact(data: {endPos: number, startPos: number, method: string}){            
-            this.callToModel(data)
-        }
-        updateReact(firCoor:number, secCoor:number){
-            this.callToView(firCoor, secCoor)
-        }
-    }
-    const ViewClass = class{
-        element: HTMLElement;
-        orient: string;
-        type: string;
-        origin: number;
-        size: number;
-        range: number;
-        start:number;
-        end: number;
-
-        tumbler:    {html: string; elements:NodeListOf<Element>;orient: string; type: string; cloud:string; render: Function; update: Function};
-        line:       {element: HTMLElement; orient: string; render: Function}
-        selected:   {html: string; element: HTMLElement; orient: string; render: Function; update: Function}
-        scale:      {html: string; element: HTMLElement; display:boolean; list: Array<any>; orient: string; origin: number; range: number; 
-                     interval: number; render: Function; update: Function }
-
-        tumblerShifted: Function;
-
-        static scaleClass = class{
-            html: string;
-            element: HTMLElement; 
-            display: boolean;
-            list: Array<any>
-            orient: string;
-            origin: number; 
-            range: number; 
-            interval: number;
-
-            constructor(data:{list: Array<any>;orient: string; origin: number; range: number; interval: number; display: boolean;}){
-                this.display = data.display
-                this.orient = data.orient
-                this.origin = data.origin 
-                this.range = data.range 
-                this.interval = data.interval
-                this.list = data.list
-                if(this.list[0]){
-                    this.origin = 0;
-                    this.range =this.list.length -1
-                    this.interval = 1
-                }
-                this.html = `<div class='RangeSlider__scale RangeSlider__scale_for_${this.orient}'></div>`;
-            }
-            render(callback:Function){
-                let thisList = Boolean(this.list[0])
-                this.element =  root.querySelector(".RangeSlider__scale")
-                let intervals = Math.ceil(this.range/ this.interval)
-                
-                let flexcont = document.createElement("div")
-                flexcont.classList.add("Scale__mainline")
-                flexcont.classList.add(`Scale__mainline_for_${this.orient}`)
-
-                this.element.append(flexcont)
-                
-                let cell = document.createElement("span")
-                cell.classList.add("Scale__cell")
-                cell.classList.add(`Scale__cell_for_${this.orient}`)
-                if(this.orient == "vertical"){
-                    cell.style.height = this.interval/this.range*100 + "%"
-                    
-                }
-                else{
-                    cell.style.width = this.interval/this.range*100 + "%"
-                }
-                
-                let createCell = (int:number)=>{
-                    let currentCell = (cell.cloneNode(true) as HTMLSpanElement)
-                   
-                    currentCell.classList.add(`Scale__cell_meaning_${int}`)
-                    currentCell.setAttribute("value", `${int}`)
-                    
-                    let amountCont = document.createElement("span")
-                    amountCont.innerHTML = thisList ?
-                        this.list[int]
-                        :
-                        int.toString()
-                    currentCell.append(amountCont)
-                    
-                    flexcont.append(currentCell)
-
-                    return currentCell
-                }
-                createCell(this.origin)
-                for( let i=1; i<intervals; i++){
-                    if(i !==intervals-1) {
-                        createCell(i*this.interval+this.origin)
-                    }
-                    else createCell(i*this.interval+this.origin).style.flexShrink = "1"
-                }
-                this.orient == "vertical" ? 
-                    createCell(this.range+this.origin).style.height = "0px"
-                    :
-                    createCell(this.range+this.origin).style.width = "0px"
-                
-                this.element.onclick= (e:MouseEvent)=>{
-                    if( (<HTMLElement>e.target).closest(".Scale__cell>span") ){
-                        let value = +(<HTMLElement>e.target).closest(".Scale__cell").getAttribute("value") - this.origin
-                        callback({startPos: value, method: "scaleClick"})
-                    }
-                }
-                if(!this.display) this.element.style.display = "none"
-            }
-            update(firPos: number, secPos:number){
-                this.element.querySelectorAll(".Scale__cell").forEach(el=>{
-                    let elem = el as HTMLElement
-                    let amount = +el.getAttribute("value")
-                    if(amount>= (this.range/100 *firPos + this.origin) && amount<=(this.range/100 *secPos + this.origin) ){
-                        elem.classList.add("Scale__cell_status_active")
-                    }
-                    else{
-                        elem.classList.remove("Scale__cell_status_active")
-                    } 
-                })
-            }
-        }
-        static LineClass = class{
-            element: HTMLElement;
-            orient: string;
-            constructor(data: {orient: string}){
-                this.orient = data.orient
-            }
-            render(){
-                this.element = root.querySelector(".RangeSlider__line") as HTMLElement
-            }
-        }
-        static TumblerClass = class{
-            html: string;
-            elements: NodeListOf<HTMLElement>
-            orient: string;
-            type: string;
-            size: number;
-            cloud: string;
-            constructor(data: {orient:string, type:string, cloud: string;}){
-                this.orient = data.orient
-                this.type = data.type
-                this.cloud = data.cloud
-                this.html = `<span tabindex= "1"; class='RangeSlider__tumbler RangeSlider__tumbler_for_${this.orient}'> </span>`
-            }
-            render(callback:Function){
-                this.elements = root.querySelectorAll(".RangeSlider__tumbler") 
-                this.elements.forEach((el, i)=>{ 
-                    let elem = (el as HTMLElement)
-                    let cloud: HTMLElement
-                    if(this.type === "point" && i===0) elem.style.display = "none"
-                    
-                    cloud = document.createElement("div")
-                    cloud.classList.add("RangeSlider__cloud")
-                    cloud.classList.add(`RangeSlider__cloud_for_${this.orient}`)
-                    cloud.append(document.createElement("b"))
-                    cloud.append(document.createElement("div"))
-                    el.append(cloud)
-
-                    if(this.cloud !== "always") cloud.style.display = "none"
-                    
-                    elem.onmousedown = (e: MouseEvent)=>{
-                        e.preventDefault()
-                        if(this.cloud == "click") cloud.style.display = "block"
-                        root.onmousemove = (ev:MouseEvent)=>{
-                            let tumbler = <HTMLElement>e.target;
-                            let line= root.querySelector(".RangeSlider")
-                            let bias = this.orient === "vertical" ? 
-                                        -(ev.clientY - line.getBoundingClientRect().bottom)/line.getBoundingClientRect().height * 100
-                                        //Минус тут нужен для реверса. так как шкала сверху вниз т.е. противонаправлена линии координат
-                                        :
-                                        (ev.clientX - line.getBoundingClientRect().x)/line.getBoundingClientRect().width * 100 
-                            if (tumbler.nextSibling){
-                                callback({startPos: bias})
-                            }
-                            else(callback({endPos: bias }) )
-                        }
-                        document.onmouseup = e=>{
-                            if(this.cloud == "click") cloud.style.display = "none"
-                            root.onmousemove = null;
-                            document.onmouseup = null;
-                        }
-                    }
-                    elem.onfocus = (e:Event)=>{
-                        if(this.cloud == "click") cloud.style.display = "block"
-                        let target = (<HTMLElement>e.target)
-                        document.onkeydown = e=>{
-                            if( (e.key === "ArrowDown" && this.orient ==="vertical") || (e.key === "ArrowLeft" && this.orient !=="vertical")){
-                                target.nextSibling ? 
-                                        callback({startPos: -1, method: "tepping"})
-                                        :
-                                        callback({endPos:-1, method:"tepping"})
-                            } 
-                            else if( (e.key === "ArrowUp" && this.orient ==="vertical") || (e.key === "ArrowRight" && this.orient !=="vertical")){
-                                target.nextSibling ? 
-                                        callback({startPos: 1, method: "tepping"})
-                                        :
-                                        callback({endPos:1, method:"tepping"})
-                            }
-                        }
-                        (<HTMLElement>e.target).onblur = e=>{
-                            if(this.cloud == "click") cloud.style.display = "none"
-                            document.onkeydown = null;
-                            (<HTMLElement>e.target).onblur = null
-                        }
-                    }
-                } );
-            }
-            update(firPos: number, secPos:number, valueFir: string, valueSec: string){
-                let firEl = this.elements[0] as HTMLElement
-                let secEl = this.elements[1] as HTMLElement
-                if(this.orient == "vertical"){
-                    firEl.style.bottom = firPos + "%";
-                    secEl.style.bottom = secPos  + "%"
-                }
-                else{
-                    firEl.style.left = firPos + "%";
-                    secEl.style.left = secPos  + "%"
-                }
-            
-                firEl.querySelector("b").innerText = valueFir;
-                secEl.querySelector("b").innerText = valueSec;
-            }
-        };
-        static SelectedClass = class{
-            element: HTMLElement;
-            html: string;
-            orient: string;
-
-            constructor(data: {orient: string}){
-                this.orient = data.orient 
-                this.html = `<div class='RangeSlider__selected RangeSlider__selected_for_${this.orient}'></div>`
-            }
-            render(){
-                this.element = root.querySelector(".RangeSlider__selected")
-            }
-            update(firPos: number, secPos: number){
-                if(this.orient == "vertical"){
-                    this.element.style.bottom = firPos + "%"
-                    this.element.style.top = 100 - secPos + "%"
-                    
-                }
-                else{
-                    this.element.style.left = firPos + "%"
-                    this.element.style.right = 100 - secPos + "%"
-                }
-            }
-        }
-        constructor({orient = "horizontal",type= "range", origin = 0, range = 100, scale=true, cloud="click", scaleInterval=10, list=[]}){
-            this.element
-            this.orient = orient
-
-            this.tumbler = new ViewClass.TumblerClass({orient: orient, type: type, cloud: cloud})
-            this.line = new ViewClass.LineClass({orient: orient})
-            this.selected = new ViewClass.SelectedClass({orient: orient})
-            this.scale = new ViewClass.scaleClass({list: list, display: scale, orient: orient, origin: origin, range: range, interval: scaleInterval})
-        }
-        render():void{
-            root.innerHTML =  `<div class='RangeSlider RangeSlider_for_${this.orient}'><div class='RangeSlider__line RangeSlider__line_for_${this.orient}'> ${this.selected.html}${this.tumbler.html}${this.tumbler.html}</div> ${this.scale.html} </div></div>`;
-            this.line.render()
-
-            this.scale.render(this.tumblerShifted)
-
-            this.tumbler.render(this.tumblerShifted)
-
-            this.selected.render()
-
-            this.element = root.querySelector(".RangeSlider")
-        }
-        viewUpdate(firPos:number, secPos:number){
-            let firValue = (this.scale.range/100*firPos+ this.scale.origin).toFixed()
-            let secValue = (this.scale.range/100*secPos+ this.scale.origin).toFixed()
-            if(this.scale.list[0]){
-                firValue  = this.scale.list[+firValue]
-                secValue = this.scale.list[+secValue]
-            }
-            this.tumbler.update(firPos, secPos, firValue, secValue)
-
-            this.selected.update(firPos, secPos)
-
-            this.scale.update(firPos, secPos)
-        }
-    }
-    const sliderObject = { 
-        Model: new ModelClass(options),
-        Presenter: new PresenterClass(options),
-        View: new ViewClass(options),
-
-        init: function(){
-            this.View.tumblerShifted = this.Presenter.shiftReact.bind(this.Presenter)
-            this.Presenter.callToModel = this.Model.update.bind(this.Model)
-            this.Model.updated = this.Presenter.updateReact.bind(this.Presenter)
-            this.Presenter.callToView = this.View.viewUpdate.bind(this.View)
-
-            this.View.render()  
-            this.Presenter.shiftReact({})
-        },
-        getValue(){
-            console.log(`Selected range: ${this.Model.value[0]} — ${this.Model.value[1]}`)
-            return this.Model.value
-        },
-        setValue(start:number, end:number){
-            this.Presenter.shiftReact({startPos: start, endPos: end, method: "direct"})
-            
-        },
-    }
-    return sliderObject 
+    
 }
 
-// let slider = jQuery(".wrapper>div").RangeSlider({type: "range",start:20, end : 80, step: 1, scale:false, cloud: "always"}  )
-// let slider2 = jQuery(".wrapper-two>div").RangeSlider({type: "point", origin: 10, range: 90, end:10, step: 5, scaleInterval: 20})
-// let slider3 = jQuery(".wrapper-three>div").RangeSlider({type: "point", orient:"vertical", origin: 0, scaleInterval: 5, range: 10, end:5} )
-// let slider4 = jQuery(".wrapper-list>div").RangeSlider( {type: "range", list: ["ἄ", "β", "γ", "λ", "Ξ", "ζ", "π", "θ", "ψ"], end: 2, cloud:"none"})
-
-// slider.init()
-// slider2.init()
-// slider3.init()
-// slider4.init()
 
 
 

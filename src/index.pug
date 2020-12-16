@@ -7,11 +7,15 @@ html(lang='ru')
     title RangeSlider
 
   body
-    .wrapper(style="width:40%; margin:auto; padding: 40px")
-        div(style="height: 30px;")
-    .wrapper-two(style="width:40%; margin:auto; padding: 40px")
-        div(style="height: 30px; ")
-    .wrapper-list(style="width:40%; margin:auto; padding: 40px")
-        div(style="height: 30px; ")
-    .wrapper-three(style="width:20%; margin-left:100px;")
-        div(style="height: 500px;")
+    .wrapper.first_wrapper
+      include ./panel.pug
+      div Контейнер под слайдер
+    .wrapper.second_wrapper
+      include ./panel.pug
+      div Контейнер под слайдер(2)
+    .wrapper.third_wrapper
+      include ./panel.pug
+      div.for_vertical Контейнер под слайдер(3)
+    .wrapper.fourt_wrapper
+      include ./panel.pug
+      div Контейнер под слайдер(4)

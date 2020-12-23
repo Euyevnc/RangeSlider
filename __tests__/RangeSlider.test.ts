@@ -1,5 +1,5 @@
 import jQuery from "jquery";
-import "../src/main"
+import "../src/RangeSlider/RangeSlider"
 
 
 let inputData = {orient: "horizontal", type: "range", origin: 10, range: 100, start:10, end:30, step : 1, scale: true, scaleInterval: 20, cloud: "test", };
@@ -18,7 +18,7 @@ describe("Creation of the slider object", () => {
     expect(createdObject).toHaveProperty("Model");
     expect(createdObject).toHaveProperty("Presenter");
     expect(createdObject).toHaveProperty("View");
-    expect(createdObject.View).toHaveProperty("tumbler");
+    expect(createdObject.View).toHaveProperty("tumblers");
     expect(createdObject.View).toHaveProperty("line");
     expect(createdObject.View).toHaveProperty("selected");
     expect(createdObject.View).toHaveProperty("scale");
@@ -27,7 +27,7 @@ describe("Creation of the slider object", () => {
     expect(createdObject.Model.origin).toEqual(inputData.origin);
     expect(createdObject.View.scale.display).toEqual(inputData.scale);
     expect(createdObject.View.orient).toEqual(inputData.orient);
-    expect(createdObject.View.tumbler.cloud).toEqual(inputData.cloud);
+    expect(createdObject.View.tumblers.cloud).toEqual(inputData.cloud);
     expect(createdObject.View.scale.interval).toEqual(inputData.scaleInterval);
   })
   
@@ -62,13 +62,13 @@ describe("Creation of the slider object", () => {
     let createdObject = node.RangeSlider(inputData)
 
     expect(createdObject.View.element).not.toBeTruthy()
-    expect(createdObject.View.tumbler.elements).not.toBeTruthy()
+    expect(createdObject.View.tumblers.elements).not.toBeTruthy()
     expect(createdObject.View.line.element).not.toBeTruthy()
     expect(createdObject.View.selected.element).not.toBeTruthy()
     expect(createdObject.View.scale.element).not.toBeTruthy()
     createdObject.init()
     expect(createdObject.View.element).toBeTruthy()
-    expect(createdObject.View.tumbler.elements).toBeTruthy()
+    expect(createdObject.View.tumblers.elements).toBeTruthy()
     expect(createdObject.View.line.element).toBeTruthy()
     expect(createdObject.View.selected.element).toBeTruthy()
     expect(createdObject.View.scale.element).toBeTruthy()
@@ -79,7 +79,7 @@ describe("Creation of the slider object", () => {
     let createdObject = node.RangeSlider(inputData)
     let lastLink = createdObject.View.viewUpdate = jest.fn()
     createdObject.init()
-    createdObject.View.tumblerShifted({})
+    createdObject.View.callback({})
     expect(lastLink).toBeCalled()
 
     //проверка того, что презентер пробрасывает данные
@@ -87,7 +87,7 @@ describe("Creation of the slider object", () => {
     let modelReceiver = createdObject2.Model.update = jest.fn()
     let testObject = {a: "string", b: 55, c: true }
     createdObject2.init()
-    createdObject2.View.tumblerShifted(testObject)
+    createdObject2.View.callback(testObject)
     expect(modelReceiver).toHaveBeenCalledWith(testObject)
   });
 });
@@ -100,9 +100,9 @@ describe("Slider functioning", ()=>{
       createdObject.init()
       
 
-      createdObject.View.tumblerShifted({startPos: 25, endPos: 40})
+      createdObject.View.callback({startPos: 25, endPos: 40})
       expect(ViewUpdate).toBeCalledWith(25, 40)
-      createdObject.View.tumblerShifted({startPos: -10, endPos: 120})
+      createdObject.View.callback({startPos: -10, endPos: 120})
       expect(ViewUpdate).toBeCalledWith(0, 100)
     })
     
@@ -111,12 +111,12 @@ describe("Slider functioning", ()=>{
       let ViewUpdate = createdObject.View.viewUpdate = jest.fn()
       createdObject.init()
 
-      createdObject.View.tumblerShifted({startPos: 1, endPos: -1, method: "tepping"})
+      createdObject.View.callback({startPos: 1, endPos: -1, method: "tepping"})
       expect(ViewUpdate).toBeCalledWith(1, 19)
 
       createdObject.Model.start = 0 
       createdObject.Model.end = 100 
-      createdObject.View.tumblerShifted({startPos: -1, endPos: +1, method: "tepping"})
+      createdObject.View.callback({startPos: -1, endPos: +1, method: "tepping"})
       expect(ViewUpdate).toBeCalledWith(0, 100)
     })
     
@@ -125,10 +125,10 @@ describe("Slider functioning", ()=>{
       let ViewUpdate = createdObject.View.viewUpdate = jest.fn()
       createdObject.init()
 
-      createdObject.View.tumblerShifted({startPos: 50, method: "scaleClick"})
+      createdObject.View.callback({startPos: 50, method: "scaleClick"})
       expect(ViewUpdate).toBeCalledWith(0, 50)
 
-      createdObject.View.tumblerShifted({startPos: 20, method: "scaleClick"})
+      createdObject.View.callback({startPos: 20, method: "scaleClick"})
       expect(ViewUpdate).toBeCalledWith(20, 50)    
     })
     
@@ -137,10 +137,10 @@ describe("Slider functioning", ()=>{
       let ViewUpdate = createdObject.View.viewUpdate = jest.fn()
       createdObject.init()
 
-      createdObject.View.tumblerShifted({startPos: 20, endPos: 70, method: "direct"})
+      createdObject.View.callback({startPos: 20, endPos: 70, method: "direct"})
       expect(ViewUpdate).toBeCalledWith(10, 60)
 
-      createdObject.View.tumblerShifted({startPos: 20, endPos: 5, method: "direct"})
+      createdObject.View.callback({startPos: 20, endPos: 5, method: "direct"})
       expect(ViewUpdate).toBeCalledWith(10, 11)      
     })
 
@@ -151,13 +151,13 @@ describe("Slider functioning", ()=>{
       let ViewUpdate = createdObject.View.viewUpdate = jest.fn()
       createdObject.init()
 
-      createdObject.View.tumblerShifted({startPos: 20, endPos: 50})
+      createdObject.View.callback({startPos: 20, endPos: 50})
       expect(ViewUpdate).toBeCalledWith(20, 60)
-      createdObject.View.tumblerShifted({endPos: 28})
+      createdObject.View.callback({endPos: 28})
       expect(ViewUpdate).toBeCalledWith(20, 40)
-      createdObject.View.tumblerShifted({startPos: -12})
+      createdObject.View.callback({startPos: -12})
       expect(ViewUpdate).toBeCalledWith(0, 40)
-      createdObject.View.tumblerShifted({endPos: 90})
+      createdObject.View.callback({endPos: 90})
       expect(ViewUpdate).toBeCalledWith(0, 100)
     })
     
@@ -168,12 +168,12 @@ describe("Slider functioning", ()=>{
       let ViewUpdate = createdObject.View.viewUpdate = jest.fn()
       createdObject.init()
 
-      createdObject.View.tumblerShifted({startPos: 1, endPos: -1, method: "tepping"})
+      createdObject.View.callback({startPos: 1, endPos: -1, method: "tepping"})
       expect(ViewUpdate).toBeCalledWith(20, 40)
 
       createdObject.Model.start = 0 
       createdObject.Model.end = 60 
-      createdObject.View.tumblerShifted({startPos: -1, endPos: +1, method: "tepping"})
+      createdObject.View.callback({startPos: -1, endPos: +1, method: "tepping"})
       expect(ViewUpdate).toBeCalledWith(0, 100)
     })
     
@@ -184,11 +184,11 @@ describe("Slider functioning", ()=>{
       let ViewUpdate = createdObject.View.viewUpdate = jest.fn()
       createdObject.init()
 
-      createdObject.View.tumblerShifted({startPos: 12, method: "scaleClick"})
+      createdObject.View.callback({startPos: 12, method: "scaleClick"})
       expect(ViewUpdate).toBeCalledWith(0, 20)
-      createdObject.View.tumblerShifted({startPos: 36, method: "scaleClick"})
+      createdObject.View.callback({startPos: 36, method: "scaleClick"})
       expect(ViewUpdate).toBeCalledWith(0, 60)
-      createdObject.View.tumblerShifted({startPos: 12, method: "scaleClick"})
+      createdObject.View.callback({startPos: 12, method: "scaleClick"})
       expect(ViewUpdate).toBeCalledWith(20, 60)
     })
     
@@ -199,38 +199,38 @@ describe("Slider functioning", ()=>{
       let ViewUpdate = createdObject.View.viewUpdate = jest.fn()
       createdObject.init()
 
-      createdObject.View.tumblerShifted({startPos: 25, endPos: 61, method: "direct"})
+      createdObject.View.callback({startPos: 25, endPos: 61, method: "direct"})
       expect(ViewUpdate).toBeCalledWith(100/60 * 15, 100/60 * 51)
 
-      createdObject.View.tumblerShifted({startPos: -20, endPos: 8, method: "direct"})
+      createdObject.View.callback({startPos: -20, endPos: 8, method: "direct"})
       expect(ViewUpdate).toBeCalledWith(0, 100/60 * 1) 
     })
   })
   describe("it check the occurrence of events and their transfer to the presenter", ()=>{
     let createdObject = node.RangeSlider(inputData)
-    let tumblerReaction = createdObject.Presenter.shiftReact = jest.fn()
+    let tumblersReaction = createdObject.Presenter.shiftReact = jest.fn()
     createdObject.init()
 
     test("mouse move event", ()=>{
       let md = new MouseEvent("mousedown")
       let mm = new MouseEvent("mousemove", {bubbles: true})
 
-      createdObject.View.tumbler.elements[0].dispatchEvent(md)
+      createdObject.View.tumblers.elements[0].dispatchEvent(md)
       createdObject.View.element.dispatchEvent(mm)
-      expect(tumblerReaction).toBeCalled()
+      expect(tumblersReaction).toBeCalled()
     })
     test("mouse click event", ()=>{
       let mc = new MouseEvent("click")
       createdObject.View.scale.element.querySelector(".Scale__cell").dispatchEvent(mc)
-      expect(tumblerReaction).toBeCalled()
+      expect(tumblersReaction).toBeCalled()
     })
     test("keyboard event", ()=>{
       let f = new FocusEvent("focus")
       let kd = new KeyboardEvent("keydown", {key: "ArrowLeft", code: "ArrowLeft"})
 
-      createdObject.View.tumbler.elements[0].dispatchEvent(f)
+      createdObject.View.tumblers.elements[0].dispatchEvent(f)
       document.dispatchEvent(kd)
-      expect(tumblerReaction).toBeCalled()
+      expect(tumblersReaction).toBeCalled()
     })
   })
 })

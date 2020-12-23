@@ -227,7 +227,7 @@ function connectThePanel(panelNode: JQuery, sliderObject:RangeSliderObject){
         e.preventDefault()
     })
 
-    slider.Presenter.OptionalCallback_toView = ()=>{
+    slider.Presenter.OptionalCallback_updateReact = ()=>{
         panelNode.find("input[name='first_pos']").prop("value", slider.getValue()[0])
         panelNode.find("input[name='second_pos']").prop("value", slider.getValue()[1])
     }

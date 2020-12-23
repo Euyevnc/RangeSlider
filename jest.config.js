@@ -1,6 +1,8 @@
+const path = require('path');
 module.exports = {
+
     moduleNameMapper: {
-        "^.*[.](jpg|JPG|gif|GIF|png|PNG|less|LESS|css|CSS|scss|SCSS)$": "../EmptyModule"
+        "^.*[.](jpg|JPG|gif|GIF|png|PNG|less|LESS|css|CSS|scss|SCSS)$" : path.join(__dirname,  `EmptyModule`)
     },
     moduleFileExtensions: ["js", "jsx", "json", "ts", "tsx"],
     transformIgnorePatterns: [ "/node_modules/" ],

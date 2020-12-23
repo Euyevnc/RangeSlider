@@ -21,10 +21,10 @@ function CreateSlider(e: HTMLElement, options:object){
         View: new View(root, options),
 
         init: function(){
-            this.View.tumblerShifted = this.Presenter.shiftReact.bind(this.Presenter)
-            this.Presenter.callToModel = this.Model.update.bind(this.Model)
-            this.Model.updated = this.Presenter.updateReact.bind(this.Presenter)
-            this.Presenter.callToView = this.View.viewUpdate.bind(this.View)
+            this.View.callback = this.Presenter.shiftReact.bind(this.Presenter)
+            this.Presenter.callback_shiftReact = this.Model.update.bind(this.Model)
+            this.Model.callback = this.Presenter.updateReact.bind(this.Presenter)
+            this.Presenter.callback_updateReact = this.View.viewUpdate.bind(this.View)
 
             this.View.render()  
             this.Presenter.shiftReact({})
@@ -48,7 +48,7 @@ class Model implements ModelI{
     type: string;
     set start(num:number){
         this.type == "range" ? 
-            this._start = Math.min(Math.ceil(this.end/this.step)*this.step - this.step, Math.max(num, 0) )
+            this._start = Math.min(Math.max(Math.ceil(this.end/this.step)*this.step - this.step, 0), Math.max(num, 0) )
             :
             this._start = 0 
     }
@@ -57,14 +57,14 @@ class Model implements ModelI{
     }
     set end(num:number){
         this.type == "range" ? 
-        this._end = Math.max(Math.floor(this.start/this.step)*this.step + this.step, Math.min(num, this.range) )
+        this._end = Math.max(Math.min(Math.floor(this.start/this.step)*this.step + this.step, this.range), Math.min(num, this.range) )
         :
         this._end = Math.max(this.start, Math.min(num, this.range) )
     }
     get end(){
         return this._end
     }
-    updated: Function;
+    callback: Function;
     constructor({type="range", origin = 0, range = 100,  start = 0, end=<number>null, step=1, list=<Array <number|string>>[]}){
         this.type = type
         this.range = range
@@ -130,25 +130,25 @@ class Model implements ModelI{
         }
         this.value = [this.start + this.origin, this.end + this.origin]
         
-        this.updated(100/this.range*this.start, 100/this.range*this.end)
+        this.callback(100/this.range*this.start, 100/this.range*this.end)
     }
 }
 
 class Presenter{
-    callToModel: Function;
-    callToView: Function;
-    OptionalCallback_toModel: Function;
-    OptionalCallback_toView: Function;
+    callback_shiftReact: Function;
+    callback_updateReact: Function;
+    OptionalCallback_shiftReact: Function;
+    OptionalCallback_updateReact: Function;
     constructor(data:object){ 
 
     }
     shiftReact(data: {endPos: number, startPos: number, method: string}){            
-        this.callToModel(data)
-        if(this.OptionalCallback_toModel) this.OptionalCallback_toModel()
+        this.callback_shiftReact(data)
+        if(this.OptionalCallback_shiftReact) this.OptionalCallback_shiftReact()
     }
     updateReact(firCoor:number, secCoor:number){
-        this.callToView(firCoor, secCoor)
-        if(this.OptionalCallback_toView) this.OptionalCallback_toView()
+        this.callback_updateReact(firCoor, secCoor)
+        if(this.OptionalCallback_updateReact) this.OptionalCallback_updateReact()
     }
 }
 
@@ -162,7 +162,7 @@ class View{
     selected:   {element: HTMLElement; orient: string; render: Function; update: Function}
     scale:      {element: HTMLElement; display:boolean; list: Array<any>; orient: string; origin: number; range: number; 
                  interval: number; render: Function; update: Function }
-    tumblerShifted: Function;
+    callback: Function;
 
     constructor(root: HTMLElement, {orient = "horizontal",type= "range", origin = 0, range = 100, scale=true, cloud="click", scaleInterval=10, list=[]}){
         this.root = root
@@ -183,8 +183,8 @@ class View{
         this.root.append(this.element)
        
         this.element.append( this.line.render() )
-        this.element.append( this.scale.render(this.tumblerShifted) )
-        this.tumblers.render(this.root, this.tumblerShifted).forEach((el:HTMLElement)=>{
+        this.element.append( this.scale.render(this.callback) )
+        this.tumblers.render(this.root, this.callback).forEach((el:HTMLElement)=>{
             this.line.element.append(el)
         })
         this.line.element.append(this.selected.render())

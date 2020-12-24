@@ -1,5 +1,6 @@
 # RangeSlider
 https://drive.google.com/file/d/1nYSpW9N7zwQJ2vJgMtDh5ux6BseQ3ryB/view?usp=sharing <==== Ссылка на UML-диаграмму.
+
 Приложение добавляет в  библиотеку jQuery метод RangeSlider. Метод этот при примененяется на  jQuery-объект, аргументом служит объект, через который задаются параметры слайдера. Их перечень:
 
     Имя          |Описание                                          |Значение по-умолчанию

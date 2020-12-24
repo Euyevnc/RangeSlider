@@ -1,7 +1,11 @@
 .wrapper{
-    margin:auto;
-    width: 1000px;
+    display: flex;
+    flex-wrap: wrap;
+    max-width: 1000px;
     background-color: rgb(232, 243, 223);
+    margin: auto;
+    justify-content: stretch;
+    align-content: stretch;
     & > *{
         display: inline-block;
         vertical-align: middle;
@@ -19,7 +23,9 @@
         }
     }
     & .panel{
-        width: 360px;
+        box-sizing: border-box;
+        height: 100%;
+        width: 400px;
         border: 10px solid rgb(180, 201, 124);
         & div{
             width: 50%;
@@ -30,13 +36,13 @@
         }
     }
     &>:not(.panel){
-        height: 40px;
-        padding: 35px;
-        margin: auto;
-        width: 500px;
+        min-width: 150px;
+        padding: 20% 20px;
+        flex-grow: 1;
         &.for_vertical{
-          height: 290px;  
           width: 40px;
+          padding: 10px 0 10px 10%;
+          min-height: 150px;
         }
     }
 }

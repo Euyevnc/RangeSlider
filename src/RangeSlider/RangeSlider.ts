@@ -76,7 +76,7 @@ class Model implements ModelI{
             this.step = 1
         }
         this._start = Math.max(Math.min(start - origin, this.range - this.step), 0) 
-        this._end = end === null ? range : Math.min(range, Math.max(this.type == "point" ? this.start : this.start+this.step, end-origin) ) 
+        this._end = end === null ? range + origin : Math.min(range, Math.max(this.type == "point" ? this.start : this.start+this.step, end-origin) ) 
         this.value = [this.start + this.origin, this.end + this.origin]
     }
     update(data: {startPos: number, endPos: number, method: string}):void{
@@ -144,11 +144,11 @@ class Presenter{
     }
     shiftReact(data: {endPos: number, startPos: number, method: string}){            
         this.callback_shiftReact(data)
-        if(this.OptionalCallback_shiftReact) this.OptionalCallback_shiftReact()
+        if(this.OptionalCallback_shiftReact) this.OptionalCallback_shiftReact(data)
     }
     updateReact(firCoor:number, secCoor:number){
         this.callback_updateReact(firCoor, secCoor)
-        if(this.OptionalCallback_updateReact) this.OptionalCallback_updateReact()
+        if(this.OptionalCallback_updateReact) this.OptionalCallback_updateReact(firCoor, secCoor)
     }
 }
 
@@ -192,7 +192,7 @@ class View{
     viewUpdate(firPos:number, secPos:number){
         let firValue = (this.scale.range/100*firPos+ this.scale.origin).toFixed()
         let secValue = (this.scale.range/100*secPos+ this.scale.origin).toFixed()
-        if(this.scale.list[0]){
+        if(this.scale.list.length){
             firValue  = this.scale.list[+firValue]
             secValue = this.scale.list[+secValue]
         }

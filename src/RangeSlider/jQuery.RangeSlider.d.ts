@@ -12,9 +12,9 @@ interface sliderObjectI
     root: HTMLElement;
     config: sliderConfigI;
 
-    Model: ModelI;
-    View:ViewI;
-    Presenter:PresenterI;
+    model: ModelI;
+    view:ViewI;
+    presenter:PresenterI;
 
     init: Function;
     getValue: Function;
@@ -44,12 +44,16 @@ interface ModelI{
 }
 
 interface PresenterI{
-    callback_shiftReact: Function;
-    callback_updateReact: Function;
-    OptionalCallback_shiftReact: Function;
-    OptionalCallback_updateReact: Function;
-    shiftReact: Function;
-    updateReact: Function;
+    view: ViewI;
+    model: ModelI;
+
+    reactToInteraction: Function;
+    reactToUpdate: Function;
+
+    OptionalReactToInteraction: Function;
+    OptionalReactToUpdate: Function;
+
+    connectLayers: Function;
 }
 
 interface ViewI{

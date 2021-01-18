@@ -38,11 +38,15 @@
     &>:not(.panel){
         display: flex;
         align-items: center;
-        padding: 0 30px;
+        padding: 0 20px;
+        margin: 100px 10px;
         flex-grow: 1;
+        box-shadow: 2px 2px 125px -66px rgb(103, 139, 110);
+        border-radius: 15px;
         &.for_vertical{
           width: 40px;
-          padding: 20px 0;
+          padding: 10px 0;
+          margin: 10px 100px;
           justify-content: center;
         }
     }

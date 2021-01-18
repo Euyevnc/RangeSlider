@@ -1,136 +1,163 @@
-import "./RangeSlider.scss"
 import jQuery from "jquery";
+
+import "./RangeSlider.scss"
 
 export default (function($){
     $.fn.RangeSlider = function(options:object) {
         let sliderObjects: Array<Object> = []
         this.each((i:number, e:HTMLElement)=> {
-            sliderObjects.push( CreateSlider(e,options) )
+            sliderObjects.push( createSlider(e,options) )
         })
+        
         if(sliderObjects.length == 1) return sliderObjects[0]
         else return sliderObjects
     }
 })(jQuery)
 
-function CreateSlider(e: HTMLElement, options:object){  
-    const root = e
-    let sliderObject: RangeSliderObject;
-    sliderObject = { 
-        Model: new Model(options),
-        Presenter: new Presenter(options),
-        View: new View(root, options),
-
-        init: function(){
-            this.View.callback = this.Presenter.shiftReact.bind(this.Presenter)
-            this.Presenter.callback_shiftReact = this.Model.update.bind(this.Model)
-            this.Model.callback = this.Presenter.updateReact.bind(this.Presenter)
-            this.Presenter.callback_updateReact = this.View.viewUpdate.bind(this.View)
-
-            this.View.render()  
-            this.Presenter.shiftReact({})
-        },
-        getValue(){
-            return this.Model.value
-        },
-        setValue(start:number, end:number){
-            this.Presenter.shiftReact({startPos: start, endPos: end, method: "direct"})    
-        },
-    }
-    return sliderObject 
+function createSlider(element: HTMLElement, options:object){
+    let slider:sliderObjectI;
+    slider = new sliderObject(element, options);
+    return slider
 }
-class Model implements ModelI{
-    private _start: number;
-    private _end: number;
-    range: number;
-    origin: number;
-    step:number;
-    value: Array<number>;
-    type: string;
-    set start(num:number){
-        this.type == "range" ? 
-            this._start = Math.min(Math.max(Math.ceil(this.end/this.step)*this.step - this.step, 0), Math.max(num, 0) )
-            :
-            this._start = 0 
+
+
+class sliderObject{
+    root:HTMLElement;
+    config: sliderConfigI;
+    View: View;
+    Presenter: Presenter;
+    Model: Model;
+    constructor(root:HTMLElement, {type="range", origin = 0, range = 100,  start = 0, end=<number>null, 
+                step=1, list=<Array <number|string>>[], orient = "horizontal", scale=true, cloud="click", scaleInterval=10}){
+        
+        let verifiedRange = list.length ? list.length - 1 : range;
+        let verifiedOrigin = list.length ? 0 : origin;
+        let verifiedStep = list.length ? 1 : step;
+        let verifiedInterval = list.length ? 1 : scaleInterval;
+
+        let verifiedStart = type == "point" ? 0 : Math.max(Math.min(start - verifiedOrigin, verifiedRange - verifiedStep), 0);
+        let verifiedEnd = end === null ? verifiedRange : Math.min(verifiedRange, Math.max(type == "point" ? verifiedStart : (verifiedStart + verifiedStep), end - verifiedOrigin) );
+        this.root = root;
+        this.config = {
+            type: type,
+            orient: orient,
+            list: list,
+            scale: scale,
+            scaleInterval: verifiedInterval,
+            cloud: cloud,
+            range: verifiedRange,
+            origin: verifiedOrigin,
+            step: verifiedStep,
+
+            _start: verifiedStart,
+            _end: verifiedEnd,
+            value: [verifiedStart+verifiedOrigin, verifiedEnd+verifiedOrigin],
+
+            set start(num:number){
+                this.type == "range" ? 
+                    this._start = Math.min(Math.max(Math.ceil(this.end/this.step)*this.step - this.step, 0), Math.max(num, 0) )
+                    :
+                    this._start = 0 
+            },
+            get start(){
+                return this._start
+            },
+            set end(num:number){
+                this.type == "range" ? 
+                this._end = Math.max(Math.min(Math.floor(this.start/this.step)*this.step + this.step, this.range), Math.min(num, this.range) )
+                :
+                this._end = Math.max(this.start, Math.min(num, this.range) )
+            },
+            get end(){
+                return this._end
+            },
+            
+        },
+        this.View = new View(this.root, this.config);
+        this.Presenter = new Presenter(this.config);
+        this.Model = new Model(this.config)
+    };
+    init(){
+        this.View.callback = this.Presenter.shiftReact.bind(this.Presenter)
+        this.Presenter.callback_shiftReact = this.Model.updateConfig.bind(this.Model)
+        this.Model.callback = this.Presenter.updateReact.bind(this.Presenter)
+        this.Presenter.callback_updateReact = this.View.updateView.bind(this.View)
+
+        this.View.render()  
+        this.Presenter.shiftReact({startPos:undefined, endPos:undefined, method:"standart"})
+    };
+    getValue(){
+        return this.config.value
+    };
+    setValue(start:number, end:number){
+        this.Presenter.shiftReact({startPos: start, endPos: end, method: "direct"})    
     }
-    get start(){
-        return this._start
-    }
-    set end(num:number){
-        this.type == "range" ? 
-        this._end = Math.max(Math.min(Math.floor(this.start/this.step)*this.step + this.step, this.range), Math.min(num, this.range) )
-        :
-        this._end = Math.max(this.start, Math.min(num, this.range) )
-    }
-    get end(){
-        return this._end
-    }
+}
+
+class Model{
+    config: sliderConfigI;
     callback: Function;
-    constructor({type="range", origin = 0, range = 100,  start = 0, end=<number>null, step=1, list=<Array <number|string>>[]}){
-        this.type = type
-        this.range = range
-        this.origin = origin
-        this.step = step
-        if(list[0]){
-            this.range = list.length - 1
-            this.origin = 0
-            this.step = 1
-        }
-        this._start = Math.max(Math.min(start - origin, this.range - this.step), 0) 
-        this._end = end === null ? range + origin : Math.min(range, Math.max(this.type == "point" ? this.start : this.start+this.step, end-origin) ) 
-        this.value = [this.start + this.origin, this.end + this.origin]
+
+    constructor(option:sliderConfigI){
+        this.config = option
     }
-    update(data: {startPos: number, endPos: number, method: string}):void{
+    updateConfig(data: {startPos: number, endPos: number, method: string}):void{
+        let config = this.config;
+        let{type, origin, range, step} = config;
+        
         if(data.method == "direct"){
-            if(this.type == "point") {
-                if(data.startPos<this.origin) this._end = 0
-                else if(data.startPos> this.range + this.origin) this._end = this.range
-                else if(data.startPos || data.startPos == 0)this._end = data.startPos - this.origin  
+            if(type == "point") {
+                if(data.startPos< origin) this.config._end = 0
+                else if(data.startPos> range + origin) this.config._end = range
+                else if(data.startPos || data.startPos == 0)this.config._end = data.startPos - origin  
             }
             else{
-                if(data.startPos<this.origin) this._start = 0
-                else if(data.startPos>=this.range+this.origin) this._start =  this.range - 1
-                else if(data.startPos || data.startPos == 0) this._start = data.startPos - this.origin
-                   
-                if(data.endPos<=this.start+this.origin) this._end = this.start + 1
-                else if(data.endPos>=this.range+this.origin) this._end = this.range
-                else if(data.endPos || data.endPos == 0) this._end = data.endPos - this.origin
+                let newStart = data.startPos - origin || config.start
+                let newEnd = (data.endPos || data.endPos == 0) ? data.endPos - origin : config.end
+                if(newStart>=newEnd) return
+                newStart = Math.min( Math.max(newStart, 0), range-1 )
+                newEnd = Math.min(Math.max(newEnd, 1), range)
+
+                config._start = newStart
+                config._end = newEnd
+                // Не знаю, стоило ли к приватным методам обращаться, но ситуация с этим способом 
+                //ввода такова, что что-то иное придумать сложно
             }
         }
         else if(data.method == "tepping"){
             if(data.startPos){
-                this.start += this.step*data.startPos
+                config.start += step*data.startPos
             }
             if(data.endPos){
-                this.end += this.step*data.endPos
+                config.end += step*data.endPos
             }
         }
         else if(data.method == "scaleClick"){
-            if(this.type == "point" || Math.abs(data.startPos - this.end)<=Math.abs(data.startPos - this.start) ){
-                this.end = data.startPos
+            if(type == "point" || Math.abs(data.startPos - config.end)<=Math.abs(data.startPos - config.start) ){
+                config.end = data.startPos
             }
-            else this.start = data.startPos
+            else config.start = data.startPos
         }
         else{
-            let newStart = this.range/100*data.startPos 
-            let newEnd = this.range/100*data.endPos
+            let newStart = range/100*data.startPos 
+            let newEnd = range/100*data.endPos
 
-            if((newEnd - this.end) >= this.step*0.7 || (this.end - newEnd) >= this.step*0.7 || newEnd>=this.range){
-                newEnd = Math.round(newEnd/this.step)*this.step
+            if((newEnd -  config.end) >= step*0.7 || (config.end - newEnd) >=  config.step*0.7 || newEnd >= range){
+                newEnd = Math.round(newEnd/step)*step
             }
-            else newEnd =this.end
+            else newEnd = config.end
 
-            if((newStart - this.start) >= this.step*0.7 || (this.start - newStart) >= this.step*0.7 || newStart<=0){
-                newStart = Math.round(newStart/this.step)*this.step
+            if((newStart - config.start) >= step*0.7 || (config.start - newStart) >= step*0.7 || newStart<=0){
+                newStart = Math.round(newStart/step)*step
             }
-            else newStart = this.start
+            else newStart = config.start
 
-            this.end = newEnd
-            this.start = newStart
-            //Это канитель со значениями new добавил уже для панели, чтобы на лету параметры слайдер удобно менять.
+            config.end = newEnd
+            config.start = newStart
+            //Эту канитель со значениями new добавил уже для панели, чтобы на лету параметры слайдер удобно менять.
         }
-        this.value = [this.start + this.origin, this.end + this.origin]
-        
-        this.callback(100/this.range*this.start, 100/this.range*this.end)
+        config.value = [config.start + origin, config.end + origin]
+        this.callback(100/range*config.start, 100/range*config.end)
     }
 }
 
@@ -140,9 +167,9 @@ class Presenter{
     OptionalCallback_shiftReact: Function;
     OptionalCallback_updateReact: Function;
     constructor(data:object){ 
-
+        
     }
-    shiftReact(data: {endPos: number, startPos: number, method: string}){            
+    shiftReact(data: {startPos: number, endPos: number,  method: string}){            
         this.callback_shiftReact(data)
         if(this.OptionalCallback_shiftReact) this.OptionalCallback_shiftReact(data)
     }
@@ -155,46 +182,53 @@ class Presenter{
 class View{
     root:HTMLElement;
     element: HTMLElement;
-    orient: string;
+    config: sliderConfigI;
 
-    tumblers:    {elements:HTMLDivElement[];orient: string; type: string; cloud:string; render: Function; update: Function};
-    line:       {element: HTMLElement; orient: string; render: Function}
-    selected:   {element: HTMLElement; orient: string; render: Function; update: Function}
-    scale:      {element: HTMLElement; display:boolean; list: Array<any>; orient: string; origin: number; range: number; 
-                 interval: number; render: Function; update: Function }
+    tumblers: Tumblers;
+    line:     Line;
+    selected: Selected;
+    scale: Scale;
     callback: Function;
 
-    constructor(root: HTMLElement, {orient = "horizontal",type= "range", origin = 0, range = 100, scale=true, cloud="click", scaleInterval=10, list=[]}){
-        this.root = root
+    constructor(root: HTMLElement, option: sliderConfigI){
         this.element
-        this.orient = orient
+        this.root = root
+        this.config = option
 
-        this.tumblers = new Tumblers({orient: orient, type: type, cloud: cloud})
-        this.line = new Line({orient: orient})
-        this.selected = new Selected({orient: orient})
-        this.scale = new Scale({list: list, display: scale, orient: orient, origin: origin, range: range, interval: scaleInterval})
+        this.tumblers = new Tumblers(root, option)
+        this.line = new Line(option)
+        this.selected = new Selected(option)
+        this.scale = new Scale(option)
     }
     render():void{
+        let root = this.root
+        let config = this.config 
+        let mainElement = this.element
 
-        this.element = document.createElement("div")
-        this.element.classList.add("RangeSlider")
-        this.element.classList.add(`RangeSlider_for_${this.orient}`)
+        mainElement = document.createElement("div")
+        mainElement.classList.add("RangeSlider")
+        mainElement.classList.add(`RangeSlider_for_${config.orient}`)
         this.root.innerHTML = ""
-        this.root.append(this.element)
+        this.root.append(mainElement)
        
-        this.element.append( this.line.render() )
-        this.element.append( this.scale.render(this.callback) )
-        this.tumblers.render(this.root, this.callback).forEach((el:HTMLElement)=>{
+        mainElement.append( this.line.render() )
+        mainElement.append( this.scale.render(this.callback) )
+        this.tumblers.render(this.callback).forEach((el:HTMLElement)=>{
             this.line.element.append(el)
         })
         this.line.element.append(this.selected.render())
     }
-    viewUpdate(firPos:number, secPos:number){
-        let firValue = (this.scale.range/100*firPos+ this.scale.origin).toFixed()
-        let secValue = (this.scale.range/100*secPos+ this.scale.origin).toFixed()
-        if(this.scale.list.length){
-            firValue  = this.scale.list[+firValue]
-            secValue = this.scale.list[+secValue]
+    updateView(firPos:number, secPos:number){
+        let config = this.config
+        
+        let firValue: string
+        let secValue: string
+        firValue = (config.start+config.origin).toString()
+        secValue = (config.end+config.origin).toString()
+
+        if(config.list.length){
+            firValue  = config.list[+firValue].toString()
+            secValue = config.list[+secValue].toString()
         }
         this.tumblers.update(firPos, secPos, firValue, secValue)
 
@@ -206,78 +240,96 @@ class View{
 
 class Line{
     element: HTMLElement;
-    orient: string;
-    constructor(data: {orient: string}){
-        this.orient = data.orient
+    config: sliderConfigI;
+    constructor(option: sliderConfigI){
+        this.config = option
     }
+
     render(){
-        this.element = document.createElement("div")
-        this.element.classList.add("RangeSlider__line")
-        this.element.classList.add(`RangeSlider__line_for_${this.orient}`)
-        return this.element
+        let config = this.config;
+
+        let lineElement
+        lineElement = document.createElement("div")
+        lineElement.classList.add("RangeSlider__line")
+        lineElement.classList.add(`RangeSlider__line_for_${config.orient}`)
+
+        this.element = lineElement
+        return lineElement
     }
 }
 class Selected{
     element: HTMLElement;
-    orient: string;
+    config: sliderConfigI;
 
-    constructor(data: {orient: string}){
-        this.orient = data.orient 
+    constructor(option: sliderConfigI){
+        this.config = option
     }
+
     render(){
-        this.element = document.createElement("div")
-        this.element.classList.add("RangeSlider__selected")
-        this.element.classList.add(`RangeSlider__selected_for_${this.orient}`)
-        return this.element
+        let config = this.config;
+        let selectedElement
+
+        selectedElement = document.createElement("div")
+        selectedElement.classList.add("RangeSlider__selected")
+        selectedElement.classList.add(`RangeSlider__selected_for_${config.orient}`)
+
+        this.element = selectedElement 
+        return selectedElement
     }
     update(firPos: number, secPos: number){
-        if(this.orient == "vertical"){
-            this.element.style.bottom = firPos + "%"
-            this.element.style.top = 100 - secPos + "%"
+        let config = this.config;
+        let selectedElement = this.element
+
+        if(config.orient == "vertical"){
+            selectedElement.style.bottom = firPos + "%"
+            selectedElement.style.top = 100 - secPos + "%"
             
         }
         else{
-            this.element.style.left = firPos + "%"
-            this.element.style.right = 100 - secPos + "%"
+            selectedElement.style.left = firPos + "%"
+            selectedElement.style.right = 100 - secPos + "%"
         }
     }
 }
 
 class Tumblers{
     elements: HTMLDivElement[]
-    orient: string;
-    type: string;
-    cloud: string;
-    constructor(data: {orient:string, type:string, cloud: string;}){
-        this.orient = data.orient
-        this.type = data.type
-        this.cloud = data.cloud
+    root: HTMLElement;
+    config: sliderConfigI;
+
+    constructor(root: HTMLElement, option: sliderConfigI){
+        this.config = option
+        this.root = root
     }
-    render(root: HTMLElement, callback:Function){
+
+    render(callback:Function){
+        let root = this.root
+        let config = this.config
+
         let list = []
         for(let i=0; i<2; i++){ 
-            let elem = document.createElement("div")
+            let tumblerElement = document.createElement("div")
             let cloud: HTMLElement
-            elem.classList.add("RangeSlider__tumbler")
-            elem.classList.add(`RangeSlider__tumbler_for_${this.orient}`)
-            if(this.type === "point" && i===0) elem.style.display = "none"
+            tumblerElement.classList.add("RangeSlider__tumbler")
+            tumblerElement.classList.add(`RangeSlider__tumbler_for_${config.orient}`)
+            if(config.type === "point" && i===0) tumblerElement.style.display = "none"
 
             cloud = document.createElement("div")
             cloud.classList.add("RangeSlider__cloud")
-            cloud.classList.add(`RangeSlider__cloud_for_${this.orient}`)
+            cloud.classList.add(`RangeSlider__cloud_for_${config.orient}`)
             cloud.append(document.createElement("b"))
             cloud.append(document.createElement("div"))
 
-            elem.append(cloud)
+            tumblerElement.append(cloud)
 
-            if(this.cloud !== "always") cloud.style.display = "none"
+            if(config.cloud !== "always") cloud.style.display = "none"
             
-            elem.onmousedown = (e: MouseEvent)=>{
+            tumblerElement.onmousedown = (e: MouseEvent)=>{
                 e.preventDefault()
-                if(this.cloud == "click") cloud.style.display = "block"
+                if(config.cloud == "click") cloud.style.display = "block"
                 root.onmousemove = (ev:MouseEvent)=>{
                     let line= root.querySelector(".RangeSlider")
-                    let bias = this.orient === "vertical" ? 
+                    let bias = config.orient === "vertical" ? 
                                 -(ev.clientY - line.getBoundingClientRect().bottom)/line.getBoundingClientRect().height * 100
                                 //Минус тут нужен для реверса. так как шкала сверху вниз т.е. противонаправлена линии координат
                                 :
@@ -288,22 +340,22 @@ class Tumblers{
                     else(callback({endPos: bias }) )
                 }
                 document.onmouseup = e=>{
-                    if(this.cloud == "click") cloud.style.display = "none"
+                    if(config.cloud == "click") cloud.style.display = "none"
                     root.onmousemove = null;
                     document.onmouseup = null;
                 }
             }
-            elem.onfocus = (ev:Event)=>{
-                if(this.cloud == "click") cloud.style.display = "block"
+            tumblerElement.onfocus = (ev:Event)=>{
+                if(config.cloud == "click") cloud.style.display = "block"
                 let target = (<HTMLElement>ev.target)
                 document.onkeydown = e=>{
-                    if( (e.key === "ArrowDown" && this.orient ==="vertical") || (e.key === "ArrowLeft" && this.orient !=="vertical")){
+                    if( (e.key === "ArrowDown" && config.orient ==="vertical") || (e.key === "ArrowLeft" && config.orient !=="vertical")){
                         target.nextSibling ? 
                                 callback({startPos: -1, method: "tepping"})
                                 :
                                 callback({endPos:-1, method:"tepping"})
                     } 
-                    else if( (e.key === "ArrowUp" && this.orient ==="vertical") || (e.key === "ArrowRight" && this.orient !=="vertical")){
+                    else if( (e.key === "ArrowUp" && config.orient ==="vertical") || (e.key === "ArrowRight" && config.orient !=="vertical")){
                         target.nextSibling ? 
                                 callback({startPos: 1, method: "tepping"})
                                 :
@@ -311,20 +363,23 @@ class Tumblers{
                     }
                 }
                 (<HTMLElement>ev.target).onblur = e=>{
-                    if(this.cloud == "click") cloud.style.display = "none"
+                    if(config.cloud == "click") cloud.style.display = "none"
                     document.onkeydown = null;
                     (<HTMLElement>e.target).onblur = null
                 }
             }
-            list.push(elem)
+            list.push(tumblerElement)
         };
         this.elements = list
-        return this.elements
+        return list
     }
     update(firPos: number, secPos:number, valueFir: string, valueSec: string){
-        let firEl = this.elements[0] as HTMLElement
-        let secEl = this.elements[1] as HTMLElement
-        if(this.orient == "vertical"){
+        let config = this.config
+        let tumblerElements = this.elements
+
+        let firEl = tumblerElements[0] as HTMLElement
+        let secEl = tumblerElements[1] as HTMLElement
+        if(config.orient == "vertical"){
             firEl.style.bottom = firPos + "%";
             secEl.style.bottom = secPos  + "%"
         }
@@ -339,50 +394,38 @@ class Tumblers{
 };
 
 class Scale{
-    element: HTMLElement; 
-    display: boolean;
-    list: Array<any>
-    orient: string;
-    origin: number; 
-    range: number; 
-    interval: number;
+    element: HTMLElement;
+    config: sliderConfigI;
 
-    constructor(data:{list: Array<any>;orient: string; origin: number; range: number; interval: number; display: boolean;}){
-        this.display = data.display
-        this.orient = data.orient
-        this.origin = data.origin 
-        this.range = data.range 
-        this.interval = data.interval
-        this.list = data.list
-        if(this.list[0]){
-            this.origin = 0;
-            this.range =this.list.length -1
-            this.interval = 1
-        }
+    constructor(option: sliderConfigI){
+        this.config = option
     }
     render(callback:Function){
-        let thisList = Boolean(this.list[0])
-        this.element =  document.createElement("div")
-        this.element.classList.add("RangeSlider__scale")
-        this.element.classList.add(`RangeSlider__scale_for_${this.orient}`)
+        let config = this.config
+        let scaleElement
 
-        let intervals = Math.ceil(this.range/ this.interval)
+        let thisList = Boolean(config.list.length)
+        scaleElement =  document.createElement("div")
+        scaleElement.classList.add("RangeSlider__scale")
+        scaleElement.classList.add(`RangeSlider__scale_for_${config.orient}`)
+
+        let intervals = Math.ceil(config.range/ config.scaleInterval)
         
         let flexcont = document.createElement("div")
         flexcont.classList.add("Scale__mainline")
-        flexcont.classList.add(`Scale__mainline_for_${this.orient}`)
+        flexcont.classList.add(`Scale__mainline_for_${config.orient}`)
 
-        this.element.append(flexcont)
+        scaleElement.append(flexcont)
         
         let cell = document.createElement("span")
         cell.classList.add("Scale__cell")
-        cell.classList.add(`Scale__cell_for_${this.orient}`)
-        if(this.orient == "vertical"){
-            cell.style.height = this.interval/this.range*100 + "%"
+        cell.classList.add(`Scale__cell_for_${config.orient}`)
+        if(config.orient == "vertical"){
+            cell.style.height = config.scaleInterval/config.range*100 + "%"
             
         }
         else{
-            cell.style.width = this.interval/this.range*100 + "%"
+            cell.style.width = config.scaleInterval/config.range*100 + "%"
         }
         
         let createCell = (int:number)=>{
@@ -393,7 +436,7 @@ class Scale{
             
             let amountCont = document.createElement("span")
             amountCont.innerHTML = thisList ?
-                this.list[int]
+                config.list[int].toString()
                 :
                 int.toString()
             currentCell.append(amountCont)
@@ -402,33 +445,37 @@ class Scale{
 
             return currentCell
         }
-        createCell(this.origin)
+        createCell(config.origin)
         for( let i=1; i<intervals; i++){
             if(i !==intervals-1) {
-                createCell(i*this.interval+this.origin)
+                createCell(i*config.scaleInterval+config.origin)
             }
-            else createCell(i*this.interval+this.origin).style.flexShrink = "1"
+            else createCell(i*config.scaleInterval+config.origin).style.flexShrink = "1"
         }
-        this.orient == "vertical" ? 
-            createCell(this.range+this.origin).style.height = "0px"
+        config.orient == "vertical" ? 
+            createCell(config.range+config.origin).style.height = "0px"
             :
-            createCell(this.range+this.origin).style.width = "0px"
+            createCell(config.range+config.origin).style.width = "0px"
         
-        this.element.onclick= (e:MouseEvent)=>{
+        scaleElement.onclick= (e:MouseEvent)=>{
             if( (<HTMLElement>e.target).closest(".Scale__cell>span") ){
-                let value = +(<HTMLElement>e.target).closest(".Scale__cell").getAttribute("value") - this.origin
+                let value = +(<HTMLElement>e.target).closest(".Scale__cell").getAttribute("value") - config.origin
                 callback({startPos: value, method: "scaleClick"})
             }
         }
-        if(!this.display) this.element.style.display = "none"
+        if(!config.scale) scaleElement.style.display = "none"
         
-        return this.element
+        this.element = scaleElement
+        return scaleElement
     }
     update(firPos: number, secPos:number){
-        this.element.querySelectorAll(".Scale__cell").forEach(el=>{
+        let config = this.config
+        let scaleElement = this.element
+
+        scaleElement.querySelectorAll(".Scale__cell").forEach(el=>{
             let elem = el as HTMLElement
             let amount = +el.getAttribute("value")
-            if(amount>= (this.range/100 *firPos + this.origin) && amount<=(this.range/100 *secPos + this.origin) ){
+            if(amount>= (config.range/100 *firPos + config.origin) && amount<=(config.range/100 *secPos + config.origin) ){
                 elem.classList.add("Scale__cell_status_active")
             }
             else{

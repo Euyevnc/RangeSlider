@@ -36,13 +36,14 @@
         }
     }
     &>:not(.panel){
-        min-width: 150px;
-        padding: 20% 20px;
+        display: flex;
+        align-items: center;
+        padding: 0 30px;
         flex-grow: 1;
         &.for_vertical{
           width: 40px;
-          padding: 10px 0 10px 10%;
-          min-height: 150px;
+          padding: 20px 0;
+          justify-content: center;
         }
     }
 }

@@ -7,8 +7,11 @@ interface JQueryStatic
 {
     RangeSlider: Function;
 } 
-interface RangeSliderObject
+interface sliderObjectI
 {
+    root: HTMLElement;
+    config: sliderConfigI;
+
     Model: ModelI;
     View:ViewI;
     Presenter:PresenterI;
@@ -17,15 +20,26 @@ interface RangeSliderObject
     getValue: Function;
     setValue: Function;
 }
-interface ModelI{
-    range: number;
-    origin: number;
-    step:number;
-    value: Array<number>;
+interface sliderConfigI{
     type: string;
+    orient: string;
+    list: Array<number|string>;
+    _start: number;
+    _end: number;
     start: number;
-    end:number;
-    update: Function;
+    end: number;
+    range: number;
+    origin:number;
+    step: number;
+    scale: boolean;
+    scaleInterval: number;
+    cloud: string;
+    value: Array<number>;
+
+}
+interface ModelI{
+    config: sliderConfigI;
+    updateConfig: Function;
     callback:Function;
 }
 
@@ -41,16 +55,15 @@ interface PresenterI{
 interface ViewI{
     root:HTMLElement;
     element: HTMLElement;
-    orient: string;
+    config: sliderConfigI;
 
-    tumblers:    {elements:HTMLDivElement[];orient: string; type: string; cloud:string; render: Function; update: Function};
-    line:       {element: HTMLElement; orient: string; render: Function}
-    selected:   {element: HTMLElement; orient: string; render: Function; update: Function}
-    scale:      {element: HTMLElement; display:boolean; list: Array<any>; orient: string; origin: number; range: number; 
-                 interval: number; render: Function; update: Function }
+    tumblers: Object;
+    line: Object;
+    selected: Object;
+    scale: Object;
     callback: Function;
     render: Function;
-    viewUpdate: Function;
+    updateView: Function;
 }
 
 

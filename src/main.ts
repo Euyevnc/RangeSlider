@@ -1,5 +1,5 @@
 import jQuery from "jquery";
-import "./RangeSlider/RangeSlider"
+import "./range-slider-plugin/range-slider"
 import "./main.scss"
 import { Object } from "lodash";
 
@@ -26,6 +26,7 @@ window.addEventListener('DOMContentLoaded', (event) => {
 
 });
 
+////
 function connectThePanel(panelNode: JQuery, sliderObject:sliderObjectI){
     let slider = sliderObject
     
@@ -74,12 +75,10 @@ function connectThePanel(panelNode: JQuery, sliderObject:sliderObjectI){
         e.onchange = (event)=>{
             if(e.getAttribute("value") == "point"){
                 slider.config.type = "point"
-                slider.config.type = "point"
                 slider.init()
                 panelNode.find("[name='first_pos']").prop("disabled", true)
             }
             else{
-                slider.config.type = "range"
                 slider.config.type = "range"
                 slider.init() 
                 panelNode.find("[name='first_pos']").prop("disabled", false)
@@ -127,7 +126,6 @@ function connectThePanel(panelNode: JQuery, sliderObject:sliderObjectI){
             }
             else{
                 slider.config.orient = "horizontal"
-                slider.config.orient = "horizontal"
                 panelNode.next().removeClass("for_vertical")
                 slider.init() 
             }
@@ -140,9 +138,6 @@ function connectThePanel(panelNode: JQuery, sliderObject:sliderObjectI){
         slider.config.origin = value
         slider.init()
     })
-    panelNode.find("input[name='origin']").on("submit", (e)=>{
-        e.preventDefault()
-    })
 
     panelNode.find("input[name='range']").on("change", (e)=>{
         e.preventDefault()
@@ -151,18 +146,13 @@ function connectThePanel(panelNode: JQuery, sliderObject:sliderObjectI){
         slider.config.range = value
         slider.init()
     })
-    panelNode.find("input[name='range']").on("submit", (e)=>{
-        e.preventDefault()
-    })
+
     panelNode.find("input[name='interval']").on("change", (e)=>{
         e.preventDefault()
         let value = Math.max(Number((e.target as HTMLInputElement).value), 1);
         (e.target as HTMLInputElement).value = value.toString()
         slider.config.scaleInterval = value
         slider.init()
-    })
-    panelNode.find("input[name='interval']").on("submit", (e)=>{
-        e.preventDefault()
     })
 
     panelNode.find("input[name='list']").on("change", (e)=>{
@@ -174,9 +164,7 @@ function connectThePanel(panelNode: JQuery, sliderObject:sliderObjectI){
         panelNode.find("input[name='range']").prop("value", slider.config.range)
         
     })
-    panelNode.find("input[name='list']").on("submit", (e)=>{
-        e.preventDefault()
-    })
+
     panelNode.find("input[name='step']").on("change", (e)=>{
         e.preventDefault()
         let value = Math.max(Number((e.target as HTMLInputElement).value), 1);
@@ -184,33 +172,37 @@ function connectThePanel(panelNode: JQuery, sliderObject:sliderObjectI){
         slider.config.step = value
         slider.init()
     })
-    panelNode.find("input[name='list']").on("submit", (e)=>{
-        e.preventDefault()
+
+
+    panelNode.find("input[name='first_pos']").on("keydown", (e)=>{
+        let value = (e.target as HTMLInputElement).value
+        if(e.code == "Enter") slider.setValue(value)
     })
 
-    panelNode.find("input[name='first_pos']").on("change", (e)=>{
-        e.preventDefault()
-        let value = Number((e.target as HTMLInputElement).value);
-        slider.setValue(value);
-        (e.target as HTMLInputElement).value = (slider.getValue()[0]).toString()
+    panelNode.find("input[name='second_pos']").on("keydown", (e)=>{
+        let value = (e.target as HTMLInputElement).value
+        if(e.code == "Enter") {
+            slider.config.type == "point" ?
+                slider.setValue(value)
+                :
+                slider.setValue(undefined , value)
+        }
     })
-    panelNode.find("input[name='first_pos']").on("submit", (e)=>{
+    panelNode.find(".values-enter-button").on("click", (e)=>{
         e.preventDefault()
-    })
-
-    panelNode.find("input[name='second_pos']").on("change", (e)=>{
-        e.preventDefault()
-        let value = Number((e.target as HTMLInputElement).value);
+        let start = panelNode.find("input[name='first_pos']").val()
+        let end =  panelNode.find("input[name='second_pos']").val()
         slider.config.type == "point" ?
-        slider.setValue(value)
+            slider.setValue(end) 
             :
-        slider.setValue(undefined, value);
-
-        (e.target as HTMLInputElement).value = (slider.getValue()[1]).toString()
+            slider.setValue(start, end)
     })
-    panelNode.find("input[name='second_pos']").on("submit", (e)=>{
+     
+    panelNode.find("form").on("submit", (e)=>{
         e.preventDefault()
     })
+
+
 
     slider.presenter.OptionalReactToUpdate= ()=>{
         panelNode.find("input[name='first_pos']").prop("value", slider.getValue()[0])

@@ -1,0 +1,66 @@
+div(class = "panel")
+  form  
+    div
+      p Тип:
+      label
+        input(type="radio" name="type" value="point")
+        span Point
+      br
+      label
+        input(type="radio" name="type" value="range") 
+        span Range
+    div
+      p "Облачко":
+      label
+        input(type="radio" name="cloud" value="yes")
+        span Да
+      br
+      label
+        input(type="radio" name="cloud" value="no") 
+        span Нет
+      br
+      label
+        input(type="radio" name="cloud" value="click") 
+        span Отклик
+    div
+      p Шкала:
+      label
+        input(type="radio" name="scale" value="yes")
+        span Да
+      br
+      label
+        input(type="radio" name="scale" value="no") 
+        span Нет
+      br
+      label(style="padding-left:5px") Интервал:  
+        input(type="number" name="interval" style="width: 40%")
+    div
+      p Ориентация:
+      label
+        input(type="radio" name="orient" value="vertical")
+        span Вертикальное
+      br
+      label
+        input(type="radio" name="orient" value="horizontal") 
+        span Горизонтальное
+    div 
+      label Точка отсчёта :
+        input(type="number" name="origin")
+    div 
+      label Диапозон:
+        input(type="number" name="range")
+    div 
+      label Шаг:
+        input(type="number" name="step")
+    div 
+      label Список:
+        input(type="text" name="list")
+    div.value-enter-container 
+      label Значение 1:  
+        input(type="number" name="first_pos" style="width: 40%")
+    div.value-enter-container
+      label(style="padding-left:5px") Значение 2:  
+        input(type="number" name="second_pos" style="width: 40%")
+    div 
+      span(name="entry-values" class="values-enter-button") Устанавливает значения
+          

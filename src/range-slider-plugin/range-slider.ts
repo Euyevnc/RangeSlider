@@ -1,6 +1,6 @@
 import jQuery from "jquery";
 
-import "./RangeSlider.scss"
+import "./range-slider.scss"
 
 export default (function($){
     $.fn.RangeSlider = function(options:object) {
@@ -23,12 +23,51 @@ function createSlider(element: HTMLElement, options:object){
 
 class sliderObject{
     root:HTMLElement;
-    config: sliderConfigI;
+    config: ConfigI;
     view: ViewI;
     presenter: PresenterI;
     model: ModelI;
-    constructor(root:HTMLElement, {type="range", origin = 0, range = 100,  start = 0, end=<number>null, 
-                step=1, list=<Array <number|string>>[], orient = "horizontal", scale=true, cloud="click", scaleInterval=10}){
+    constructor(root:HTMLElement, options:Object){
+        this.root = root
+        this.config = new Config(options)
+
+        this.view = new View(this.root, this.config);
+        this.model = new Model(this.config)
+
+        this.presenter = new Presenter(this.view, this.model);
+    };
+    init(){
+        this.presenter.connectLayers()
+        this.view.render()  
+        this.presenter.reactToInteraction({startPos: this.config.getStart(), endPos:this.config.getEnd(),  method:"direct"})
+    }; 
+    getValue(){
+        return this.config.value
+    };
+    setValue(start:number, end:number){
+        this.config.type == "point" ? 
+            this.presenter.reactToInteraction({startPos: this.config.origin, endPos: start-this.config.origin, method: "direct"})
+            :
+            this.presenter.reactToInteraction({startPos: start-this.config.origin, endPos: end - this.config.origin, method: "direct"})    
+    }
+}
+
+
+class Config implements ConfigI{
+    private start: number;
+    private end: number;
+    type: string;
+    orient: string;
+    list: Array<number|string>;
+    range: number;
+    origin:number;
+    step: number;
+    scale: boolean;
+    scaleInterval: number;
+    cloud: string;
+    value: Array<number>;
+    constructor({type="range", origin = 0, range = 100,  start = 0, end=<number>null, step=1, 
+    list=<Array <number|string>>[], orient = "horizontal", scale=true, cloud="click", scaleInterval=10}){
         
         let verifiedRange = list.length ? list.length - 1 : range;
         let verifiedOrigin = list.length ? 0 : origin;
@@ -37,64 +76,61 @@ class sliderObject{
 
         let verifiedStart = type == "point" ? 0 : Math.max(Math.min(start - verifiedOrigin, verifiedRange - verifiedStep), 0);
         let verifiedEnd = end === null ? verifiedRange : Math.min(verifiedRange, Math.max(type == "point" ? verifiedStart : (verifiedStart + verifiedStep), end - verifiedOrigin) );
-        this.root = root;
-        this.config = {
-            type: type,
-            orient: orient,
-            list: list,
-            scale: scale,
-            cloud: cloud,
-            scaleInterval: verifiedInterval,
-            range: verifiedRange,
-            origin: verifiedOrigin,
-            step: verifiedStep,
 
-            _start: verifiedStart,
-            _end: verifiedEnd,
-            value: [verifiedStart+verifiedOrigin, verifiedEnd+verifiedOrigin],
+        this.type = type,
+        this.orient = orient,
+        this.list = list,
+        this.scale = scale,
+        this.cloud = cloud,
+        this.scaleInterval = verifiedInterval,
+        this.range = verifiedRange,
+        this.origin = verifiedOrigin,
+        this.step = verifiedStep,
+        this.value = [verifiedStart+verifiedOrigin, verifiedEnd+verifiedOrigin],
+        this.start = verifiedStart;
+        this.end = verifiedEnd
 
-            set start(num:number){
-                this.type == "range" ? 
-                    this._start = Math.min(Math.max(Math.ceil(this.end/this.step)*this.step - this.step, 0), Math.max(num, 0) )
-                    :
-                    this._start = 0 
-            },
-            get start(){
-                return this._start
-            },
-            set end(num:number){
-                this.type == "range" ? 
-                this._end = Math.max(Math.min(Math.floor(this.start/this.step)*this.step + this.step, this.range), Math.min(num, this.range) )
-                :
-                this._end = Math.max(this.start, Math.min(num, this.range) )
-            },
-            get end(){
-                return this._end
-            },
-            
-        },
-        this.view = new View(this.root, this.config);
-        this.model = new Model(this.config)
-        this.presenter = new Presenter(this.view, this.model);
-    };
-    init(){
-        this.presenter.connectLayers()
-        this.view.render()  
-        this.presenter.reactToInteraction({startPos: undefined, endPos:undefined,  method:"standart"})
-    };
-    getValue(){
-        return this.config.value
-    };
-    setValue(start:number, end:number){
-        this.presenter.reactToInteraction({startPos: start, endPos: end, method: "direct"})    
     }
+    setStart(value:number, isDirect: boolean){
+        if(this.type=="point"){
+            this.start = 0
+            return 
+        }
+        let step = this.step
+        let maxStartValue = Math.max( (Math.ceil(this.end/step)*step - step), this.start)
+        
+        isDirect ?
+            this.start = value 
+            :
+            this.start = Math.min(Math.max(value, 0), Math.max(maxStartValue, 0 ) )
+    }
+    getStart(){
+        return this.start
+    }
+
+    setEnd(value:number, isDirect:boolean){
+        let step = this.step
+        let minEndValue = this.type == 'point' ? 
+            0 
+            :
+            Math.min( (Math.floor(this.start/step)*step + step), this.end)
+
+        isDirect ?
+            this.end = value 
+            :
+            this.end = Math.max( Math.min(value, this.range), Math.min(minEndValue, this.range) )
+    }
+    getEnd(){
+        return this.end
+    }
+    
 }
 
 class Model implements ModelI{
-    config: sliderConfigI;
+    config: ConfigI;
     callback: Function;
 
-    constructor(option:sliderConfigI){
+    constructor(option:ConfigI){
         this.config = option
         
     }
@@ -102,69 +138,90 @@ class Model implements ModelI{
     updateConfig(data: {startPos: number, endPos: number, method: string}):void{
         let config = this.config;
         let{type, origin, range, step} = config;
-        
+        let currentStart = config.getStart()
+        let currentEnd = config.getEnd()
+        let minEndValue = type == 'point' ? 0 : 1
+
         if(data.method == "direct") changeByDirective(data.startPos, data.endPos)
         else if(data.method == "tepping") changeByTepping(data.startPos, data.endPos)
         else if(data.method == "scaleClick") changeByScaleClick(data.startPos)
         else changeByDrag(data.startPos, data.endPos)
 
-        config.value = [config.start + origin, config.end + origin]
-        this.callback(100/range*config.start, 100/range*config.end)
+        config.value = [config.getStart() + origin, config.getEnd() + origin]
+        this.callback(100/range*config.getStart(), 100/range*config.getEnd())
 
         /////////////
-        function changeByDirective(startPos:number, endPos:number){
-            if(type == "point") {
-                if(startPos< origin) this.config._end = 0
-                else if(startPos> range + origin) this.config._end = range
-                else if(startPos || startPos == 0)this.config._end = startPos - origin  
-            }
+        function changeByDirective(startPos:number, endPos:number){   
+            let newStart 
+            if(!startPos && startPos !== 0) newStart = config.getStart()
+            else  newStart =  Math.min( Math.max(startPos, 0), range-1 )
+
+            let newEnd
+            if(!endPos && endPos !== 0) newEnd = config.getEnd()
+            else newEnd = Math.min(Math.max( endPos , minEndValue), range)
+
+            if( newStart>newEnd || (newEnd == newStart && type !== 'point' )) return
             else{
-                let newStart = startPos - origin || config.start
-                let newEnd = (endPos || endPos == 0) ? endPos - origin : config.end
-                if(newStart>=newEnd) return
-                newStart = Math.min( Math.max(newStart, 0), range-1 )
-                newEnd = Math.min(Math.max(newEnd, 1), range)
-    
-                config._start = newStart
-                config._end = newEnd
-                // Не знаю, стоило ли к приватным методам обращаться, но ситуация с этим способом 
-                //ввода такова, что что-то иное придумать сложно
+                config.setStart(newStart, true)
+                config.setEnd(newEnd, true)
             }
         }
 
         function changeByTepping(startPos:number, endPos:number){
             if(startPos){
-                config.start += config.step*startPos
+                let newValue 
+                if(startPos<0) newValue =  Math.ceil(currentStart/step)*step + step*startPos
+                if(startPos>0) newValue =  Math.floor(currentStart/step)*step + step*startPos
+                config.setStart(newValue)
             }
             if(endPos){
-                config.end += config.step*endPos
+                let newValue 
+                if(endPos<0) newValue =  Math.ceil(currentEnd/step)*step + step*endPos
+                if(endPos>0) newValue =  Math.floor(currentEnd/step)*step + step*endPos
+                config.setEnd(newValue)
             }
+
         }
 
         function changeByScaleClick(position:number){
-            if(config.type == "point" || Math.abs(position - config.end)<=Math.abs(position - config.start) ){
-                config.end = position
+            if(type == "point" || Math.abs(position - currentEnd)<=Math.abs(position - currentStart) ){
+                config.setEnd(position)
             }
-            else config.start = position
+            else config.setStart(position)
         }
     
         function changeByDrag(startPos:number, endPos:number){
-            let newStart = range/100*startPos 
-            let newEnd = range/100*endPos
-    
-            if((newEnd -  config.end) >= step*0.7 || (config.end - newEnd) >=  config.step*0.7 || newEnd >= range){
-                newEnd = Math.round(newEnd/step)*step
+            if(startPos || startPos == 0){
+                let newStart = range/100*startPos
+                let conditionOfTrigger 
+                let cursorFarEnough = (newStart - currentStart) >= step*0.8 || (currentStart - newStart) >= step*0.8
+                let cursorOverMakup = (newStart%step > step*0.8 || newStart%step <step*0.2 )
+                conditionOfTrigger = cursorFarEnough || cursorOverMakup
+
+               
+                if(conditionOfTrigger){
+                    newStart = Math.round(newStart/step)*step
+                }
+                else newStart = currentStart
+
+                if(newStart!==currentStart) config.setStart(newStart)
             }
-            else newEnd = config.end
-    
-            if((newStart - config.start) >= step*0.7 || (config.start - newStart) >= step*0.7 || newStart<=0){
-                newStart = Math.round(newStart/step)*step
-            }
-            else newStart = config.start
-    
-            config.end = newEnd
-            config.start = newStart
-            //Эту канитель со значениями new добавил уже для панели, чтобы на лету параметры слайдер удобно менять.
+            if(endPos || endPos == 0){
+                let newEnd = range/100*endPos
+                let conditionOfTrigger 
+                let cursorFarEnough = (newEnd - currentEnd  >= step*0.8) || (currentEnd - newEnd >= step*0.8)
+                let cursorOverMakup = (newEnd%step > step*0.8 ||newEnd%step <step*0.2 )
+                let cursorOverFinish = newEnd >= range
+                conditionOfTrigger = cursorFarEnough || cursorOverMakup || cursorOverFinish
+
+               
+                if(conditionOfTrigger){
+                    newEnd = Math.round(newEnd/step)*step
+                }
+                else newEnd = config.getEnd()
+                
+                if(newEnd !== currentEnd) config.setEnd(newEnd)
+            }     
         }
     }
 };
@@ -200,7 +257,7 @@ class Presenter implements PresenterI{
 class View implements ViewI{
     root:HTMLElement;
     element: HTMLElement;
-    config: sliderConfigI;
+    config: ConfigI;
 
     tumblers: Tumblers;
     line:     Line;
@@ -208,11 +265,10 @@ class View implements ViewI{
     scale: Scale;
     callback: Function;
 
-    constructor(root: HTMLElement, option: sliderConfigI){
+    constructor(root: HTMLElement, option: ConfigI){
         this.element
         this.root = root
         this.config = option
-
         this.tumblers = new Tumblers(root, option)
         this.line = new Line(option)
         this.selected = new Selected(option)
@@ -233,7 +289,8 @@ class View implements ViewI{
         this.line.element.append(this.selected.render())
 
         this.root.innerHTML = ""
-        this.root.append(mainElement);
+        this.element = mainElement;
+        this.root.append(this.element);
 
         
     }
@@ -249,8 +306,8 @@ class View implements ViewI{
 
 class Line{
     element: HTMLElement;
-    config: sliderConfigI;
-    constructor(option: sliderConfigI){
+    config: ConfigI;
+    constructor(option: ConfigI){
         this.config = option
     }
 
@@ -262,14 +319,14 @@ class Line{
         lineElement.className = `range-slider__line  range-slider__line_for_${config.orient}`
 
         this.element = lineElement
-        return lineElement
+        return this.element
     }
 }
 class Selected{
     element: HTMLElement;
-    config: sliderConfigI;
+    config: ConfigI;
 
-    constructor(option: sliderConfigI){
+    constructor(option: ConfigI){
         this.config = option
     }
 
@@ -281,7 +338,7 @@ class Selected{
         selectedElement.className = `range-slider__selected  range-slider__selected_for_${config.orient}`
 
         this.element = selectedElement 
-        return selectedElement
+        return this.element
     }
     update(firCoor: number, secCoor: number){
         let config = this.config;
@@ -302,9 +359,9 @@ class Selected{
 class Tumblers{
     elements: HTMLDivElement[]
     root: HTMLElement;
-    config: sliderConfigI;
+    config: ConfigI;
 
-    constructor(root: HTMLElement, option: sliderConfigI){
+    constructor(root: HTMLElement, option: ConfigI){
         this.config = option
         this.root = root
     }
@@ -426,8 +483,8 @@ class Tumblers{
         function updateClouds() {
             let firValue: string
             let secValue: string
-            firValue = (config.start+config.origin).toString()
-            secValue = (config.end+config.origin).toString()
+            firValue = (config.getStart()+config.origin).toString()
+            secValue = (config.getEnd()+config.origin).toString()
     
             if(config.list.length){
                 firValue  = config.list[+firValue].toString()
@@ -442,9 +499,9 @@ class Tumblers{
 
 class Scale{
     element: HTMLElement;
-    config: sliderConfigI;
+    config: ConfigI;
 
-    constructor(option: sliderConfigI){
+    constructor(option: ConfigI){
         this.config = option
     }
     render(callback:Function){
@@ -491,7 +548,9 @@ class Scale{
                 :
                 int.toString();
             ;
+            amountContainer.tabIndex = 0
             amountContainer.addEventListener("click", handlerCellClick)
+            amountContainer.addEventListener("keydown", handlerCellKeydown)
             cell.append(amountContainer);
 
             scaleElement.append(cell);
@@ -502,15 +561,22 @@ class Scale{
             let value = +(<HTMLElement>event.target).closest(".range-slider__cell").getAttribute("value") - config.origin
             callback({startPos: value, method: "scaleClick"})
         }
+        function handlerCellKeydown(event:KeyboardEvent){
+            if(event.code!=='Enter') return
+            let value = +(<HTMLElement>event.target).closest(".range-slider__cell").getAttribute("value") - config.origin
+            callback({startPos: value, method: "scaleClick"})  
+        }
     }
     update(firCoor: number, secCoor:number){
         let config = this.config
         let scaleElement = this.element
 
+        let firValue = config.range/100*firCoor + config.origin
+        let secValue = config.range/100*secCoor + config.origin
         scaleElement.querySelectorAll(".js-range-slider__cell").forEach(el=>{
             let elem = el as HTMLElement
             let valueInCell = +el.getAttribute("value")
-            if(valueInCell>= (config.range/100 *firCoor + config.origin) && valueInCell<=(config.range/100 *secCoor + config.origin) ){
+            if(valueInCell>= firValue && valueInCell<=secValue ){
                 elem.classList.add("range-slider__cell_status_active")
             }
             else{

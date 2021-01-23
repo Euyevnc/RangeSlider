@@ -33,6 +33,15 @@
             border: 1px dotted rgb(204, 174, 119);
             box-sizing: border-box;
             padding: 5px 5px 10px ;
+            &:last-child{
+                width: 100%;
+                text-align: center;
+                border: 0;
+            }
+            &.value-enter-container{
+                border: 0;
+                
+            }
         }
     }
     &>:not(.panel){
@@ -49,5 +58,21 @@
           margin: 10px 100px;
           justify-content: center;
         }
+    }
+}
+.values-enter-button{
+    display: inline-block;
+    height: 30px;
+    width: 250px;
+    line-height: 30px;
+    color: #fff; 
+    text-decoration: none; 
+    user-select: none; 
+    background: rgb(212,75,56);
+    &:hover{
+        background: rgb(232,95,76)
+    }
+    &:active{
+        background: rgb(152,15,0)
     }
 }

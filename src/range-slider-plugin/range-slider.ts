@@ -36,26 +36,29 @@ class sliderObject{
 
         this.presenter = new Presenter(this.view, this.model);
     };
-    init(){
+    init(firValue:number, secValue:number){
         this.presenter.connectLayers()
         this.view.render()  
-        this.presenter.reactToInteraction({startPos: this.config.getStart(), endPos:this.config.getEnd(),  method:"direct"})
+        this.config.type == 'point' ? 
+            this.model.updateConfig({startPos: this.config.origin, endPos: firValue,  method:"direct"})
+            :
+            this.model.updateConfig({startPos: firValue, endPos: secValue,  method:"direct"})
     }; 
+
     getValue(){
         return this.config.value
     };
+
     setValue(start:number, end:number){
         this.config.type == "point" ? 
-            this.presenter.reactToInteraction({startPos: this.config.origin, endPos: start-this.config.origin, method: "direct"})
+            this.model.updateConfig({startPos: this.config.origin, endPos: start, method: "direct"})
             :
-            this.presenter.reactToInteraction({startPos: start-this.config.origin, endPos: end - this.config.origin, method: "direct"})    
+            this.model.updateConfig({startPos: start, endPos: end, method: "direct"})    
     }
 }
 
 
 class Config implements ConfigI{
-    private start: number;
-    private end: number;
     type: string;
     orient: string;
     list: Array<number|string>;
@@ -74,9 +77,6 @@ class Config implements ConfigI{
         let verifiedStep = list.length ? 1 : step;
         let verifiedInterval = list.length ? 1 : scaleInterval;
 
-        let verifiedStart = type == "point" ? 0 : Math.max(Math.min(start - verifiedOrigin, verifiedRange - verifiedStep), 0);
-        let verifiedEnd = end === null ? verifiedRange : Math.min(verifiedRange, Math.max(type == "point" ? verifiedStart : (verifiedStart + verifiedStep), end - verifiedOrigin) );
-
         this.type = type,
         this.orient = orient,
         this.list = list,
@@ -85,98 +85,88 @@ class Config implements ConfigI{
         this.scaleInterval = verifiedInterval,
         this.range = verifiedRange,
         this.origin = verifiedOrigin,
-        this.step = verifiedStep,
-        this.value = [verifiedStart+verifiedOrigin, verifiedEnd+verifiedOrigin],
-        this.start = verifiedStart;
-        this.end = verifiedEnd
-
+        this.step = verifiedStep
     }
-    setStart(value:number){
-        this.start = value 
-
-        this.value = [this.start + this.origin, this.end + this.origin]
-    }
-    getStart(){
-        return this.start
-    }
-
-    setEnd(value:number){
-        this.end = value 
-
-        this.value = [this.start + this.origin, this.end + this.origin]
-    }
-    getEnd(){
-        return this.end
-    }
-    
 }
 
 class Model implements ModelI{
     config: ConfigI;
     callback: Function;
-
+    private start: number;
+    private end: number;
     constructor(option:ConfigI){
         this.config = option
-        
     }
     
     updateConfig(data: {startPos: number, endPos: number, method: string}):void{
         let config = this.config;
         let{type, origin, range, step} = config;
-        let currentStart = config.getStart()
-        let currentEnd = config.getEnd()
+        let method = data.method
+
+        let currentStart = this.start
+        let currentEnd = this.end
 
         let newStart: number
         let newEnd: number
 
-        if(data.method == "direct") changeByDirective(data.startPos, data.endPos)
-        else if(data.method == "tepping") changeByTepping(data.startPos, data.endPos)
-        else if(data.method == "scaleClick") changeByScaleClick(data.startPos)
-        else changeByDrag(data.startPos, data.endPos)
+        if(method == 'direct') changeByDirect(data.startPos-origin, data.endPos - origin)
+        else if(method == 'tepping') changeByTepping(data.startPos, data.endPos)
+        else if(method == "drag") changeByDrag(data.startPos, data.endPos)
+        else if(method == "scaleClick") changeByScaleClick(data.startPos)
+        
+        if(method !== "direct"){
+            if(!newStart && newStart !== 0) newStart = currentStart
+            if(!newEnd && newEnd !== 0) newEnd =currentEnd 
 
-        let maxStartValue = type == 'point' ?
-            0
-            :
-            Math.max( (Math.ceil(currentEnd/step)*step - step), currentStart)
-        let minEndValue = type == 'point' ? 
-            0 
-            :
-            Math.min( (Math.floor(currentStart/step)*step + step), currentEnd)
+            let maxStartValue = type == 'point' ?
+                0
+                :
+                Math.max( (Math.ceil(newEnd/step)*step - step), currentStart)
 
-        if(data.method !== "direct") newStart = Math.min(Math.max(newStart, 0), Math.max(maxStartValue, 0 ) )
-        if(data.method !== "direct") newEnd = Math.max( Math.min(newEnd, range), Math.min(minEndValue, range) )
+            let minEndValue = type == 'point' ? 
+                0 
+                :
+                Math.min( (Math.floor(newStart/step)*step + step), currentEnd)
 
-        console.log(newEnd, newStart)
-        if(newStart || newStart == 0) config.setStart(newStart)
-        if(newEnd || newEnd == 0) config.setEnd(newEnd)
-
-        this.callback(100/range*config.getStart(), 100/range*config.getEnd())
-
+            newStart = Math.min(Math.max(newStart, 0), Math.max(maxStartValue, 0 ) )
+            newEnd = Math.max( Math.min(newEnd, range), Math.min(minEndValue, range) )
+        }
+        
+        if(newStart !== currentStart || newEnd !== currentEnd || method == 'direct'){
+            this.start = newStart
+            this.end = newEnd
+            config.value = [newStart + origin, newEnd + origin]
+            this.callback(100/range*newStart, 100/range*newEnd)
+        }
+        
         /////////////
-        function changeByDirective(startPos:number, endPos:number){    
+        function changeByDirect(startPos:number, endPos:number){
             let minEndValue = type == 'point' ? 0 : 1
+            let maxStartValue = type == 'point' ? 0 : range-1
 
-            if(!startPos && startPos !== 0) newStart = config.getStart()
-            else  newStart =  Math.min( Math.max(startPos, 0), range-1 )
+            if(!startPos && startPos !== 0 ) newStart = currentStart || 0
+            else newStart = startPos
+            if(!endPos && endPos !== 0) newEnd = currentEnd || range
+            else newEnd = endPos
 
-            if(!endPos && endPos !== 0) newEnd = config.getEnd()
-            else newEnd = Math.min(Math.max( endPos , minEndValue), range)
+            newStart =  Math.min( Math.max(newStart, 0), maxStartValue )
+            newEnd = Math.min(Math.max(newEnd , minEndValue), range)
 
             if( newStart>newEnd || (newEnd == newStart && type !== 'point' )){
-                newStart = null 
-                newEnd = null
+                newEnd = currentEnd
+                newStart = currentStart 
             }
         }
         function changeByTepping(startPos:number, endPos:number){
             if(startPos){ 
                 if(startPos<0) newStart =  Math.ceil(currentStart/step)*step + step*startPos
                 if(startPos>0) newStart =  Math.floor(currentStart/step)*step + step*startPos
+
             }
             if(endPos){
                 if(endPos<0) newEnd =  Math.ceil(currentEnd/step)*step + step*endPos
                 if(endPos>0) newEnd =  Math.floor(currentEnd/step)*step + step*endPos
             }
-
         }
 
         function changeByScaleClick(position:number){
@@ -188,32 +178,27 @@ class Model implements ModelI{
     
         function changeByDrag(startPos:number, endPos:number){
             if(startPos || startPos == 0){
-                newStart = range/100*startPos
+                let cursorPosition = range/100*startPos
                 let conditionOfTrigger 
-                let cursorFarEnough = (newStart - currentStart) >= step*0.8 || (currentStart - newStart) >= step*0.8
-                let cursorOverMakup = (newStart%step > step*0.8 || newStart%step <step*0.2 )
+                let cursorFarEnough = (cursorPosition - currentStart) >= step*0.8 || (currentStart - cursorPosition) >= step*0.8
+                let cursorOverMakup = (cursorPosition%step > step*0.8 || cursorPosition%step <step*0.2 )
                 conditionOfTrigger = cursorFarEnough || cursorOverMakup
 
                 if(conditionOfTrigger){
-                    newStart = Math.round(newStart/step)*step
+                    newStart = Math.round(cursorPosition/step)*step
                 }
-                else newStart = currentStart
-
             }
             if(endPos || endPos == 0){
-                newEnd = range/100*endPos
+                let cursorPosition = range/100*endPos
                 let conditionOfTrigger 
-                let cursorFarEnough = (newEnd - currentEnd  >= step*0.8) || (currentEnd - newEnd >= step*0.8)
-                let cursorOverMakup = (newEnd%step > step*0.8 ||newEnd%step <step*0.2 )
-                let cursorOverFinish = newEnd >= range
+                let cursorFarEnough = (cursorPosition - currentEnd  >= step*0.8) || (currentEnd - cursorPosition >= step*0.8)
+                let cursorOverMakup = (cursorPosition%step > step*0.8 ||cursorPosition%step <step*0.2 )
+                let cursorOverFinish = cursorPosition >= range
                 conditionOfTrigger = cursorFarEnough || cursorOverMakup || cursorOverFinish
-
-               
+     
                 if(conditionOfTrigger){
-                    newEnd = Math.round(newEnd/step)*step
+                    newEnd = Math.round(cursorPosition/step)*step
                 }
-                else newEnd = currentEnd
-                
             }     
         }
     }
@@ -394,7 +379,6 @@ class Tumblers{
             
             return cloud
         }
-
         function handleTumblerMousedown(e:MouseEvent){
             e.preventDefault()
             let tumbler = e.target as HTMLElement
@@ -419,9 +403,9 @@ class Tumblers{
                         :
                         (event.clientX - sliderZone.getBoundingClientRect().x)/sliderZone.getBoundingClientRect().width * 100 
             if (isFirstTumbler){
-                callback({startPos: bias})
+                callback({startPos: bias, method: 'drag'})
             }
-            else(callback({endPos: bias }) )
+            else(callback({endPos: bias , method: 'drag'}) )
         }
 
         function handleTumblerFocus(event:FocusEvent){
@@ -470,14 +454,14 @@ class Tumblers{
             firEl.style.left = firCoor + "%";
             secEl.style.left = secCoor  + "%"
         };
-        updateClouds();
+        updateClouds(firCoor, secCoor);
 
         ///////
-        function updateClouds() {
+        function updateClouds(firPerc:number, secPerc:number) {
             let firValue: string
             let secValue: string
-            firValue = (config.getStart()+config.origin).toString()
-            secValue = (config.getEnd()+config.origin).toString()
+            firValue = Math.round(config.range/100*firPerc+config.origin).toString()
+            secValue = Math.round(config.range/100*secPerc+config.origin).toString()
     
             if(config.list.length){
                 firValue  = config.list[+firValue].toString()

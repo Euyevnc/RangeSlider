@@ -91,34 +91,19 @@ class Config implements ConfigI{
         this.end = verifiedEnd
 
     }
-    setStart(value:number, isDirect: boolean){
-        if(this.type=="point"){
-            this.start = 0
-            return 
-        }
-        let step = this.step
-        let maxStartValue = Math.max( (Math.ceil(this.end/step)*step - step), this.start)
-        
-        isDirect ?
-            this.start = value 
-            :
-            this.start = Math.min(Math.max(value, 0), Math.max(maxStartValue, 0 ) )
+    setStart(value:number){
+        this.start = value 
+
+        this.value = [this.start + this.origin, this.end + this.origin]
     }
     getStart(){
         return this.start
     }
 
-    setEnd(value:number, isDirect:boolean){
-        let step = this.step
-        let minEndValue = this.type == 'point' ? 
-            0 
-            :
-            Math.min( (Math.floor(this.start/step)*step + step), this.end)
+    setEnd(value:number){
+        this.end = value 
 
-        isDirect ?
-            this.end = value 
-            :
-            this.end = Math.max( Math.min(value, this.range), Math.min(minEndValue, this.range) )
+        this.value = [this.start + this.origin, this.end + this.origin]
     }
     getEnd(){
         return this.end
@@ -140,74 +125,83 @@ class Model implements ModelI{
         let{type, origin, range, step} = config;
         let currentStart = config.getStart()
         let currentEnd = config.getEnd()
-        let minEndValue = type == 'point' ? 0 : 1
+
+        let newStart: number
+        let newEnd: number
 
         if(data.method == "direct") changeByDirective(data.startPos, data.endPos)
         else if(data.method == "tepping") changeByTepping(data.startPos, data.endPos)
         else if(data.method == "scaleClick") changeByScaleClick(data.startPos)
         else changeByDrag(data.startPos, data.endPos)
 
-        config.value = [config.getStart() + origin, config.getEnd() + origin]
+        let maxStartValue = type == 'point' ?
+            0
+            :
+            Math.max( (Math.ceil(currentEnd/step)*step - step), currentStart)
+        let minEndValue = type == 'point' ? 
+            0 
+            :
+            Math.min( (Math.floor(currentStart/step)*step + step), currentEnd)
+
+        if(data.method !== "direct") newStart = Math.min(Math.max(newStart, 0), Math.max(maxStartValue, 0 ) )
+        if(data.method !== "direct") newEnd = Math.max( Math.min(newEnd, range), Math.min(minEndValue, range) )
+
+        console.log(newEnd, newStart)
+        if(newStart || newStart == 0) config.setStart(newStart)
+        if(newEnd || newEnd == 0) config.setEnd(newEnd)
+
         this.callback(100/range*config.getStart(), 100/range*config.getEnd())
 
         /////////////
-        function changeByDirective(startPos:number, endPos:number){   
-            let newStart 
+        function changeByDirective(startPos:number, endPos:number){    
+            let minEndValue = type == 'point' ? 0 : 1
+
             if(!startPos && startPos !== 0) newStart = config.getStart()
             else  newStart =  Math.min( Math.max(startPos, 0), range-1 )
 
-            let newEnd
             if(!endPos && endPos !== 0) newEnd = config.getEnd()
             else newEnd = Math.min(Math.max( endPos , minEndValue), range)
 
-            if( newStart>newEnd || (newEnd == newStart && type !== 'point' )) return
-            else{
-                config.setStart(newStart, true)
-                config.setEnd(newEnd, true)
+            if( newStart>newEnd || (newEnd == newStart && type !== 'point' )){
+                newStart = null 
+                newEnd = null
             }
         }
-
         function changeByTepping(startPos:number, endPos:number){
-            if(startPos){
-                let newValue 
-                if(startPos<0) newValue =  Math.ceil(currentStart/step)*step + step*startPos
-                if(startPos>0) newValue =  Math.floor(currentStart/step)*step + step*startPos
-                config.setStart(newValue)
+            if(startPos){ 
+                if(startPos<0) newStart =  Math.ceil(currentStart/step)*step + step*startPos
+                if(startPos>0) newStart =  Math.floor(currentStart/step)*step + step*startPos
             }
             if(endPos){
-                let newValue 
-                if(endPos<0) newValue =  Math.ceil(currentEnd/step)*step + step*endPos
-                if(endPos>0) newValue =  Math.floor(currentEnd/step)*step + step*endPos
-                config.setEnd(newValue)
+                if(endPos<0) newEnd =  Math.ceil(currentEnd/step)*step + step*endPos
+                if(endPos>0) newEnd =  Math.floor(currentEnd/step)*step + step*endPos
             }
 
         }
 
         function changeByScaleClick(position:number){
             if(type == "point" || Math.abs(position - currentEnd)<=Math.abs(position - currentStart) ){
-                config.setEnd(position)
+                newEnd = position
             }
-            else config.setStart(position)
+            else newStart = position
         }
     
         function changeByDrag(startPos:number, endPos:number){
             if(startPos || startPos == 0){
-                let newStart = range/100*startPos
+                newStart = range/100*startPos
                 let conditionOfTrigger 
                 let cursorFarEnough = (newStart - currentStart) >= step*0.8 || (currentStart - newStart) >= step*0.8
                 let cursorOverMakup = (newStart%step > step*0.8 || newStart%step <step*0.2 )
                 conditionOfTrigger = cursorFarEnough || cursorOverMakup
 
-               
                 if(conditionOfTrigger){
                     newStart = Math.round(newStart/step)*step
                 }
                 else newStart = currentStart
 
-                if(newStart!==currentStart) config.setStart(newStart)
             }
             if(endPos || endPos == 0){
-                let newEnd = range/100*endPos
+                newEnd = range/100*endPos
                 let conditionOfTrigger 
                 let cursorFarEnough = (newEnd - currentEnd  >= step*0.8) || (currentEnd - newEnd >= step*0.8)
                 let cursorOverMakup = (newEnd%step > step*0.8 ||newEnd%step <step*0.2 )
@@ -218,9 +212,8 @@ class Model implements ModelI{
                 if(conditionOfTrigger){
                     newEnd = Math.round(newEnd/step)*step
                 }
-                else newEnd = config.getEnd()
+                else newEnd = currentEnd
                 
-                if(newEnd !== currentEnd) config.setEnd(newEnd)
             }     
         }
     }

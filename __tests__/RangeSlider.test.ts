@@ -113,8 +113,8 @@ describe("Slider functioning", ()=>{
     
     test("range: 100, step: 1, method: scaleClick", ()=>{  
       let createdObject = node.RangeSlider(inputData)
-      let ViewUpdate = createdObject.view.updateView = jest.fn()
       createdObject.init()
+      let ViewUpdate = createdObject.view.updateView = jest.fn()
 
       createdObject.view.callback({startPos: 50, method: "scaleClick"})
       expect(ViewUpdate).toBeCalledWith(0, 50)

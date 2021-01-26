@@ -32,11 +32,6 @@ interface ConfigI{
     scaleInterval: number;
     cloud: string;
     value: Array<number>;
-    setStart: Function;
-    getStart: Function;
-    setEnd: Function;
-    getEnd: Function;
-
 }
 interface ModelI{
     config: ConfigI;

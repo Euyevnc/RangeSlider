@@ -2,16 +2,14 @@ import jQuery from "jquery";
 import "../src/range-slider-plugin/range-slider"
 
 
-let inputData = {orient: "horizontal", type: "range", origin: 10, range: 100, start:10, end:30, step : 1, scale: true, scaleInterval: 20, cloud: "test", };
+let inputData = {orient: "horizontal", type: "range", origin: 10, range: 100, step : 1, scale: true, scaleInterval: 20, cloud: "test", };
 
 let inputDataList = {orient: "vertical", type: "point", scale: true, cloud: "test", list: ["one", "two", "three", "four", "five"]};
 
 document.body.innerHTML =  '<div style="width:100px; height:50px"> </div>';
 let node =jQuery("div")
 
-
 describe("Creation of the slider object", () => {
-
   test("it check that the slider object create correctly", () => {
     let createdObject = node.RangeSlider(inputData)
 
@@ -32,20 +30,22 @@ describe("Creation of the slider object", () => {
 
   test("it check the correctness of the coordinates. if they are entered incorrectly the constructor should have formatted them", ()=>{
     for(let n = 0; n<55; n++){
-        let dataClone = {...inputData}
-        
-        dataClone.start = Math.random() >= 0.5 ? Math.round(Math.random()*100) : -Math.round(Math.random()*100)
-        dataClone.end = Math.random() >= 0.5 ? Math.round(Math.random()*100) : -Math.round(Math.random()*100)
-        
-        let createdObject = node.RangeSlider(dataClone)
+        let createdObject = node.RangeSlider(inputData)
+        let origin = createdObject.config.origin
+        let range = createdObject.config.range
+        let start = Math.random() >= 0.5 ? Math.round(Math.random()*100) : -Math.round(Math.random()*100)
+        let end = Math.random() >= 0.5 ? Math.round(Math.random()*100) : -Math.round(Math.random()*100)
+        createdObject.init(start, end)
+        let fixedStart  = createdObject.config.value[0] - origin
+        let fixedEnd = createdObject.config.value[1] - origin
+  
+        expect([0,start-origin, fixedEnd-1, range-1]).toContain(fixedStart)
+        expect(fixedStart).toBeGreaterThanOrEqual(0);
 
-        expect([dataClone.start-dataClone.origin, 0, dataClone.range-dataClone.step]).toContain(createdObject.config.start);
-        expect(createdObject.config.start).toBeLessThan(createdObject.config.end);
-        expect(createdObject.config.start).toBeGreaterThanOrEqual(0);
+        expect([1, end-origin, range]).toContain(fixedEnd)
+        expect(fixedEnd).toBeLessThanOrEqual(range)
 
-        expect([dataClone.end-dataClone.origin, dataClone.range, (createdObject.config.start)+1]).toContain(createdObject.config.end)
-        expect(createdObject.config.end).toBeGreaterThan(createdObject.config.start)
-        expect(createdObject.config.end).toBeLessThanOrEqual(dataClone.range)
+        expect(fixedStart).toBeLessThan(fixedEnd);
     }
   });
 
@@ -87,13 +87,12 @@ describe("Slider functioning", ()=>{
   describe("data processing", ()=>{
     test("range: 100, step: 1, method: standart", ()=>{  
       let createdObject = node.RangeSlider(inputData)
-      
       createdObject.init()
-      let ViewUpdate = createdObject.view.updateView = jest.fn()
-      
-      createdObject.view.callback({startPos: 25, endPos: 40})
-      expect(ViewUpdate).toBeCalledWith(19, 40)
-      createdObject.view.callback({startPos: -10, endPos: 120})
+      let ViewUpdate = createdObject.view.updateView = jest.fn() 
+
+      createdObject.view.callback({startPos: 25, endPos: 40, method: "drag"})
+      expect(ViewUpdate).toBeCalledWith(25, 40)
+      createdObject.view.callback({startPos: -10, endPos: 120, method: "drag"})
       expect(ViewUpdate).toBeCalledWith(0, 100)
     })
     
@@ -103,12 +102,10 @@ describe("Slider functioning", ()=>{
       createdObject.init()
 
       createdObject.view.callback({startPos: 1, endPos: -1, method: "tepping"})
-      expect(ViewUpdate).toBeCalledWith(1, 19)
+      expect(ViewUpdate).toBeCalledWith(1, 99)
 
-      createdObject.config.setStart(0) 
-      createdObject.config.setEnd(100) 
-      createdObject.view.callback({startPos: -1, endPos: +1, method: "tepping"})
-      expect(ViewUpdate).toBeCalledWith(0, 100)
+      createdObject.view.callback({startPos: +50, endPos: -70, method: "tepping"})
+      expect(ViewUpdate).toBeCalledWith(28, 29)
     })
     
     test("range: 100, step: 1, method: scaleClick", ()=>{  
@@ -117,10 +114,10 @@ describe("Slider functioning", ()=>{
       let ViewUpdate = createdObject.view.updateView = jest.fn()
 
       createdObject.view.callback({startPos: 50, method: "scaleClick"})
-      expect(ViewUpdate).toBeCalledWith(0, 50)
+      expect(ViewUpdate).toBeCalledWith(40, 100)
 
-      createdObject.view.callback({startPos: 20, method: "scaleClick"})
-      expect(ViewUpdate).toBeCalledWith(20, 50)    
+      createdObject.view.callback({startPos: 90, method: "scaleClick"})
+      expect(ViewUpdate).toBeCalledWith(40, 80)    
     })
     
     test("range: 100, step: 1, method: direct", ()=>{  
@@ -129,25 +126,30 @@ describe("Slider functioning", ()=>{
       let ViewUpdate = createdObject.view.updateView = jest.fn()
 
       createdObject.view.callback({startPos: 20, endPos: 70, method: "direct"})
-      expect(ViewUpdate).toBeCalledWith(20, 70)
+      expect(ViewUpdate).toBeCalledWith(10, 60)
 
-      createdObject.view.callback({startPos: 20, endPos: 5, method: "direct"})
-      expect(ViewUpdate).toBeCalledWith(20, 70)      
+      createdObject.view.callback({endPos: 15, method: "direct"})
+      expect(ViewUpdate).toBeCalledWith(10, 11)
+
+      createdObject.view.callback({startPos: 20, endPos: 15, method: "direct"})
+      expect(ViewUpdate).toBeCalledWith(4, 5)      
     })
 
     test("range: 60, step: 12, method: standart", ()=>{  
       let createdObject = node.RangeSlider(inputData)
       createdObject.config.range = 60 
       createdObject.config.step = 12
+      
       createdObject.init()
       let ViewUpdate = createdObject.view.updateView = jest.fn()
-      createdObject.view.callback({startPos: 20, endPos: 50})
+
+      createdObject.view.callback({startPos: 20, endPos: 50, method: "drag"})
       expect(ViewUpdate).toBeCalledWith(20, 60)
-      createdObject.view.callback({endPos: 28})
+      createdObject.view.callback({endPos: 28, method: "drag"})
       expect(ViewUpdate).toBeCalledWith(20, 40)
-      createdObject.view.callback({startPos: -12})
+      createdObject.view.callback({startPos: -12, method: "drag"})
       expect(ViewUpdate).toBeCalledWith(0, 40)
-      createdObject.view.callback({endPos: 90})
+      createdObject.view.callback({endPos: 90, method: "drag"})
       expect(ViewUpdate).toBeCalledWith(0, 100)
     })
     
@@ -155,14 +157,9 @@ describe("Slider functioning", ()=>{
       let createdObject = node.RangeSlider(inputData)
       createdObject.config.range = 60 
       createdObject.config.step = 12
+
       createdObject.init()
-      createdObject.config.setStart(0) 
-      createdObject.config.setEnd(60) 
-
       let ViewUpdate = createdObject.view.updateView = jest.fn()
-
-      createdObject.view.callback({startPos: -1, endPos: +1, method: "tepping"})
-      expect(ViewUpdate).toBeCalledWith(0, 100)
 
       createdObject.view.callback({startPos: 1, endPos: -1, method: "tepping"})
       expect(ViewUpdate).toBeCalledWith(20, 80)
@@ -170,65 +167,40 @@ describe("Slider functioning", ()=>{
       createdObject.view.callback({startPos: 2, method: "tepping"})
       expect(ViewUpdate).toBeCalledWith(60, 80)
 
+      let newViewUpdate = createdObject.view.updateView = jest.fn()
       createdObject.view.callback({endPos: -1, method: "tepping"})
-      expect(ViewUpdate).toBeCalledWith(60, 80)
- 
+      expect(newViewUpdate).not.toBeCalled()
     })
     
     test("range: 60, step: 12, method: scaleClick", ()=>{  
       let createdObject = node.RangeSlider(inputData)
       createdObject.config.range = 60 
       createdObject.config.step = 12
+
       let ViewUpdate = createdObject.view.updateView = jest.fn()
       createdObject.init()
 
-      createdObject.view.callback({startPos: 12, method: "scaleClick"})
-      expect(ViewUpdate).toBeCalledWith(0, 20)
-      createdObject.view.callback({startPos: 36, method: "scaleClick"})
-      expect(ViewUpdate).toBeCalledWith(0, 60)
-      createdObject.view.callback({startPos: 12, method: "scaleClick"})
+      createdObject.view.callback({startPos: 22, method: "scaleClick"})
+      expect(ViewUpdate).toBeCalledWith(20, 100)
+      createdObject.view.callback({startPos: 46, method: "scaleClick"})
       expect(ViewUpdate).toBeCalledWith(20, 60)
+      createdObject.view.callback({startPos: 10, method: "scaleClick"})
+      expect(ViewUpdate).toBeCalledWith(0, 60)
     })
     
     test("range: 60, step: 12, method: direct", ()=>{  
       let createdObject = node.RangeSlider(inputData)
       createdObject.config.range = 60 
       createdObject.config.step = 12
+
       createdObject.init()
       let ViewUpdate = createdObject.view.updateView = jest.fn()
 
-      createdObject.view.callback({startPos: 25, endPos: 61, method: "direct"})
+      createdObject.view.callback({startPos: 35, endPos: 71, method: "direct"})
       expect(ViewUpdate).toBeCalledWith(100/60 * 25, 100)
 
-      createdObject.view.callback({startPos: -20, endPos: 8, method: "direct"})
+      createdObject.view.callback({startPos: -20, endPos: 18, method: "direct"})
       expect(ViewUpdate).toBeCalledWith(0, 100/60 * 8) 
-    })
-  })
-  describe("it check the occurrence of events and their transfer to the presenter", ()=>{
-    let createdObject = node.RangeSlider(inputData)
-    let tumblersReaction = createdObject.presenter.reactToInteraction = jest.fn()
-    createdObject.init()
-
-    test("mouse move event", ()=>{
-      let md = new MouseEvent("mousedown")
-      let mm = new MouseEvent("mousemove", {bubbles: true})
-
-      createdObject.view.tumblers.elements[0].dispatchEvent(md)
-      createdObject.view.element.dispatchEvent(mm)
-      expect(tumblersReaction).toBeCalled()
-    })
-    test("mouse click event", ()=>{
-      let mc = new MouseEvent("click")
-      createdObject.view.scale.element.querySelector(".range-slider__cell").dispatchEvent(mc)
-      expect(tumblersReaction).toBeCalled()
-    })
-    test("keyboard event", ()=>{
-      let f = new FocusEvent("focus")
-      let kd = new KeyboardEvent("keydown", {key: "ArrowLeft", code: "ArrowLeft"})
-
-      createdObject.view.tumblers.elements[0].dispatchEvent(f)
-      document.dispatchEvent(kd)
-      expect(tumblersReaction).toBeCalled()
     })
   })
 })

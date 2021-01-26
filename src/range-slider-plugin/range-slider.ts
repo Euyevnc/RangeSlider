@@ -39,6 +39,7 @@ class sliderObject{
     init(firValue:number, secValue:number){
         this.presenter.connectLayers()
         this.view.render()  
+        let origin = this.config.origin
         this.config.type == 'point' ? 
             this.model.updateConfig({startPos: this.config.origin, endPos: firValue,  method:"direct"})
             :
@@ -69,7 +70,7 @@ class Config implements ConfigI{
     scaleInterval: number;
     cloud: string;
     value: Array<number>;
-    constructor({type="range", origin = 0, range = 100,  start = 0, end=<number>null, step=1, 
+    constructor({type="range", origin = 0, range = 100, step=1, value = [],
     list=<Array <number|string>>[], orient = "horizontal", scale=true, cloud="click", scaleInterval=10}){
         
         let verifiedRange = list.length ? list.length - 1 : range;
@@ -85,7 +86,8 @@ class Config implements ConfigI{
         this.scaleInterval = verifiedInterval,
         this.range = verifiedRange,
         this.origin = verifiedOrigin,
-        this.step = verifiedStep
+        this.step = verifiedStep,
+        this.value = value
     }
 }
 
@@ -102,34 +104,34 @@ class Model implements ModelI{
         let config = this.config;
         let{type, origin, range, step} = config;
         let method = data.method
-
-        let currentStart = this.start
-        let currentEnd = this.end
+        let isPoint = type == 'point'
+        let currentStart = this.start || 0
+        let currentEnd = this.end || range
 
         let newStart: number
         let newEnd: number
 
-        if(method == 'direct') changeByDirect(data.startPos-origin, data.endPos - origin)
+        if(method == 'direct') changeByDirect(data.startPos-origin, data.endPos-origin)
         else if(method == 'tepping') changeByTepping(data.startPos, data.endPos)
-        else if(method == "drag") changeByDrag(data.startPos, data.endPos)
-        else if(method == "scaleClick") changeByScaleClick(data.startPos)
+        else if(method == 'drag') changeByDrag(data.startPos, data.endPos)
+        else if(method == 'scaleClick') changeByScaleClick(data.startPos-origin)
         
         if(method !== "direct"){
             if(!newStart && newStart !== 0) newStart = currentStart
-            if(!newEnd && newEnd !== 0) newEnd =currentEnd 
+            if(!newEnd && newEnd !== 0) newEnd =currentEnd  
+            newStart = Math.max(0, Math.min(range-1, newStart))
+            newEnd = Math.max( isPoint ? 0: 1 , Math.min(range, newEnd))
 
-            let maxStartValue = type == 'point' ?
+            let maxStartValue = isPoint ? 
                 0
                 :
                 Math.max( (Math.ceil(newEnd/step)*step - step), currentStart)
-
-            let minEndValue = type == 'point' ? 
-                0 
-                :
+            newStart = Math.min(newStart, maxStartValue)
+            let minEndValue = isPoint ? 
+                0
+                :    
                 Math.min( (Math.floor(newStart/step)*step + step), currentEnd)
-
-            newStart = Math.min(Math.max(newStart, 0), Math.max(maxStartValue, 0 ) )
-            newEnd = Math.max( Math.min(newEnd, range), Math.min(minEndValue, range) )
+            newEnd = Math.max(newEnd, minEndValue)
         }
         
         if(newStart !== currentStart || newEnd !== currentEnd || method == 'direct'){
@@ -141,20 +143,21 @@ class Model implements ModelI{
         
         /////////////
         function changeByDirect(startPos:number, endPos:number){
-            let maxStartValue = type == 'point' ? 0 : range-1
-            let minEndValue = type == 'point' ? 0 : 1 
+            let maxStartValue = isPoint ? 0 : range-1
+            let minEndValue = isPoint ? 0 : 1 
 
-            if(!startPos && startPos !== 0 ) newStart = currentStart || 0
+            if(!startPos && startPos !== 0 ) newStart = currentStart
             else newStart = startPos
-            if(!endPos && endPos !== 0) newEnd = currentEnd || range
+            if(!endPos && endPos !== 0) newEnd = currentEnd 
             else newEnd = endPos
-    
-            newEnd = Math.min(Math.max(newEnd , minEndValue), range)
-            newStart =  Math.min( Math.max(newStart, 0), maxStartValue )
 
-            if(newStart>=newEnd && !(newEnd == 0 && type == 'point')){
-                newEnd = currentEnd
-                newStart = currentStart 
+            newStart =  Math.min( Math.max(newStart, 0), maxStartValue )
+            newEnd = Math.min(Math.max(newEnd , minEndValue), range)
+            
+
+            if(newStart>=newEnd && !(newEnd == 0 && isPoint)){
+                if(startPos) newStart = newEnd - 1
+                else if(endPos) newEnd = newStart + 1 
             }
         }
         function changeByTepping(startPos:number, endPos:number){
@@ -170,7 +173,7 @@ class Model implements ModelI{
         }
 
         function changeByScaleClick(position:number){
-            if(type == "point" || Math.abs(position - currentEnd)<=Math.abs(position - currentStart) ){
+            if(isPoint || Math.abs(position - currentEnd)<=Math.abs(position - currentStart) ){
                 newEnd = position
             }
             else newStart = position
@@ -535,12 +538,12 @@ class Scale{
         }
 
         function handlerCellClick(event:MouseEvent){
-            let value = +(<HTMLElement>event.target).closest(".range-slider__cell").getAttribute("value") - config.origin
+            let value = +(<HTMLElement>event.target).closest(".range-slider__cell").getAttribute("value")
             callback({startPos: value, method: "scaleClick"})
         }
         function handlerCellKeydown(event:KeyboardEvent){
             if(event.code!=='Enter') return
-            let value = +(<HTMLElement>event.target).closest(".range-slider__cell").getAttribute("value") - config.origin
+            let value = +(<HTMLElement>event.target).closest(".range-slider__cell").getAttribute("value")
             callback({startPos: value, method: "scaleClick"})  
         }
     }

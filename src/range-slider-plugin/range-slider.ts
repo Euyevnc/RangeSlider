@@ -141,17 +141,16 @@ class Model implements ModelI{
         
         /////////////
         function changeByDirect(startPos:number, endPos:number){
-            let maxStartValue = type == 'point' ? 0 : range
-            let minEndValue = type == 'point' ? 0 : 1
-
+            let maxStartValue = type == 'point' ? 0 : range-1
+            let minEndValue = type == 'point' ? 0 : 1 
 
             if(!startPos && startPos !== 0 ) newStart = currentStart || 0
             else newStart = startPos
             if(!endPos && endPos !== 0) newEnd = currentEnd || range
             else newEnd = endPos
-
+    
+            newEnd = Math.min(Math.max(newEnd , minEndValue), range)
             newStart =  Math.min( Math.max(newStart, 0), maxStartValue )
-            newEnd = Math.min(Math.max(newEnd , 0), range)
 
             if(newStart>=newEnd && !(newEnd == 0 && type == 'point')){
                 newEnd = currentEnd

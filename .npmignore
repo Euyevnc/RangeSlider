@@ -1,5 +1,5 @@
 src 
-webpack.config
+webpack.config.js
 package-lock
 .gitignore
 .eslintrc.json
@@ -11,3 +11,4 @@ jest.config.js
 .eslintrc.json
 .babelrc
 .gitignore
+readme_assets

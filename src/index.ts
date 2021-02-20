@@ -8,38 +8,15 @@ import {Presenter} from "./Presenter/Presenter"
 import {Config} from "./Config/Config"
 import {Observer} from "./Observer/Observer"
 
-let sliderInst = (function($){
-    $.fn.rangeSlider = function(options:object) {
-        let sliderObjects: Array<Object> = []
-        this.each((i:number, elem:HTMLElement)=> {
-
-            sliderObjects.push( createSlider(elem, options) )
-
-        })
-        
-        if(sliderObjects.length == 1) return sliderObjects[0]
-        else return sliderObjects
-    }
-} )(jQuery)
-
-
-function createSlider(element: HTMLElement, options:Object){
-    let slider = new sliderObject(element, options);
-    return slider
-}
-
-
 class sliderObject implements sliderObjectI{
-    root:HTMLElement;
     config: ConfigI;
     view: ViewI;
     presenter: PresenterI;
     model: ModelI;
     constructor(root:HTMLElement, options:Object){
-        this.root = root
         this.config = new Config(options)
 
-        this.view = new View(this.root, this.config, new Observer());
+        this.view = new View(root, this.config, new Observer());
         this.model = new Model(this.config, new Observer())
 
         this.presenter = new Presenter(this.view, this.model);
@@ -64,5 +41,19 @@ class sliderObject implements sliderObjectI{
             this.model.updateConfig({startPos: start, endPos: end, method: "direct"})    
     }
 }
+///////////
+let sliderInst = (function($){
+    $.fn.rangeSlider = function(options:object) {
+        let sliderObjects: Array<Object> = []
+        this.each((i:number, elem:HTMLElement)=> {
+
+            sliderObjects.push( new sliderObject(elem, options) )
+
+        })
+        
+        if(sliderObjects.length == 1) return sliderObjects[0]
+        else return sliderObjects
+    }
+} )(jQuery)
 
 export default sliderInst

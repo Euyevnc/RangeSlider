@@ -10,7 +10,6 @@ interface JQueryStatic
 
 interface sliderObjectI
 {
-    root: HTMLElement;
     config: ConfigI;
 
     model: ModelI;

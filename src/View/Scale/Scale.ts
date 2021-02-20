@@ -48,7 +48,7 @@ export class Scale{
             amountContainer.innerHTML = isList ?
                 config.list[int].toString()
                 :
-                int.toString();
+                int.toLocaleString();
             ;
             amountContainer.tabIndex = 0
             amountContainer.addEventListener("click", handlerCellClick)

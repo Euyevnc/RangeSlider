@@ -1,6 +1,7 @@
 const path = require('path');
-module.exports = {
 
+module.exports = {
+    setupFiles: ['<rootDir>/__tests__/setting/setup.js'],
     moduleNameMapper: {
         "^.*[.](jpg|JPG|gif|GIF|png|PNG|less|LESS|css|CSS|scss|SCSS)$" : path.join(__dirname,  `EmptyModule`)
     },
@@ -13,4 +14,5 @@ module.exports = {
       "<rootDir>/EmptyModule.js"
     ],
     preset: 'ts-jest',
+    modulePathIgnorePatterns : ["<rootDir>/__tests__/setting"]
 };

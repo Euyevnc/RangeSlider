@@ -1,16 +1,15 @@
 interface JQuery
 {
-    RangeSlider: Function;
+    rangeSlider: Function;
 }
 
 interface JQueryStatic
 {
-    RangeSlider: Function;
+    rangeSlider: Function;
 } 
 
 interface sliderObjectI
 {
-    root: HTMLElement;
     config: ConfigI;
 
     model: ModelI;
@@ -35,8 +34,8 @@ interface ConfigI{
 }
 interface ModelI{
     config: ConfigI;
+    observer: ObserverI;
     updateConfig: Function;
-    callback:Function;
 }
 
 interface PresenterI{
@@ -46,9 +45,6 @@ interface PresenterI{
     reactToInteraction: Function;
     reactToUpdate: Function;
 
-    OptionalReactToInteraction: Function;
-    OptionalReactToUpdate: Function;
-
     connectLayers: Function;
 }
 
@@ -56,6 +52,7 @@ interface ViewI{
     root:HTMLElement;
     element: HTMLElement;
     config: ConfigI;
+    observer: ObserverI;
 
     tumblers: Object;
     line: Object;
@@ -64,6 +61,13 @@ interface ViewI{
     callback: Function;
     render: Function;
     updateView: Function;
+}
+
+interface ObserverI{
+    observers: Array<Function>;
+    subscribe: Function;
+    unsubscribe: Function;
+    broadcast: Function;
 }
 
 

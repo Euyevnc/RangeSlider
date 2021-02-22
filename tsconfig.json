@@ -4,6 +4,7 @@
     "charset": "utf8",
     "outDir": "./dist/",
     "target": "es5",
+    "moduleResolution": "node",
     "allowJs": true,
     "checkJs": false, 
     "sourceMap": false,
@@ -14,14 +15,15 @@
     "alwaysStrict": true,
     "strictNullChecks": false, 
     "noImplicitAny": true,
-
     "noUnusedLocals": true,
     "noUnusedParameters": false,
 
     "baseUrl": "./",
     "allowSyntheticDefaultImports": true,
-    "moduleResolution": "node",
-    
+
+    "noEmitOnError": true,
+    "pretty": true, 
+    "removeComments": true, 
   },
-  "files": ["./src/index.ts"],
+  "files": ["src/index.ts", "types/index.d.ts"],
 }

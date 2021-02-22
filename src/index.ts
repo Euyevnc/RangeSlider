@@ -1,5 +1,4 @@
 import "./main.scss"
-import "../types/index.d"
 
 import {View} from "./View/View"
 import {Model} from "./Model/Model"

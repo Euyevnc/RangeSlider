@@ -1,15 +1,4 @@
-interface JQuery
-{
-    rangeSlider: Function;
-}
-
-interface JQueryStatic
-{
-    rangeSlider: Function;
-} 
-
-interface sliderObjectI
-{
+interface sliderObjectI{
     config: ConfigI;
 
     model: ModelI;
@@ -69,5 +58,14 @@ interface ObserverI{
     unsubscribe: Function;
     broadcast: Function;
 }
+interface JQuery
+{
+    rangeSlider: Function;
+}
+
+interface JQueryStatic
+{
+    rangeSlider: Function;
+} 
 
 

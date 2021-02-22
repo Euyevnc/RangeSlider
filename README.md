@@ -24,7 +24,7 @@ let slider = container.rangeSlider(params)
 
 slider.init(4500, 10000) 
 ```
-Выглядеть это будет примерно так:
+Выглядеть это будет примерно так:  
 ![demo](https://github.com/Euyevnc/RangeSlider/blob/master/readme_assets/readme3.png)
 
 Метод _init_ отрендерит слайдер и устанавит первоначальные значения, если они не будут указаны, то по-умолчанию примут экстримальные значения.

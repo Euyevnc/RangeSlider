@@ -1,0 +1,16 @@
+.range-slider{
+    &__line{
+        background-color: rgb(244, 255, 255);
+        border-radius: 10px;
+        display: inline-block;
+        position: relative;
+        &_for_vertical{
+            width: 16px;
+            height: 100%;
+        }
+        &_for_horizontal{
+            height: 16px;
+            width: 100%;
+        }
+    }
+}

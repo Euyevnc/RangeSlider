@@ -1,3 +1,5 @@
+import "./view.scss";
+
 import {Tumblers} from "./Tumblers/Tumblers"
 import {Selected} from "./Selected/Selected"
 import {Scale} from "./Scale/Scale"

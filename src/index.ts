@@ -1,5 +1,3 @@
-import "./main.scss"
-
 import {View} from "./View/View"
 import {Model} from "./Model/Model"
 import {Presenter} from "./Presenter/Presenter"

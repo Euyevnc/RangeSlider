@@ -33,14 +33,14 @@ export class Scale{
         ////////////
         function createCell(int:number){
             let cell = document.createElement("span")
-            cell.className = (`js-range-slider__cell range-slider__cell  range-slider__cell_for_${config.orient}`)
+            cell.className = (`js-range-slider__scale-cell range-slider__scale-cell  range-slider__scale-cell_for_${config.orient}`)
             if(config.orient == "vertical"){
                 cell.style.height = config.scaleInterval/config.range*100 + "%"
             }
             else{
                 cell.style.width = config.scaleInterval/config.range*100 + "%"
             };
-            cell.classList.add(`range-slnider__cell_meaning_${int}`)
+            cell.classList.add(`range-slnider__scale-cell_meaning_${int}`)
             cell.setAttribute("value", `${int}`)
 
             let amountContainer = document.createElement("span")
@@ -60,12 +60,12 @@ export class Scale{
         }
 
         function handlerCellClick(event:MouseEvent){
-            let value = +(<HTMLElement>event.target).closest(".range-slider__cell").getAttribute("value") 
+            let value = +(<HTMLElement>event.target).closest(".range-slider__scale-cell").getAttribute("value") 
             callback({startPos: value, method: "scaleClick"})
         }
         function handlerCellKeydown(event:KeyboardEvent){
             if(event.code!=='Enter') return
-            let value = +(<HTMLElement>event.target).closest(".range-slider__cell").getAttribute("value") 
+            let value = +(<HTMLElement>event.target).closest(".range-slider__scale-cell").getAttribute("value") 
             callback({startPos: value, method: "scaleClick"})  
         }
     }
@@ -75,14 +75,14 @@ export class Scale{
 
         let firValue = config.range/100*firCoor + config.origin
         let secValue = config.range/100*secCoor + config.origin
-        scaleElement.querySelectorAll(".js-range-slider__cell").forEach(el=>{
+        scaleElement.querySelectorAll(".js-range-slider__scale-cell").forEach(el=>{
             let elem = el as HTMLElement
             let valueInCell = +el.getAttribute("value")
             if(valueInCell>= firValue && valueInCell<=secValue ){
-                elem.classList.add("range-slider__cell_status_active")
+                elem.classList.add("range-slider__scale-cell_status_active")
             }
             else{
-                elem.classList.remove("range-slider__cell_status_active")
+                elem.classList.remove("range-slider__scale-cell_status_active")
             } 
         })
     }

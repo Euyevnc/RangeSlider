@@ -1,0 +1,19 @@
+.range-slider{
+    &__selected{  
+        position: absolute;
+        display: inline-block;
+        z-index: 10;
+        border-radius: 10px;
+        background-color: rgb(107, 192, 174);
+        &_for_vertical{
+            left: 50%;
+            transform: translateX(-50%);
+            width: 22px;
+        }
+        &_for_horizontal{
+            top: 50%;
+            transform: translateY(-50%);
+            height: 22px;
+        }
+    }
+}

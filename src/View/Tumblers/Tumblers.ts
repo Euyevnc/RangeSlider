@@ -17,7 +17,7 @@ export class Tumblers{
         
         for(let i=0; i<2; i++){ 
             let tumblerElement = document.createElement("div")
-            tumblerElement.className = `range-slider__tumbler  range-slider__tumbler_for_${config.orient}`
+            tumblerElement.className = `js-range-slider__tumbler range-slider__tumbler  range-slider__tumbler_for_${config.orient}`
             tumblerElement.tabIndex = 0;
 
             let cloud = createTheCloud()
@@ -45,16 +45,18 @@ export class Tumblers{
         }
         function handleTumblerMousedown(e:MouseEvent){
             e.preventDefault()
-            let tumbler = e.target as HTMLElement
-            isFirstTumbler = tumbler == list[0]
+            let tumbler = (e.target as HTMLElement).closest(".js-range-slider__tumbler")
+            isFirstTumbler = (tumbler == list[0])
 
             let cloud = tumbler.querySelector(".js-range-slider__cloud ") as HTMLElement
             if(config.cloud == "click") cloud.style.display = "block"
 
+            document.body.style.cursor = "pointer"
             root.addEventListener("mousemove", handleRootMove)
             document.onmouseup = e=>{
                 root.removeEventListener("mousemove", handleRootMove);
                 if(config.cloud == "click") cloud.style.display = "none"
+                document.body.style.cursor = "auto"
                 document.onmouseup = null;
             }
         }

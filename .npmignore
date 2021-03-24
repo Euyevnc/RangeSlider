@@ -12,3 +12,4 @@ jest.config.js
 .babelrc
 .gitignore
 readme_assets
+demosrc

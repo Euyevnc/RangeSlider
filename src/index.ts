@@ -5,6 +5,20 @@ import {Presenter} from "./Presenter/Presenter"
 import {Config} from "./Config/Config"
 import {Observer} from "./Observer/Observer"
 
+let sliderInst = (function($){
+    $.fn.rangeSlider = function(options:object) {
+        let sliderObjects: Array<Object> = []
+        this.each((i:number, elem:HTMLElement)=> {
+
+            sliderObjects.push( new sliderObject(elem, options) )
+
+        })
+        
+        if(sliderObjects.length == 1) return sliderObjects[0]
+        else return sliderObjects
+    }
+})(jQuery)
+
 class sliderObject implements sliderObjectI{
     config: ConfigI;
     view: ViewI;
@@ -38,19 +52,5 @@ class sliderObject implements sliderObjectI{
             this.model.updateConfig({startPos: start, endPos: end, method: "direct"})    
     }
 }
-///////////
-let sliderInst = (function($){
-    $.fn.rangeSlider = function(options:object) {
-        let sliderObjects: Array<Object> = []
-        this.each((i:number, elem:HTMLElement)=> {
-
-            sliderObjects.push( new sliderObject(elem, options) )
-
-        })
-        
-        if(sliderObjects.length == 1) return sliderObjects[0]
-        else return sliderObjects
-    }
-} )(jQuery)
 
 export default sliderInst

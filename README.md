@@ -1,6 +1,6 @@
 # RangeSlider
 
-[__DEMO__](https://euyevnc.github.io#slider)
+[__DEMO__](https://euyevnc.github.io/RangeSlider/)
 
 ## Установка 
 >npm i range-slider-for-ml

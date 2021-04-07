@@ -3,35 +3,30 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
 const PATHS = {
   dist: path.join(__dirname,  './dist'),
+  demo: path.join(__dirname,  './DEMO')
 }
-let test = 'raz'
+const forDemo = false
+
 module.exports = (env, options) =>{
   const isProduction = options.mode == 'production'
    return{
-    entry: {
-      './' : './src/index.ts',
-      '../DEMO' : './demosrc/demo.ts'
-    },
+    entry: forDemo ? './demosrc/demo.ts' : './src/index.ts',
     output: {
-      filename: '[name]/index.js',
-  
-      path: PATHS.dist,
+      filename: 'index.js',
+      path: forDemo ? PATHS.demo : PATHS.dist,
       publicPath: isProduction ? './' : '/',
     },	
 
     devServer: {
       overlay: true,
-      contentBase:`./`,
-      openPage:`./DEMO/demo.html`,
-      hot: true,
-      inline: true,
+      contentBase: 'DEMO',
       watchContentBase: true,
       liveReload: true,
     },
     // devtool : "eval",
     plugins: [
       new MiniCssExtractPlugin({
-        filename: '[name]/styles.css',
+        filename: 'styles.css',
       }),
     ],
     module:{

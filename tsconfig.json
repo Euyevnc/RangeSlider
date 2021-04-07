@@ -25,5 +25,10 @@
     "pretty": true, 
     "removeComments": true, 
   },
-  "files": ["src/index.ts", "types/index.d.ts"],
+  "include": [
+    "src",
+    "demosrc",
+    "types"
+  ],
+  // "files": ["src/index.ts", "types/index.d.ts"],
 }

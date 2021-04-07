@@ -1,18 +1,21 @@
-export class Line{
-    element: HTMLElement;
-    config: ConfigI;
-    constructor(option: ConfigI){
-        this.config = option
-    }
+class Line {
+  element: HTMLElement;
 
-    render(){
-        let config = this.config;
+  config: ConfigI;
 
-        let lineElement
-        lineElement = document.createElement("div")
-        lineElement.className = `range-slider__line  range-slider__line_for_${config.orient}`
+  constructor(option: ConfigI) {
+    this.config = option;
+  }
 
-        this.element = lineElement
-        return this.element
-    }
+  render() {
+    const { config } = this;
+
+    const lineElement = document.createElement('div');
+    lineElement.className = `range-slider__line  range-slider__line_for_${config.orient}`;
+
+    this.element = lineElement;
+    return this.element;
+  }
 }
+
+export default Line;

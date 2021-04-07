@@ -1,56 +1,54 @@
-import {View} from "./View/View"
-import {Model} from "./Model/Model"
-import {Presenter} from "./Presenter/Presenter"
+import View from './View/View';
+import Model from './Model/Model';
+import Presenter from './Presenter/Presenter';
 
-import {Config} from "./Config/Config"
-import {Observer} from "./Observer/Observer"
+import Config from './Config/Config';
 
-let sliderInst = (function($){
-    $.fn.rangeSlider = function(options:object) {
-        let sliderObjects: Array<Object> = []
-        this.each((i:number, elem:HTMLElement)=> {
+const sliderInst = (function ($) {
+  // eslint-disable-next-line no-param-reassign
+  $.fn.rangeSlider = function (options:object) {
+    const sliderObjects: Array<Object> = [];
+    this.each((i:number, elem:HTMLElement) => {
+      sliderObjects.push(new SliderObject(elem, options));
+    });
 
-            sliderObjects.push( new sliderObject(elem, options) )
+    if (sliderObjects.length === 1) return sliderObjects[0];
+    return sliderObjects;
+  };
+}(jQuery));
 
-        })
-        
-        if(sliderObjects.length == 1) return sliderObjects[0]
-        else return sliderObjects
-    }
-})(jQuery)
+class SliderObject implements sliderObjectI {
+  config: ConfigI;
 
-class sliderObject implements sliderObjectI{
-    config: ConfigI;
-    view: ViewI;
-    presenter: PresenterI;
-    model: ModelI;
-    constructor(root:HTMLElement, options:Object){
-        this.config = new Config(options)
+  view: ViewI;
 
-        this.view = new View(root, this.config, new Observer());
-        this.model = new Model(this.config, new Observer())
+  presenter: PresenterI;
 
-        this.presenter = new Presenter(this.view, this.model);
-    };
-    init(firValue:number, secValue:number){
-        this.presenter.connectLayers()
-        this.view.render()  
-        this.config.type == 'point' ? 
-            this.model.updateConfig({startPos: this.config.origin, endPos: firValue,  method:"direct"})
-            :
-            this.model.updateConfig({startPos: firValue, endPos: secValue,  method:"direct"})
-    }; 
+  model: ModelI;
 
-    getValue(){
-        return this.config.value
-    };
+  constructor(root:HTMLElement, options:Object) {
+    this.config = new Config(options);
 
-    setValue(start:number, end:number){
-        this.config.type == "point" ? 
-            this.model.updateConfig({startPos: this.config.origin, endPos: start, method: "direct"})
-            :
-            this.model.updateConfig({startPos: start, endPos: end, method: "direct"})    
-    }
+    this.view = new View(root, this.config);
+    this.model = new Model(this.config);
+
+    this.presenter = new Presenter(this.view, this.model);
+  }
+
+  init(firValue:number, secValue:number) {
+    this.presenter.connectLayers();
+    this.view.render();
+    this.setValue(firValue, secValue);
+  }
+
+  getValue() {
+    return this.config.value;
+  }
+
+  setValue(start:number, end:number) {
+    if (this.config.type === 'point') this.model.updateConfig({ startPos: this.config.origin, endPos: start, method: 'direct' });
+    else this.model.updateConfig({ startPos: start, endPos: end, method: 'direct' });
+  }
 }
 
-export default sliderInst
+export default sliderInst;

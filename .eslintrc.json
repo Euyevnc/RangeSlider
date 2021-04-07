@@ -1,15 +1,21 @@
 {
-    "env": { "es6": true },
-    "parserOptions": {
-        "sourceType": "module"
-    },
-    "plugins": ["eslint-plugin-fsd"],
-    "rules": {
-        "fsd/hof-name-prefix": "error",
-        "fsd/no-heavy-constructor": "error",
-        "fsd/jq-cache-dom-elements": "error",
-        "fsd/jq-use-js-prefix-in-selector": "error",
-        "fsd/no-function-declaration-in-event-listener": "error",
-        "fsd/split-conditionals": "error"
-    }
+  "env": { 
+    "es6": true,
+    "browser": true,
+    "node": true,
+    "commonjs": true,
+    "jquery": true
+  },
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "sourceType": "module",
+    "tsconfigRootDir": "./",
+    "project" : "./tsconfig.json"
+  },
+  "plugins": ["@typescript-eslint"],
+  "extends": "airbnb-typescript",
+  "rules": {
+    "linebreak-style": [2, "windows"],
+    "@typescript-eslint/no-use-before-define": ["error", { "functions": false, "classes": false }]
+  }
 }

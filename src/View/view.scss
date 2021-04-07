@@ -4,13 +4,12 @@
 @import "./Tumblers/tumblers.scss";
 
 .range-slider{
-    display: flex;
-    &_for_vertical{
-        height: 100%;
-
-    }
-    &_for_horizontal{
-        width: 100%;
-        flex-direction: column;
-    }
+  display: flex;
+  &_for_vertical{
+    height: 100%;
+  }
+  &_for_horizontal{
+    width: 100%;
+    flex-direction: column;
+  }
 }

@@ -14,7 +14,7 @@ module.exports = (env, options) =>{
     output: {
       filename: 'index.js',
       path: forDemo ? PATHS.demo : PATHS.dist,
-      publicPath: isProduction ? './' : '/',
+      publicPath: isProduction ? './' : '/DEMO/',
     },	
 
     devServer: {

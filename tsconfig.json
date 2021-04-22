@@ -3,7 +3,7 @@
     "module": "commonjs",
     "charset": "utf8",
     "outDir": "./dist/",
-    "target": "es5",
+    "target": "es6",
     "moduleResolution": "node",
     "allowJs": true,
     "checkJs": false, 
@@ -28,7 +28,7 @@
   "include": [
     "src",
     "demosrc",
-    "types"
+    "types",    
   ],
   // "files": ["src/index.ts", "types/index.d.ts"],
 }

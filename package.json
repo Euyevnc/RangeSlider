@@ -7,7 +7,8 @@
   "scripts": {
     "test": "jest",
     "build": "webpack --mode production --config ./webpack.config.js",
-    "dev": "webpack-dev-server --mode development --config ./webpack.config.js --open",
+    "build-demo": "webpack --mode production --config ./webpack.config-demo.js",
+    "dev": "webpack-dev-server --mode development --config ./webpack.config-demo.js --open",
     "deploy": "gh-pages -d DEMO"
   },
   "repository": {

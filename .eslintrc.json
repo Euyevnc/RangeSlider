@@ -16,6 +16,7 @@
   "extends": "airbnb-typescript",
   "rules": {
     "linebreak-style": [2, "windows"],
-    "@typescript-eslint/no-use-before-define": ["error", { "functions": false, "classes": false }]
+    "@typescript-eslint/no-use-before-define": ["error", { "functions": false, "classes": false }],
+    "no-restricted-properties": [0, "isNaN"]
   }
 }

@@ -1,5 +1,6 @@
 src 
 webpack.config.js
+webpack.config-demo.js
 package-lock
 .gitignore
 .eslintrc.json

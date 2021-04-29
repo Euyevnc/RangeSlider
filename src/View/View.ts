@@ -58,8 +58,7 @@ class View implements ViewI {
   }
 
   updateView(data: { firCoor:number, secCoor:number }) {
-    const { firCoor } = data;
-    const { secCoor } = data;
+    const { firCoor, secCoor } = data;
 
     this.tumblers.update(firCoor, secCoor);
 

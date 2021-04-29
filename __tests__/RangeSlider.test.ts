@@ -221,22 +221,4 @@ describe('Slider functioning', () => {
       expect(ViewUpdate).toBeCalledWith({ firCoor: 0, secCoor: (100 / 60) * 8 });
     });
   });
-  describe('it check the occurrence of events and their transfer to the presenter', () => {
-    const createdObject = node.rangeSlider(inputData);
-    createdObject.presenter.reactToInteraction = jest.fn();
-    const tumblersReaction = createdObject.presenter.reactToInteraction;
-    createdObject.init();
-
-    test('mouse click event', () => {
-      const mc = new MouseEvent('click');
-      createdObject.view.scale.element.querySelectorAll('.js-range-slider__cell>span')[2].dispatchEvent(mc);
-      expect(tumblersReaction).toBeCalled();
-    });
-    test('keyboard event', () => {
-      const kd = new KeyboardEvent('keydown', { key: 'ArrowLeft', code: 'ArrowLeft' });
-
-      createdObject.view.tumblers.elements[1].dispatchEvent(kd);
-      expect(tumblersReaction).toBeCalled();
-    });
-  });
 });

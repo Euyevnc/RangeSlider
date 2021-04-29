@@ -17,11 +17,7 @@ class Model implements ModelI {
   }
 
   updateConfig(data: { startPos: number, endPos: number, method: string }):void {
-    const {
-      startPos, endPos, method,
-    } = data;
-
-    const { type, range, step } = this.config;
+    const { startPos, endPos, method } = data;
 
     const currentStart = this.start;
     const currentEnd = this.end;
@@ -33,7 +29,7 @@ class Model implements ModelI {
       scaleClick: this.#changeByScaleClick,
     };
 
-    let [newStart, newEnd] = this.#callSuitableMethod({
+    let { newStart, newEnd } = this.#callSuitableMethod({
       functions,
       string: method,
       args: {
@@ -42,21 +38,9 @@ class Model implements ModelI {
       },
     });
 
-    if (method !== 'direct') {
-      newStart = window.isNaN(newStart) ? currentStart : newStart;
-      newEnd = window.isNaN(newEnd) ? currentEnd : newEnd;
-
-      const maxStartValue = type === 'point'
-        ? 0
-        : Math.max((Math.ceil(newEnd / step) * step - step), currentStart);
-
-      const minEndValue = type === 'point'
-        ? 0
-        : Math.min((Math.floor(newStart / step) * step + step), currentEnd);
-
-      newStart = Math.min(Math.max(newStart, 0), Math.max(maxStartValue, 0));
-      newEnd = Math.max(Math.min(newEnd, range), Math.min(minEndValue, range));
-    }
+    const alignedValues = this.#normalizeValues({ newStart, newEnd, method });
+    newStart = alignedValues.start;
+    newEnd = alignedValues.end;
 
     if (newStart !== currentStart || newEnd !== currentEnd || method === 'direct') {
       this.#setValue({
@@ -111,7 +95,7 @@ class Model implements ModelI {
       }
     }
 
-    return [newStart, newEnd];
+    return { newStart, newEnd };
   };
 
   #changeByScaleClick = (coordinates: { startPosition : number }) => {
@@ -128,7 +112,7 @@ class Model implements ModelI {
       newEnd = position;
     } else newStart = position;
 
-    return [newStart, newEnd];
+    return { newStart, newEnd };
   };
 
   #changeByTepping = (coordinates: { startPosition:number, endPosition:number }) => {
@@ -155,33 +139,59 @@ class Model implements ModelI {
       if (endPosition > 0) newEnd = Math.floor(currentEnd / step) * step + step * endPosition;
     }
 
-    return [newStart, newEnd];
+    return { newStart, newEnd };
   };
 
   #changeByDirect = (coordinates: { startPosition:number, endPosition:number }) => {
-    const { type, origin, range } = this.config;
+    const { origin } = this.config;
+
+    const { startPosition, endPosition } = coordinates;
+
+    const newStart = startPosition - origin;
+    const newEnd = endPosition - origin;
+
+    return { newStart, newEnd };
+  };
+
+  #normalizeValues = (values: { newStart:number, newEnd:number, method: string }) => {
+    const { type, range, step } = this.config;
+
+    const { newStart, newEnd, method } = values;
 
     const currentStart = this.start;
     const currentEnd = this.end;
 
-    const { startPosition, endPosition } = coordinates;
+    let normalizedStart:number = window.isNaN(newStart) ? currentStart : newStart;
+    let normalizedEnd:number = window.isNaN(newEnd) ? currentEnd : newEnd;
 
-    let newStart = startPosition - origin;
-    let newEnd = endPosition - origin;
-    newStart = window.isNaN(newStart) ? currentStart : newStart;
-    newEnd = window.isNaN(newEnd) ? currentEnd : newEnd;
-
-    const maxStartValue = type === 'point' ? 0 : range - 1;
-    const minEndValue = type === 'point' ? 0 : 1;
-
-    newEnd = Math.min(Math.max(newEnd, minEndValue), range);
-    newStart = Math.min(Math.max(newStart, 0), maxStartValue);
-
-    if (newStart >= newEnd && !(newEnd === 0 && type === 'point')) {
-      newEnd = currentEnd;
-      newStart = currentStart;
+    let maxStartValue;
+    if (type === 'point') maxStartValue = 0;
+    else {
+      maxStartValue = method === 'direct'
+        ? range - 1
+        : Math.max((Math.ceil(normalizedEnd / step) * step - step), currentStart);
     }
-    return [newStart, newEnd];
+
+    let minEndValue;
+    if (type === 'point') minEndValue = 0;
+    else {
+      minEndValue = method === 'direct'
+        ? 1
+        : Math.min((Math.floor(normalizedStart / step) * step + step), currentEnd);
+    }
+
+    normalizedStart = Math.min(Math.max(normalizedStart, 0), Math.max(maxStartValue, 0));
+    normalizedEnd = Math.max(Math.min(normalizedEnd, range), Math.min(minEndValue, range));
+
+    if (normalizedStart >= normalizedEnd && type !== 'point') {
+      normalizedStart = currentStart;
+      normalizedEnd = currentEnd;
+    }
+
+    return {
+      start: normalizedStart,
+      end: normalizedEnd,
+    };
   };
 
   #convertToPercent = (value: number) => value / (this.config.range / 100);

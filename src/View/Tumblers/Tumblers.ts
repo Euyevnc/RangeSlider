@@ -32,7 +32,6 @@ class Tumblers {
     this.elements = list;
     return this.elements;
 
-    /// //////////////
     function createTheCloud() {
       const cloud = document.createElement('div');
       cloud.className = `js-range-slider__cloud range-slider__cloud  range-slider__cloud_for_${config.orient}`;

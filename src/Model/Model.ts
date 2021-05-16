@@ -69,7 +69,7 @@ class Model implements ModelI {
 
       const cursorOverMakup = (valueOfPosition % step > step * 0.8
         || valueOfPosition % step < step * 0.2);
-
+      
       const conditionOfTrigger = cursorFarEnough || cursorOverMakup;
 
       if (conditionOfTrigger) {
@@ -89,9 +89,11 @@ class Model implements ModelI {
       const cursorOverFinish = valueOfPosition >= range;
 
       const conditionOfTrigger = cursorFarEnough || cursorOverMarkup || cursorOverFinish;
-
       if (conditionOfTrigger) {
-        newEnd = Math.round(valueOfPosition / step) * step;
+        newEnd = cursorOverFinish ?
+          range 
+          : 
+          Math.round(valueOfPosition / step) * step;
       }
     }
 

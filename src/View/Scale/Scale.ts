@@ -9,33 +9,36 @@ class Scale {
 
   render(callback:Function) {
     const { config } = this;
-    const intervals = Math.ceil(config.range / config.scaleInterval);
+    const numberOfIntervals = Math.ceil(config.range / config.scaleInterval);
     const isList = Boolean(config.list.length);
 
     const scaleElement = document.createElement('div');
     scaleElement.className = `range-slider__scale  range-slider__scale_for_${config.orient}`;
 
     createCell(config.origin);
-    for (let i = 1; i < intervals; i += 1) {
-      if (i !== intervals - 1) {
+    for (let i = 1; i < numberOfIntervals; i += 1) {
+      if (i !== numberOfIntervals - 1 && i !== 1) {
         createCell(i * config.scaleInterval + config.origin);
       } else createCell(i * config.scaleInterval + config.origin).style.flexShrink = '1';
     }
-    if (config.orient === 'vertical') createCell(config.range + config.origin).style.height = '0px';
-    else createCell(config.range + config.origin).style.width = '0px';
+    config.orient === 'vertical' ? 
+      createCell(config.range + config.origin).style.height = '0px'
+      :
+      createCell(config.range + config.origin).style.width = '0px';
 
     if (!config.scale) scaleElement.style.display = 'none';
     this.element = scaleElement;
     return this.element;
 
-    /// /////////
     function createCell(int:number) {
       const cell = document.createElement('span');
       cell.className = (`js-range-slider__scale-cell range-slider__scale-cell  range-slider__scale-cell_for_${config.orient}`);
       if (config.orient === 'vertical') {
-        cell.style.height = `${(config.scaleInterval / config.range) * 100}%`;
+        const normalizedHeight = Math.min( (config.scaleInterval / config.range) * 100, 100)
+        cell.style.height = `${normalizedHeight}%`;
       } else {
-        cell.style.width = `${(config.scaleInterval / config.range) * 100}%`;
+        const normalizedWidth = Math.min( (config.scaleInterval / config.range) * 100, 100)
+        cell.style.width = `${normalizedWidth}%`;
       }
       cell.classList.add(`range-slnider__scale-cell_meaning_${int}`);
       cell.setAttribute('value', `${int}`);

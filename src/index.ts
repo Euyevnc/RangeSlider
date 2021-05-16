@@ -40,6 +40,10 @@ class SliderObject implements sliderObjectI {
     this.setValue(firValue, secValue);
   }
 
+  adaptValues () {
+    this.model.adaptValues()
+  }
+
   getValue() {
     return this.config.value;
   }

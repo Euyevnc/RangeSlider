@@ -51,6 +51,18 @@ class Model implements ModelI {
     }
   }
 
+  adaptValues = () => {
+    const { step, range } = this.config
+    let adaptedStart = Math.round(this.start/step) * step
+    const adaptedEnd = this.end === range ? 
+      range 
+      :
+       Math.max(Math.round(this.end/step) * step, adaptedStart + step)
+    if (adaptedEnd === range) adaptedStart = Math.min(adaptedStart, Math.ceil(adaptedEnd - step))
+    this.updateConfig({ startPos: adaptedStart, endPos: adaptedEnd, method: "drag" })
+    console.log(adaptedStart, this.end, "ya")
+  }
+
   #changeByDrag = (coordinates: { startPosition:number, endPosition:number }) => {
     const { range, step } = this.config;
 
@@ -186,8 +198,8 @@ class Model implements ModelI {
     normalizedEnd = Math.max(Math.min(normalizedEnd, range), Math.min(minEndValue, range));
 
     if (normalizedStart >= normalizedEnd && type !== 'point') {
-      normalizedStart = currentStart;
-      normalizedEnd = currentEnd;
+      if (normalizedStart === currentStart) normalizedEnd = normalizedStart + 1
+      else normalizedStart = normalizedEnd - 1
     }
 
     return {

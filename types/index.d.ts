@@ -8,6 +8,8 @@ interface sliderObjectI{
     init: Function;
     getValue: Function;
     setValue: Function;
+    adaptValues: Function;
+
 }
 interface ConfigI{
     type: string;
@@ -25,6 +27,7 @@ interface ModelI{
     config: ConfigI;
     observer: ObserverI;
     updateConfig: Function;
+    adaptValues: Function;
 }
 
 interface PresenterI{

@@ -170,6 +170,7 @@ function initDemo() {
       (e.target as HTMLInputElement).value = value.toString();
       slider.config.step = value;
       slider.init();
+      slider.adaptValues()
     });
 
     panelNode.find("input[name='first_pos']").on('keydown', (e) => {

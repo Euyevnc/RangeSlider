@@ -6,6 +6,7 @@ class Presenter implements PresenterI {
   constructor(view:ViewI, model:ModelI) {
     this.view = view;
     this.model = model;
+    this.connectLayers()
   }
 
   reactToInteraction(data: { startPos: number, endPos: number, method: string }) {

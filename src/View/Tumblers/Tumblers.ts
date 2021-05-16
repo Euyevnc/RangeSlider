@@ -114,12 +114,11 @@ class Tumblers {
     }
     updateClouds(firCoor, secCoor);
 
-    /// ////
     function updateClouds(firPerc:number, secPerc:number) {
       let firValue: string;
       let secValue: string;
-      firValue = Math.round((config.range / 100) * firPerc + config.origin).toLocaleString();
-      secValue = Math.round((config.range / 100) * secPerc + config.origin).toLocaleString();
+      firValue = ((config.range / 100) * firPerc + config.origin).toLocaleString();
+      secValue = ((config.range / 100) * secPerc + config.origin).toLocaleString();
 
       if (config.list.length) {
         firValue = config.list[+firValue].toString();

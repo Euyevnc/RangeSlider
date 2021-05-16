@@ -33,7 +33,6 @@ class SliderObject implements sliderObjectI {
     this.model = new Model(this.config);
 
     this.presenter = new Presenter(this.view, this.model);
-    this.presenter.connectLayers();
   }
 
   init(firValue:number, secValue:number) {

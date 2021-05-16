@@ -145,7 +145,7 @@ function initDemo() {
       (e.target as HTMLInputElement).value = value.toString();
       slider.config.range = value;
       slider.init();
-    });
+    }); 
 
     panelNode.find("input[name='interval']").on('change', (e) => {
       e.preventDefault();

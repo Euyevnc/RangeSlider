@@ -50,16 +50,16 @@ class Tumblers {
       if (config.cloud === 'click') cloud.style.display = 'block';
 
       document.body.style.cursor = 'pointer';
-      root.addEventListener('mousemove', handleRootMove);
+      document.addEventListener('mousemove', handlerDocumentMove);
       document.onmouseup = () => {
-        root.removeEventListener('mousemove', handleRootMove);
+        document.removeEventListener('mousemove', handlerDocumentMove);
         if (config.cloud === 'click') cloud.style.display = 'none';
         document.body.style.cursor = 'auto';
         document.onmouseup = null;
       };
     }
 
-    function handleRootMove(event:MouseEvent) {
+    function handlerDocumentMove(event:MouseEvent) {
       const sliderZone = root.querySelector('.js-range-slider');
       const bias = config.orient === 'vertical'
         ? -((event.clientY - sliderZone.getBoundingClientRect().bottom)

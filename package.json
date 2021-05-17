@@ -1,6 +1,6 @@
 {
   "name": "range-slider-for-ml",
-  "version": "1.0.32",
+  "version": "1.0.35",
   "description": "Range slider created as part of the educational program",
   "main": "./dist/index.js",
   "types": "./types/index.d.ts",

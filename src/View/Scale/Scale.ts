@@ -17,9 +17,10 @@ class Scale {
 
     createCell(config.origin);
     for (let i = 1; i < numberOfIntervals; i += 1) {
-      if (i !== numberOfIntervals - 1 && i !== 1) {
+      if (i !== numberOfIntervals - 1 && numberOfIntervals !== 1) {
         createCell(i * config.scaleInterval + config.origin);
-      } else createCell(i * config.scaleInterval + config.origin).style.flexShrink = '1';
+      } 
+      else createCell(i * config.scaleInterval + config.origin).style.flexShrink = '1';
     }
     config.orient === 'vertical' ? 
       createCell(config.range + config.origin).style.height = '0px'
@@ -39,6 +40,7 @@ class Scale {
       } else {
         const normalizedWidth = Math.min( (config.scaleInterval / config.range) * 100, 100)
         cell.style.width = `${normalizedWidth}%`;
+        console.log(normalizedWidth)
       }
       cell.classList.add(`range-slnider__scale-cell_meaning_${int}`);
       cell.setAttribute('value', `${int}`);

@@ -26,7 +26,10 @@ interface ConfigI{
 interface ModelI{
     config: ConfigI;
     observer: ObserverI;
-    updateConfig: Function;
+
+    updateDirectively: Function;
+    updateFromPercent: Function;
+    updateFromStep: Function;
     adaptValues: Function;
 }
 
@@ -60,6 +63,11 @@ interface ObserverI{
     subscribe: Function;
     unsubscribe: Function;
     broadcast: Function;
+}
+
+interface DataToTransfer{
+  startPosition?: number;
+  endPosition?: number;
 }
 interface JQuery
 {

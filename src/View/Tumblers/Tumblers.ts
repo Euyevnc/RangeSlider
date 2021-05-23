@@ -1,3 +1,4 @@
+import { TEPPEING, DRAG } from './../../consts';
 class Tumblers {
   elements: HTMLDivElement[];
 
@@ -64,12 +65,11 @@ class Tumblers {
       const bias = config.orient === 'vertical'
         ? -((event.clientY - sliderZone.getBoundingClientRect().bottom)
         / sliderZone.getBoundingClientRect().height) * 100
-        // Минус тут нужен для реверса.так как шкала сверху вниз т.е.противонаправлена оси координат
         : ((event.clientX - sliderZone.getBoundingClientRect().x)
         / sliderZone.getBoundingClientRect().width) * 100;
       if (isFirstTumbler) {
-        callback({ startPos: bias, method: 'drag' });
-      } else (callback({ endPos: bias, method: 'drag' }));
+        callback(DRAG, { startPosition: bias});
+      } else (callback(DRAG, { endPosition: bias}));
     }
 
     function handleTumblerFocus(event:FocusEvent) {
@@ -88,13 +88,15 @@ class Tumblers {
       isFirstTumbler = tumbler === list[0];
 
       if ((event.key === 'ArrowDown' && config.orient === 'vertical') || (event.key === 'ArrowLeft' && config.orient !== 'vertical')) {
-        if (isFirstTumbler) callback({ startPos: -1, method: 'tepping' });
-        else callback({ endPos: -1, method: 'tepping' });
+        const obj = { endPosition: -1 };
+        console.log(obj)
+        if (isFirstTumbler) callback(TEPPEING, { startPosition: -1});
+        else callback(TEPPEING, obj);
 
         event.preventDefault();
       } else if ((event.key === 'ArrowUp' && config.orient === 'vertical') || (event.key === 'ArrowRight' && config.orient !== 'vertical')) {
-        if (isFirstTumbler) callback({ startPos: 1, method: 'tepping' });
-        else callback({ endPos: 1, method: 'tepping' });
+        if (isFirstTumbler) callback(TEPPEING, { startPosition: 1});
+        else callback(TEPPEING, { endPosition: 1});
         event.preventDefault();
       }
     }

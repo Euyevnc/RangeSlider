@@ -13,8 +13,8 @@ class Observer implements ObserverI {
     this.observers = this.observers.filter((subscriber) => subscriber !== fn);
   };
 
-  broadcast = (data: Object) => {
-    this.observers.forEach((subscriber) => subscriber(data));
+  broadcast = (...args: Array<any>) => {
+    this.observers.forEach((subscriber) => subscriber(...args));
   };
 }
 

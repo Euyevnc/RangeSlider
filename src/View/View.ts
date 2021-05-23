@@ -27,14 +27,15 @@ class View implements ViewI {
   callback: Function;
 
   constructor(root: HTMLElement, option: ConfigI) {
+    this.observer = new Observer();
+
     this.root = root;
     this.config = option;
     this.tumblers = new Tumblers(root, option);
     this.line = new Line(option);
     this.selected = new Selected(option);
-    this.scale = new Scale(option);
+    this.scale = new Scale(option, this.observer.broadcast);
 
-    this.observer = new Observer();
   }
 
   render():void {
@@ -45,7 +46,7 @@ class View implements ViewI {
     mainElement.className = `range-slider  js-range-slider  range-slider_for_${config.orient}`;
 
     mainElement.append(this.line.render());
-    mainElement.append(this.scale.render(callback));
+    mainElement.append(this.scale.render());
 
     this.tumblers.render(callback).forEach((el:HTMLElement) => {
       this.line.element.append(el);

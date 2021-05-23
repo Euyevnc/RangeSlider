@@ -1,77 +1,51 @@
+import { SCALE_CLICK } from './../../consts';
+
+
 class Scale {
   element: HTMLElement;
 
   config: ConfigI;
 
-  constructor(option: ConfigI) {
+  cells: Array<HTMLElement>
+
+  callback: Function;
+  constructor(option: ConfigI, callback:Function) {
     this.config = option;
+    this.callback = callback
+    this.cells = []
   }
 
-  render(callback:Function) {
+  render = () => {
     const { config } = this;
     const numberOfIntervals = Math.ceil(config.range / config.scaleInterval);
-    const isList = Boolean(config.list.length);
-
     const scaleElement = document.createElement('div');
+
     scaleElement.className = `range-slider__scale  range-slider__scale_for_${config.orient}`;
 
-    createCell(config.origin);
+    scaleElement.append(this.#createCell(config.origin));
     for (let i = 1; i < numberOfIntervals; i += 1) {
       if (i !== numberOfIntervals - 1 && numberOfIntervals !== 1) {
-        createCell(i * config.scaleInterval + config.origin);
+        scaleElement.append(this.#createCell(i * config.scaleInterval + config.origin));
       } 
-      else createCell(i * config.scaleInterval + config.origin).style.flexShrink = '1';
+      else {
+        const shrinkingCell = this.#createCell(i * config.scaleInterval + config.origin)
+        shrinkingCell.style.flexShrink = '1'
+        scaleElement.append(shrinkingCell);
+      }
     }
+    const lastCell = this.#createCell(config.range + config.origin) 
     config.orient === 'vertical' ? 
-      createCell(config.range + config.origin).style.height = '0px'
+      lastCell.style.height = '0px'
       :
-      createCell(config.range + config.origin).style.width = '0px';
+      lastCell.style.width = '0px';
+    scaleElement.append(lastCell)
 
     if (!config.scale) scaleElement.style.display = 'none';
     this.element = scaleElement;
     return this.element;
-
-    function createCell(int:number) {
-      const cell = document.createElement('span');
-      cell.className = (`js-range-slider__scale-cell range-slider__scale-cell  range-slider__scale-cell_for_${config.orient}`);
-      if (config.orient === 'vertical') {
-        const normalizedHeight = Math.min( (config.scaleInterval / config.range) * 100, 100)
-        cell.style.height = `${normalizedHeight}%`;
-      } else {
-        const normalizedWidth = Math.min( (config.scaleInterval / config.range) * 100, 100)
-        cell.style.width = `${normalizedWidth}%`;
-        console.log(normalizedWidth)
-      }
-      cell.classList.add(`range-slnider__scale-cell_meaning_${int}`);
-      cell.setAttribute('value', `${int}`);
-
-      const amountContainer = document.createElement('span');
-      amountContainer.classList.add('range-slider__scale-value');
-      amountContainer.innerHTML = isList
-        ? config.list[int].toString()
-        : int.toLocaleString();
-
-      amountContainer.tabIndex = 0;
-      amountContainer.addEventListener('click', handlerCellClick);
-      amountContainer.addEventListener('keydown', handlerCellKeydown);
-      cell.append(amountContainer);
-
-      scaleElement.append(cell);
-      return cell;
-    }
-
-    function handlerCellClick(event:MouseEvent) {
-      const value = +(<HTMLElement>event.target).closest('.range-slider__scale-cell').getAttribute('value');
-      callback({ startPos: value, method: 'scaleClick' });
-    }
-    function handlerCellKeydown(event:KeyboardEvent) {
-      if (event.code !== 'Enter') return;
-      const value = +(<HTMLElement>event.target).closest('.range-slider__scale-cell').getAttribute('value');
-      callback({ startPos: value, method: 'scaleClick' });
-    }
   }
 
-  update(firCoor: number, secCoor:number) {
+  update (firCoor: number, secCoor:number) {
     const { config } = this;
     const scaleElement = this.element;
 
@@ -86,6 +60,73 @@ class Scale {
         elem.classList.remove('range-slider__scale-cell_status_active');
       }
     });
+  }
+
+  #handlerCellClick = (event:MouseEvent) => {
+    const orient = this.config.orient
+    const value = +(<HTMLElement>event.target).closest('.range-slider__scale-cell').getAttribute('value');
+
+    if (this.config.type === 'point') this.callback(SCALE_CLICK, { endPosition: value})
+    else {
+      const cell = (<HTMLElement>event.target).closest('.range-slider__scale-cell') as HTMLElement;
+      const cellPosition = orient === 'horizontal' ?
+        cell.offsetLeft 
+        :
+        cell.offsetTop
+      const tumblersPositions = orient === 'horizontal' ?
+        [...cell.closest(".range-slider").querySelectorAll(".range-slider__tumbler")].map((tum) => (<HTMLElement>tum).offsetLeft)
+        :
+        [...cell.closest(".range-slider").querySelectorAll(".range-slider__tumbler")].map((tum) => (<HTMLElement>tum).offsetTop)
+      if(Math.abs(cellPosition - tumblersPositions[0]) <= Math.abs(cellPosition - tumblersPositions[1])) this.callback(SCALE_CLICK, { startPosition: value})
+      else this.callback(SCALE_CLICK, { endPosition: value})
+    }
+  }
+
+  #handlerCellKeydown = (event:KeyboardEvent) => {
+    if (event.code !== 'Enter') return;
+
+    const value = +(<HTMLElement>event.target).closest('.range-slider__scale-cell').getAttribute('value');
+
+    if (this.config.type === 'point') this.callback(SCALE_CLICK, { endPosition: value})
+    else {
+      const cell = (<HTMLElement>event.target).closest('.range-slider__scale-cell') as HTMLElement;
+      const cellPosition = cell.offsetLeft 
+      const tumblersPositions = [...cell.closest(".range-slider").querySelectorAll(".range-slider__tumbler")].map((tum) => (<HTMLElement>tum).offsetLeft)
+      if(Math.abs(cellPosition - tumblersPositions[0]) <= Math.abs(cellPosition - tumblersPositions[1])) this.callback(SCALE_CLICK, { startPosition: value})
+      else this.callback(SCALE_CLICK, { endPosition: value})
+    }
+  }
+
+  #createCell = (int:number) => {
+    const { config } = this;
+    const isList = Boolean(config.list.length);
+
+    const cell = document.createElement('span');
+    cell.className = (`js-range-slider__scale-cell range-slider__scale-cell  range-slider__scale-cell_for_${config.orient}`);
+
+    if (config.orient === 'vertical') {
+      const normalizedHeight = Math.min( (config.scaleInterval / config.range) * 100, 100)
+      cell.style.height = `${normalizedHeight}%`;
+    } else {
+      const normalizedWidth = Math.min( (config.scaleInterval / config.range) * 100, 100)
+      cell.style.width = `${normalizedWidth}%`;
+    }
+
+    cell.classList.add(`range-slnider__scale-cell_meaning_${int}`);
+    cell.setAttribute('value', `${int}`);
+
+    const amountContainer = document.createElement('span');
+    amountContainer.classList.add('range-slider__scale-value');
+    amountContainer.innerHTML = isList
+      ? config.list[int].toString()
+      : int.toLocaleString();
+    amountContainer.tabIndex = 0;
+    amountContainer.addEventListener('click', this.#handlerCellClick);
+    amountContainer.addEventListener('keydown', this.#handlerCellKeydown);
+
+    cell.append(amountContainer);
+    this.cells.push(cell)
+    return cell;
   }
 }
 

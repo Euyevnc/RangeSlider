@@ -31,16 +31,15 @@ class View implements ViewI {
 
     this.root = root;
     this.config = option;
-    this.tumblers = new Tumblers(root, option);
-    this.line = new Line(option);
-    this.selected = new Selected(option);
+    this.tumblers = new Tumblers(option, this.observer.broadcast);
     this.scale = new Scale(option, this.observer.broadcast);
 
+    this.line = new Line(option);
+    this.selected = new Selected(option);
   }
 
   render():void {
     const { root, config } = this;
-    const callback = this.observer.broadcast;
 
     const mainElement = document.createElement('div');
     mainElement.className = `range-slider  js-range-slider  range-slider_for_${config.orient}`;
@@ -48,7 +47,7 @@ class View implements ViewI {
     mainElement.append(this.line.render());
     mainElement.append(this.scale.render());
 
-    this.tumblers.render(callback).forEach((el:HTMLElement) => {
+    this.tumblers.render().forEach((el:HTMLElement) => {
       this.line.element.append(el);
     });
     this.line.element.append(this.selected.render());
@@ -58,14 +57,14 @@ class View implements ViewI {
     root.append(this.element);
   }
 
-  updateView(data: { firCoor:number, secCoor:number }) {
-    const { firCoor, secCoor } = data;
+  updateView(data: DataForView) {
+    const { firstCoordinate, secondCoordinate } = data;
 
-    this.tumblers.update(firCoor, secCoor);
+    this.tumblers.update(firstCoordinate, secondCoordinate);
 
-    this.selected.update(firCoor, secCoor);
+    this.selected.update(firstCoordinate, secondCoordinate);
 
-    this.scale.update(firCoor, secCoor);
+    this.scale.update(firstCoordinate, secondCoordinate);
   }
 }
 

@@ -65,10 +65,16 @@ interface ObserverI{
     broadcast: Function;
 }
 
-interface DataToTransfer{
+interface DataForModel{
   startPosition?: number;
   endPosition?: number;
 }
+
+interface DataForView{
+  firstCoordinate:number;
+  secondCoordinate: number;
+}
+
 interface JQuery
 {
     rangeSlider: Function;

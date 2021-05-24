@@ -40,8 +40,8 @@ class SliderObject implements sliderObjectI {
     this.setValue(firValue, secValue);
   }
 
-  adaptValues () {
-    this.model.adaptValues()
+  adaptValues() {
+    this.model.adaptValues();
   }
 
   getValue() {
@@ -49,8 +49,8 @@ class SliderObject implements sliderObjectI {
   }
 
   setValue(start:number, end:number) {
-    if (this.config.type === 'point') this.model.updateDirectively({ startPosition: this.config.origin, endPosition: start});
-    else this.model.updateDirectively({ startPosition: start, endPosition: end});
+    if (this.config.type === 'point') this.model.updateDirectively({ startPosition: this.config.origin, endPosition: start });
+    else this.model.updateDirectively({ startPosition: start, endPosition: end });
   }
 }
 

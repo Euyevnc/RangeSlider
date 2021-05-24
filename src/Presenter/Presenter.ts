@@ -1,4 +1,5 @@
-import { SCALE_CLICK, DRAG, TEPPEING } from './../consts';
+import { SCALE_CLICK, DRAG, TEPPEING } from '../consts';
+
 class Presenter implements PresenterI {
   view: ViewI;
 
@@ -7,25 +8,26 @@ class Presenter implements PresenterI {
   constructor(view:ViewI, model:ModelI) {
     this.view = view;
     this.model = model;
-    this.connectLayers()
+    this.connectLayers();
   }
 
-  reactToInteraction(method: string, data: DataToTransfer) {
-    switch(method) {
-      case SCALE_CLICK: 
-        this.model.updateDirectively(data)
-        break
+  reactToInteraction(method: string, data: DataForModel) {
+    switch (method) {
+      case SCALE_CLICK:
+        this.model.updateDirectively(data);
+        break;
       case DRAG:
-        this.model.updateFromPercent(data)
-        break
+        this.model.updateFromPercent(data);
+        break;
       case TEPPEING:
-        this.model.updateFromStep(data)
-        break
+        this.model.updateFromStep(data);
+        break;
+      default:
+        break;
     }
-      
   }
 
-  reactToUpdate(data: ({ firCoor: number, secCoor: number })) {
+  reactToUpdate(data: DataForView) {
     this.view.updateView(data);
   }
 

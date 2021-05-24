@@ -1,0 +1,15 @@
+{
+  "extends" : [
+    "stylelint-config-standard",
+    "stylelint-config-rational-order",
+    "stylelint-prettier/recommended"
+  ],
+  "plugins": ["stylelint-order", "stylelint-scss", "stylelint-prettier"],
+  "ignoreFiles": ["**/*.css", "**/*.js"], 
+  "rules": {
+    "at-rule-no-unknown": null,
+    "scss/at-rule-no-unknown": true,
+    "prettier/prettier": true,
+    "rule-empty-line-before" : ["always", { "ignore": ["first-nested"] } ]
+  }
+}

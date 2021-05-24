@@ -16,36 +16,36 @@ class Model implements ModelI {
     this.end = this.config.range;
   }
 
-  updateDirectively = (data: DataToTransfer) => {
+  updateDirectively = (data: DataForModel) => {
     this.#update(this.#valueProcessing, data);
     this.#callTheBroadcast();
-  }
+  };
 
-  updateFromPercent = (data: DataToTransfer) => {
-    this.#update(this.#percentProcessing, data)
-  }
+  updateFromPercent = (data: DataForModel) => {
+    this.#update(this.#percentProcessing, data);
+  };
 
-  updateFromStep = (data:DataToTransfer) => {
-    this.#update(this.#stepProseccing, data)
-  }
+  updateFromStep = (data:DataForModel) => {
+    this.#update(this.#stepProseccing, data);
+  };
 
   adaptValues = () => {
-    const { step, range } = this.config
-    let adaptedStart = Math.round(this.start/step) * step
-    let adaptedEnd = Math.round(this.end/step) * step
+    const { step, range } = this.config;
+    let adaptedStart = Math.round(this.start / step) * step;
+    let adaptedEnd = Math.round(this.end / step) * step;
 
-    if (adaptedEnd > range) adaptedEnd = range 
-    if (adaptedEnd <= adaptedStart) adaptedStart = Math.ceil(adaptedEnd/step)*step - step
+    if (adaptedEnd > range) adaptedEnd = range;
+    if (adaptedEnd <= adaptedStart) adaptedStart = Math.ceil(adaptedEnd / step) * step - step;
 
-    this.#setValue({start: adaptedStart, end: adaptedEnd})
-    this.#callTheBroadcast()
-  }
+    this.#setValue({ start: adaptedStart, end: adaptedEnd });
+    this.#callTheBroadcast();
+  };
 
-  #update = (processing: Function, data: DataToTransfer):void => {
+  #update = (processing: Function, data: DataForModel):void => {
     const currentStart = this.start;
     const currentEnd = this.end;
 
-    let { newStart, newEnd } = processing(data)
+    const { newStart, newEnd } = processing(data);
 
     if (newStart !== currentStart || newEnd !== currentEnd) {
       this.#setValue({
@@ -54,33 +54,30 @@ class Model implements ModelI {
       });
       this.#callTheBroadcast();
     }
-  }
+  };
 
   #valueProcessing = (data: { startPosition:number, endPosition:number }) => {
     const { origin, type, range } = this.config;
 
     const { startPosition, endPosition } = data;
-    
+
     const currentStart = this.start;
     const currentEnd = this.end;
 
     let newStart = window.isNaN(startPosition) ? currentStart : (startPosition - origin);
     let newEnd = window.isNaN(endPosition) ? currentEnd : (endPosition - origin);
 
-    
-    newEnd = type === 'point' ?
-      Math.max(0, Math.min(newEnd, range) )
-      :
-      Math.max(1, Math.min(newEnd, range) );
-    newStart = type === 'point' ?
-      0
-      :
-      Math.min(newEnd - 1, Math.max(0, newStart));
+    newEnd = type === 'point'
+      ? Math.max(0, Math.min(newEnd, range))
+      : Math.max(1, Math.min(newEnd, range));
+    newStart = type === 'point'
+      ? 0
+      : Math.min(newEnd - 1, Math.max(0, newStart));
 
     return { newStart, newEnd };
   };
 
-  #percentProcessing = (data: DataToTransfer) => {
+  #percentProcessing = (data: DataForModel) => {
     const { range, step } = this.config;
 
     const currentStart = this.start;
@@ -98,7 +95,7 @@ class Model implements ModelI {
 
       const cursorOverMakup = (valueOfPosition % step > step * 0.8
         || valueOfPosition % step < step * 0.2);
-      
+
       const conditionOfTrigger = cursorFarEnough || cursorOverMakup;
 
       if (conditionOfTrigger) {
@@ -119,17 +116,16 @@ class Model implements ModelI {
 
       const conditionOfTrigger = cursorFarEnough || cursorOverMarkup || cursorOverFinish;
       if (conditionOfTrigger) {
-        newEnd = cursorOverFinish ?
-          range 
-          : 
-          Math.round(valueOfPosition / step) * step;
+        newEnd = cursorOverFinish
+          ? range
+          : Math.round(valueOfPosition / step) * step;
       }
     }
 
-    return this.#normalizeValues([ newStart, newEnd ]);
+    return this.#normalizeValues([newStart, newEnd]);
   };
 
-  #stepProseccing = (data: DataToTransfer) => {
+  #stepProseccing = (data: DataForModel) => {
     const { step } = this.config;
 
     const currentStart = this.start;
@@ -159,24 +155,21 @@ class Model implements ModelI {
   #normalizeValues = (values: Array<number>) => {
     const { type, range, step } = this.config;
 
-    const [ start, end ] = values;
+    const [start, end] = values;
 
     const currentStart = this.start;
     const currentEnd = this.end;
 
     let normalizedStart:number = window.isNaN(start) ? currentStart : Math.max(start, 0);
-    let normalizedEnd:number = window.isNaN(end) ? currentEnd : Math.min(end, range)
-    console.log(range)
+    let normalizedEnd:number = window.isNaN(end) ? currentEnd : Math.min(end, range);
 
+    const maxStartValue = type === 'point'
+      ? 0
+      : Math.max((Math.ceil(normalizedEnd / step) * step - step), currentStart);
 
-    let maxStartValue = type === 'point' ? 
-      0:
-      Math.max((Math.ceil(normalizedEnd / step) * step - step), currentStart);
-    
-
-    let minEndValue = type === 'point' ? 
-      0:
-      Math.min((Math.floor(normalizedStart / step) * step + step), currentEnd);
+    const minEndValue = type === 'point'
+      ? 0
+      : Math.min((Math.floor(normalizedStart / step) * step + step), currentEnd);
 
     normalizedStart = Math.min(normalizedStart, maxStartValue);
     normalizedEnd = Math.max(normalizedEnd, minEndValue);
@@ -202,8 +195,8 @@ class Model implements ModelI {
 
   #callTheBroadcast = () => {
     this.observer.broadcast({
-      firCoor: this.#convertToPercent(this.start),
-      secCoor: this.#convertToPercent(this.end),
+      firstCoordinate: this.#convertToPercent(this.start),
+      secondCoordinate: this.#convertToPercent(this.end),
     });
   };
 }

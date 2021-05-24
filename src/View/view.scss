@@ -1,15 +1,17 @@
-@import "./Line/line.scss";
-@import "./Scale/scale.scss";
-@import "./Selected/selected.scss";
-@import "./Tumblers/tumblers.scss";
+@import './Line/line.scss';
+@import './Scale/scale.scss';
+@import './Selected/selected.scss';
+@import './Tumblers/tumblers.scss';
 
-.range-slider{
+.range-slider {
   display: flex;
-  &_for_vertical{
+
+  &_for_vertical {
     height: 100%;
   }
-  &_for_horizontal{
-    width: 100%;
+
+  &_for_horizontal {
     flex-direction: column;
+    width: 100%;
   }
 }

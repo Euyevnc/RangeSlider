@@ -1,68 +1,74 @@
-.range-slider{
-  &__tumbler{
-    position: absolute;   
+.range-slider {
+  &__tumbler {
+    position: absolute;
     z-index: 11;
-    cursor: pointer; 
     box-sizing: border-box;
-    height: 30px;
     width: 30px;
+    height: 30px;
     background-color: rgb(54, 157, 134);
-    border-radius: 50%;
     border: 1px solid white;
-    &_for_vertical{
+    border-radius: 50%;
+    cursor: pointer;
+
+    &_for_vertical {
       left: 50%;
       transform: translate(-50%, 50%);
     }
-    &_for_horizontal{
+
+    &_for_horizontal {
       top: 50%;
       transform: translate(-50%, -50%);
     }
   }
-  &__cloud{
+
+  &__cloud {
     position: absolute;
     display: inline-block;
-    border-radius: 30%;
-    border : 2px solid rgb(54, 157, 134);
-    background: rgb(107, 192, 174);
-    color: white;
     box-sizing: border-box;
     min-width: 45px;
     height: 45px;
-    text-align: center;
-    line-height: 41px;
+    color: white;
     font-size: 20px;
+    line-height: 41px;
+    text-align: center;
+    background: rgb(107, 192, 174);
+    border: 2px solid rgb(54, 157, 134);
+    border-radius: 30%;
     user-select: none;
     pointer-events: none;
-    &::after{
-      content: '';
-      height: 0px;
-      width: 0px;
+
+    &::after {
       position: absolute;
-      border : 6px solid ;
+      width: 0;
+      height: 0;
+      border: 6px solid;
+      content: '';
     }
-    &_for_vertical{
-      right: 130%; 
+
+    &_for_vertical {
       top: 50%;
-      transform: translateY(-50%); 
-      &::after{
-        left: 42px;
+      right: 130%;
+      transform: translateY(-50%);
+
+      &::after {
         top: 50%;
+        left: 42px;
+        border-color: transparent transparent transparent rgb(54, 157, 134);
         transform: translateY(-50%);
-        border-color:  transparent transparent transparent rgb(54, 157, 134);
       }
     }
-    &_for_horizontal{
-      bottom: 130%;  
+
+    &_for_horizontal {
+      bottom: 130%;
       left: 50%;
       transform: translateX(-50%);
-      &::after{
+
+      &::after {
         top: 42px;
         left: 50%;
+        border-color: rgb(54, 157, 134) transparent transparent transparent;
         transform: translateX(-50%);
-        border-color:  rgb(54, 157, 134) transparent transparent transparent;
       }
-  
     }
   }
-
 }

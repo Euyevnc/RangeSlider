@@ -1,4 +1,5 @@
-import { TEPPEING, DRAG } from './../../consts';
+import { TEPPEING, DRAG } from '../../consts';
+
 class Tumblers {
   elements: HTMLDivElement[];
 
@@ -6,15 +7,16 @@ class Tumblers {
 
   config: ConfigI;
 
-  constructor(root: HTMLElement, option: ConfigI) {
+  callback: Function;
+
+  constructor(option: ConfigI, callback: Function) {
     this.config = option;
-    this.root = root;
+    this.callback = callback;
   }
 
-  render(callback:Function) {
-    const { root, config } = this;
+  render = () => {
+    const { config } = this;
     const list:Array<HTMLDivElement> = [];
-    let isFirstTumbler: boolean;
 
     for (let i = 0; i < 2; i += 1) {
       const tumblerElement = document.createElement('div');
@@ -23,9 +25,9 @@ class Tumblers {
 
       const cloud = createTheCloud();
       tumblerElement.append(cloud);
-      tumblerElement.addEventListener('mousedown', handleTumblerMousedown);
-      tumblerElement.addEventListener('keydown', handlerTumblerKeydown);
-      tumblerElement.addEventListener('focus', handleTumblerFocus);
+      tumblerElement.addEventListener('mousedown', this.#handleTumblerMousedown);
+      tumblerElement.addEventListener('keydown', this.#handlerTumblerKeydown);
+      tumblerElement.addEventListener('focus', this.#handleTumblerFocus);
       if (config.type === 'point' && i === 0) tumblerElement.style.display = 'none';
       list.push(tumblerElement);
     }
@@ -42,65 +44,7 @@ class Tumblers {
       if (config.cloud !== 'always') cloud.style.display = 'none';
       return cloud;
     }
-    function handleTumblerMousedown(e:MouseEvent) {
-      e.preventDefault();
-      const tumbler = (e.target as HTMLElement).closest('.js-range-slider__tumbler');
-      isFirstTumbler = (tumbler === list[0]);
-
-      const cloud = tumbler.querySelector('.js-range-slider__cloud ') as HTMLElement;
-      if (config.cloud === 'click') cloud.style.display = 'block';
-
-      document.body.style.cursor = 'pointer';
-      document.addEventListener('mousemove', handlerDocumentMove);
-      document.onmouseup = () => {
-        document.removeEventListener('mousemove', handlerDocumentMove);
-        if (config.cloud === 'click') cloud.style.display = 'none';
-        document.body.style.cursor = 'auto';
-        document.onmouseup = null;
-      };
-    }
-
-    function handlerDocumentMove(event:MouseEvent) {
-      const sliderZone = root.querySelector('.js-range-slider');
-      const bias = config.orient === 'vertical'
-        ? -((event.clientY - sliderZone.getBoundingClientRect().bottom)
-        / sliderZone.getBoundingClientRect().height) * 100
-        : ((event.clientX - sliderZone.getBoundingClientRect().x)
-        / sliderZone.getBoundingClientRect().width) * 100;
-      if (isFirstTumbler) {
-        callback(DRAG, { startPosition: bias});
-      } else (callback(DRAG, { endPosition: bias}));
-    }
-
-    function handleTumblerFocus(event:FocusEvent) {
-      const tumbler = (<HTMLElement>event.target);
-      const cloud = tumbler.querySelector('.js-range-slider__cloud ') as HTMLElement;
-      if (config.cloud === 'click') cloud.style.display = 'block';
-
-      tumbler.onblur = (e) => {
-        if (config.cloud === 'click') cloud.style.display = 'none';
-        (<HTMLElement>e.target).onblur = null;
-      };
-    }
-
-    function handlerTumblerKeydown(event:KeyboardEvent) {
-      const tumbler = (<HTMLElement>event.target);
-      isFirstTumbler = tumbler === list[0];
-
-      if ((event.key === 'ArrowDown' && config.orient === 'vertical') || (event.key === 'ArrowLeft' && config.orient !== 'vertical')) {
-        const obj = { endPosition: -1 };
-        console.log(obj)
-        if (isFirstTumbler) callback(TEPPEING, { startPosition: -1});
-        else callback(TEPPEING, obj);
-
-        event.preventDefault();
-      } else if ((event.key === 'ArrowUp' && config.orient === 'vertical') || (event.key === 'ArrowRight' && config.orient !== 'vertical')) {
-        if (isFirstTumbler) callback(TEPPEING, { startPosition: 1});
-        else callback(TEPPEING, { endPosition: 1});
-        event.preventDefault();
-      }
-    }
-  }
+  };
 
   update(firCoor: number, secCoor:number) {
     const { config } = this;
@@ -131,6 +75,72 @@ class Tumblers {
       secEl.querySelector('b').innerText = secValue;
     }
   }
+
+  #handleTumblerMousedown = (e:MouseEvent) => {
+    e.preventDefault();
+    const { config } = this;
+    const tumbler = (e.target as HTMLElement).closest('.js-range-slider__tumbler');
+    const cloud = tumbler.querySelector('.js-range-slider__cloud ') as HTMLElement;
+
+    const isFirstTumbler = (tumbler === this.elements[0]);
+
+    if (config.cloud === 'click') cloud.style.display = 'block';
+    document.body.style.cursor = 'pointer';
+
+    const moveHandler = (event: MouseEvent) => {
+      this.#handlerDocumentMove(event, isFirstTumbler);
+    };
+
+    document.addEventListener('mousemove', moveHandler);
+    document.onmouseup = () => {
+      document.removeEventListener('mousemove', moveHandler);
+      if (config.cloud === 'click') cloud.style.display = 'none';
+      document.body.style.cursor = 'auto';
+      document.onmouseup = null;
+    };
+  };
+
+  #handleTumblerFocus = (event:FocusEvent) => {
+    const { config } = this;
+    const tumbler = (<HTMLElement>event.target);
+    const cloud = tumbler.querySelector('.js-range-slider__cloud ') as HTMLElement;
+    if (config.cloud === 'click') cloud.style.display = 'block';
+
+    tumbler.onblur = (e) => {
+      if (config.cloud === 'click') cloud.style.display = 'none';
+      (<HTMLElement>e.target).onblur = null;
+    };
+  };
+
+  #handlerTumblerKeydown = (event:KeyboardEvent) => {
+    const { config, callback } = this;
+    const tumbler = (<HTMLElement>event.target);
+    const isFirstTumbler = tumbler === this.elements[0];
+
+    if ((event.key === 'ArrowDown' && config.orient === 'vertical') || (event.key === 'ArrowLeft' && config.orient !== 'vertical')) {
+      const obj = { endPosition: -1 };
+      if (isFirstTumbler) callback(TEPPEING, { startPosition: -1 });
+      else callback(TEPPEING, obj);
+
+      event.preventDefault();
+    } else if ((event.key === 'ArrowUp' && config.orient === 'vertical') || (event.key === 'ArrowRight' && config.orient !== 'vertical')) {
+      if (isFirstTumbler) callback(TEPPEING, { startPosition: 1 });
+      else callback(TEPPEING, { endPosition: 1 });
+      event.preventDefault();
+    }
+  };
+
+  #handlerDocumentMove = (event:MouseEvent, isFirstTumbler: Boolean) => {
+    const sliderZone = this.elements[0].closest('.js-range-slider');
+    const bias = this.config.orient === 'vertical'
+      ? -((event.clientY - sliderZone.getBoundingClientRect().bottom)
+      / sliderZone.getBoundingClientRect().height) * 100
+      : ((event.clientX - sliderZone.getBoundingClientRect().x)
+      / sliderZone.getBoundingClientRect().width) * 100;
+    if (isFirstTumbler) {
+      this.callback(DRAG, { startPosition: bias });
+    } else (this.callback(DRAG, { endPosition: bias }));
+  };
 }
 
 export default Tumblers;

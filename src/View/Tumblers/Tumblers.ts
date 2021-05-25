@@ -1,4 +1,6 @@
-import { TEPPEING, DRAG } from '../../consts';
+import {
+  TEPPEING, DRAG, POINT, VERTICAL, ALWAYS, CLICK,
+} from '../../consts';
 
 class Tumblers {
   elements: HTMLDivElement[];
@@ -23,27 +25,17 @@ class Tumblers {
       tumblerElement.className = `js-range-slider__tumbler range-slider__tumbler  range-slider__tumbler_for_${config.orient}`;
       tumblerElement.tabIndex = 0;
 
-      const cloud = createTheCloud();
+      const cloud = this.#createTheCloud();
       tumblerElement.append(cloud);
       tumblerElement.addEventListener('mousedown', this.#handleTumblerMousedown);
       tumblerElement.addEventListener('keydown', this.#handlerTumblerKeydown);
       tumblerElement.addEventListener('focus', this.#handleTumblerFocus);
-      if (config.type === 'point' && i === 0) tumblerElement.style.display = 'none';
+      if (config.type === POINT && i === 0) tumblerElement.style.display = 'none';
       list.push(tumblerElement);
     }
 
     this.elements = list;
     return this.elements;
-
-    function createTheCloud() {
-      const cloud = document.createElement('div');
-      cloud.className = `js-range-slider__cloud range-slider__cloud  range-slider__cloud_for_${config.orient}`;
-      const valueCont = document.createElement('b');
-      valueCont.className = 'js-range-slider__cloud-value range-slider__cloud-value';
-      cloud.append(valueCont);
-      if (config.cloud !== 'always') cloud.style.display = 'none';
-      return cloud;
-    }
   };
 
   update(firCoor: number, secCoor:number) {
@@ -51,29 +43,14 @@ class Tumblers {
     const firEl = this.elements[0] as HTMLElement;
     const secEl = this.elements[1] as HTMLElement;
 
-    if (config.orient === 'vertical') {
+    if (config.orient === VERTICAL) {
       firEl.style.bottom = `${firCoor}%`;
       secEl.style.bottom = `${secCoor}%`;
     } else {
       firEl.style.left = `${firCoor}%`;
       secEl.style.left = `${secCoor}%`;
     }
-    updateClouds(firCoor, secCoor);
-
-    function updateClouds(firPerc:number, secPerc:number) {
-      let firValue: string;
-      let secValue: string;
-      firValue = ((config.range / 100) * firPerc + config.origin).toLocaleString();
-      secValue = ((config.range / 100) * secPerc + config.origin).toLocaleString();
-
-      if (config.list.length) {
-        firValue = config.list[+firValue].toString();
-        secValue = config.list[+secValue].toString();
-      }
-
-      firEl.querySelector('b').innerText = firValue;
-      secEl.querySelector('b').innerText = secValue;
-    }
+    this.#updateClouds(firCoor, secCoor);
   }
 
   #handleTumblerMousedown = (e:MouseEvent) => {
@@ -84,17 +61,17 @@ class Tumblers {
 
     const isFirstTumbler = (tumbler === this.elements[0]);
 
-    if (config.cloud === 'click') cloud.style.display = 'block';
+    if (config.cloud === CLICK) cloud.style.display = 'block';
     document.body.style.cursor = 'pointer';
 
-    const moveHandler = (event: MouseEvent) => {
+    const handlerDocumentMove = (event: MouseEvent) => {
       this.#handlerDocumentMove(event, isFirstTumbler);
     };
 
-    document.addEventListener('mousemove', moveHandler);
+    document.addEventListener('mousemove', handlerDocumentMove);
     document.onmouseup = () => {
-      document.removeEventListener('mousemove', moveHandler);
-      if (config.cloud === 'click') cloud.style.display = 'none';
+      document.removeEventListener('mousemove', handlerDocumentMove);
+      if (config.cloud === CLICK) cloud.style.display = 'none';
       document.body.style.cursor = 'auto';
       document.onmouseup = null;
     };
@@ -104,10 +81,10 @@ class Tumblers {
     const { config } = this;
     const tumbler = (<HTMLElement>event.target);
     const cloud = tumbler.querySelector('.js-range-slider__cloud ') as HTMLElement;
-    if (config.cloud === 'click') cloud.style.display = 'block';
+    if (config.cloud === CLICK) cloud.style.display = 'block';
 
     tumbler.onblur = (e) => {
-      if (config.cloud === 'click') cloud.style.display = 'none';
+      if (config.cloud === CLICK) cloud.style.display = 'none';
       (<HTMLElement>e.target).onblur = null;
     };
   };
@@ -117,13 +94,13 @@ class Tumblers {
     const tumbler = (<HTMLElement>event.target);
     const isFirstTumbler = tumbler === this.elements[0];
 
-    if ((event.key === 'ArrowDown' && config.orient === 'vertical') || (event.key === 'ArrowLeft' && config.orient !== 'vertical')) {
+    if ((event.key === 'ArrowDown' && config.orient === VERTICAL) || (event.key === 'ArrowLeft' && config.orient !== VERTICAL)) {
       const obj = { endPosition: -1 };
       if (isFirstTumbler) callback(TEPPEING, { startPosition: -1 });
       else callback(TEPPEING, obj);
 
       event.preventDefault();
-    } else if ((event.key === 'ArrowUp' && config.orient === 'vertical') || (event.key === 'ArrowRight' && config.orient !== 'vertical')) {
+    } else if ((event.key === 'ArrowUp' && config.orient === VERTICAL) || (event.key === 'ArrowRight' && config.orient !== VERTICAL)) {
       if (isFirstTumbler) callback(TEPPEING, { startPosition: 1 });
       else callback(TEPPEING, { endPosition: 1 });
       event.preventDefault();
@@ -132,7 +109,7 @@ class Tumblers {
 
   #handlerDocumentMove = (event:MouseEvent, isFirstTumbler: Boolean) => {
     const sliderZone = this.elements[0].closest('.js-range-slider');
-    const bias = this.config.orient === 'vertical'
+    const bias = this.config.orient === VERTICAL
       ? -((event.clientY - sliderZone.getBoundingClientRect().bottom)
       / sliderZone.getBoundingClientRect().height) * 100
       : ((event.clientX - sliderZone.getBoundingClientRect().x)
@@ -140,6 +117,32 @@ class Tumblers {
     if (isFirstTumbler) {
       this.callback(DRAG, { startPosition: bias });
     } else (this.callback(DRAG, { endPosition: bias }));
+  };
+
+  #createTheCloud = () => {
+    const cloud = document.createElement('div');
+    cloud.className = `js-range-slider__cloud range-slider__cloud  range-slider__cloud_for_${this.config.orient}`;
+    const valueCont = document.createElement('b');
+    valueCont.className = 'js-range-slider__cloud-value range-slider__cloud-value';
+    cloud.append(valueCont);
+    if (this.config.cloud !== ALWAYS) cloud.style.display = 'none';
+    return cloud;
+  };
+
+  #updateClouds = (firPerc:number, secPerc:number) => {
+    const { config, elements } = this;
+    let firValue: string;
+    let secValue: string;
+    firValue = ((config.range / 100) * firPerc + config.origin).toLocaleString();
+    secValue = ((config.range / 100) * secPerc + config.origin).toLocaleString();
+
+    if (config.list.length) {
+      firValue = config.list[+firValue].toString();
+      secValue = config.list[+secValue].toString();
+    }
+
+    elements[0].querySelector('b').innerText = firValue;
+    elements[1].querySelector('b').innerText = secValue;
   };
 }
 

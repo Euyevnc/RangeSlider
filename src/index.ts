@@ -1,3 +1,4 @@
+import { POINT } from './consts';
 import View from './View/View';
 import Model from './Model/Model';
 import Presenter from './Presenter/Presenter';
@@ -49,8 +50,9 @@ class SliderObject implements sliderObjectI {
   }
 
   setValue(start:number, end:number) {
-    if (this.config.type === 'point') this.model.updateDirectively({ startPosition: this.config.origin, endPosition: start });
-    else this.model.updateDirectively({ startPosition: start, endPosition: end });
+    if (this.config.type === POINT) {
+      this.model.updateDirectively({ startPosition: this.config.origin, endPosition: start });
+    } else this.model.updateDirectively({ startPosition: start, endPosition: end });
   }
 }
 

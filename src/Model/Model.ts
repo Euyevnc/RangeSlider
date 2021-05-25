@@ -1,3 +1,4 @@
+import { POINT } from '../consts';
 import Observer from '../Observer/Observer';
 
 class Model implements ModelI {
@@ -67,10 +68,10 @@ class Model implements ModelI {
     let newStart = window.isNaN(startPosition) ? currentStart : (startPosition - origin);
     let newEnd = window.isNaN(endPosition) ? currentEnd : (endPosition - origin);
 
-    newEnd = type === 'point'
+    newEnd = type === POINT
       ? Math.max(0, Math.min(newEnd, range))
       : Math.max(1, Math.min(newEnd, range));
-    newStart = type === 'point'
+    newStart = type === POINT
       ? 0
       : Math.min(newEnd - 1, Math.max(0, newStart));
 
@@ -163,11 +164,11 @@ class Model implements ModelI {
     let normalizedStart:number = window.isNaN(start) ? currentStart : Math.max(start, 0);
     let normalizedEnd:number = window.isNaN(end) ? currentEnd : Math.min(end, range);
 
-    const maxStartValue = type === 'point'
+    const maxStartValue = type === POINT
       ? 0
       : Math.max((Math.ceil(normalizedEnd / step) * step - step), currentStart);
 
-    const minEndValue = type === 'point'
+    const minEndValue = type === POINT
       ? 0
       : Math.min((Math.floor(normalizedStart / step) * step + step), currentEnd);
 

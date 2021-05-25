@@ -1,3 +1,5 @@
+import { VERTICAL } from '../../consts';
+
 class Selected {
   element: HTMLElement;
 
@@ -21,7 +23,7 @@ class Selected {
     const { config } = this;
     const selectedElement = this.element;
 
-    if (config.orient === 'vertical') {
+    if (config.orient === VERTICAL) {
       selectedElement.style.bottom = `${firCoor}%`;
       selectedElement.style.top = `${100 - secCoor}%`;
     } else {

@@ -1,4 +1,6 @@
-import { SCALE_CLICK } from '../../consts';
+import {
+  SCALE_CLICK, POINT, VERTICAL,
+} from '../../consts';
 
 class Scale {
   element: HTMLElement;
@@ -33,7 +35,7 @@ class Scale {
       }
     }
     const lastCell = this.#createCell(config.range + config.origin);
-    if (config.orient === 'vertical') lastCell.style.height = '0px';
+    if (config.orient === VERTICAL) lastCell.style.height = '0px';
     else lastCell.style.width = '0px';
     scaleElement.append(lastCell);
 
@@ -63,7 +65,7 @@ class Scale {
     const { orient } = this.config;
     const value = +(<HTMLElement>event.target).closest('.js-range-slider__scale-cell').getAttribute('value');
 
-    if (this.config.type === 'point') this.callback(SCALE_CLICK, { endPosition: value });
+    if (this.config.type === POINT) this.callback(SCALE_CLICK, { endPosition: value });
     else {
       const cell = (<HTMLElement>event.target).closest('.js-range-slider__scale-cell') as HTMLElement;
       const cellPosition = orient === 'horizontal'
@@ -85,7 +87,7 @@ class Scale {
     const { orient } = this.config;
     const value = +(<HTMLElement>event.target).closest('.js-range-slider__scale-cell').getAttribute('value');
 
-    if (this.config.type === 'point') this.callback(SCALE_CLICK, { endPosition: value });
+    if (this.config.type === POINT) this.callback(SCALE_CLICK, { endPosition: value });
     else {
       const cell = (<HTMLElement>event.target).closest('.js-range-slider__scale-cell') as HTMLElement;
       const cellPosition = orient === 'horizontal'
@@ -108,7 +110,7 @@ class Scale {
     const cell = document.createElement('span');
     cell.className = (`js-range-slider__scale-cell range-slider__scale-cell  range-slider__scale-cell_for_${config.orient}`);
 
-    if (config.orient === 'vertical') {
+    if (config.orient === VERTICAL) {
       const normalizedHeight = Math.min((config.scaleInterval / config.range) * 100, 100);
       cell.style.height = `${normalizedHeight}%`;
     } else {

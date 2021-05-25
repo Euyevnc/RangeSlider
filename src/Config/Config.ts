@@ -20,7 +20,15 @@ class Config implements ConfigI {
   value: Array<number>;
 
   constructor({
-    type = 'range', origin = 0, range = 100, step = 1, list = <Array <number|string>>[], orient = 'horizontal', scale = true, cloud = 'click', scaleInterval = 10,
+    type = 'range',
+    origin = 0,
+    range = 100,
+    step = 1,
+    list = <Array <number|string>>[],
+    orient = 'horizontal',
+    scale = true,
+    cloud = 'click',
+    scaleInterval = 10,
   }) {
     const verifiedRange = list.length ? list.length - 1 : range;
     const verifiedOrigin = list.length ? 0 : origin;

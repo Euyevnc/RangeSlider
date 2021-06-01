@@ -12,7 +12,7 @@ const initials: ConfigI = {
   scale: false,
 
   list: [] as Array<string|number>,
-  value: [] as Array<number>,
+  value: [] as Array<string>,
 };
 
 export default initials;

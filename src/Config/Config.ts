@@ -25,7 +25,7 @@ class Config implements ConfigI {
 
   #cloud: string;
 
-  #value: Array<number>;
+  #value: Array<string>;
 
   constructor(initialData: {
     type: string,
@@ -88,8 +88,13 @@ class Config implements ConfigI {
   }
 
   set list(list: Array<number|string>) {
-    if (list && list.length) this.#list = list;
-    else {
+    if (list && list.length) {
+      this.#list = list;
+      this.range = list.length;
+      this.origin = 0;
+      this.step = 1;
+      this.scaleInterval = 1;
+    } else {
       this.#list = (this.#list && this.#list.length)
         ? this.#list
         : INITIALS.list;
@@ -160,7 +165,7 @@ class Config implements ConfigI {
     return this.#value;
   }
 
-  set value(value: Array<number>) {
+  set value(value: Array<string>) {
     this.#value = value;
   }
 }

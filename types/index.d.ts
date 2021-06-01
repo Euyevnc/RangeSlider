@@ -21,7 +21,7 @@ interface ConfigI{
   scale: boolean;
   scaleInterval: number;
   cloud: string;
-  value: Array<number>;
+  value: Array<string>;
 }
 interface ModelI{
   config: ConfigI;

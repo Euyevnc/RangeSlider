@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-globals */
 import { POINT } from '../consts';
 
 import Observer from '../Observer/Observer';
@@ -125,7 +126,7 @@ class Model implements ModelI {
       }
     }
 
-    return this.#normalizeValues([newStart, newEnd]);
+    return this.#accordinateTheCoordinates([newStart, newEnd]);
   };
 
   #stepProseccing = (data: DataForModel) => {
@@ -152,19 +153,19 @@ class Model implements ModelI {
       if (endPosition > 0) newEnd = Math.floor(currentEnd / step) * step + step * endPosition;
     }
 
-    return this.#normalizeValues([newStart, newEnd]);
+    return this.#accordinateTheCoordinates([newStart, newEnd]);
   };
 
-  #normalizeValues = (values: Array<number>) => {
+  #accordinateTheCoordinates = (coordinates: Array<number>) => {
     const { type, range, step } = this.config;
 
-    const [start, end] = values;
+    const [start, end] = coordinates;
 
     const currentStart = this.start;
     const currentEnd = this.end;
 
-    let normalizedStart:number = window.isNaN(start) ? currentStart : Math.max(start, 0);
-    let normalizedEnd:number = window.isNaN(end) ? currentEnd : Math.min(end, range);
+    let normalizedStart:number = isNaN(start) ? currentStart : Math.max(start, 0);
+    let normalizedEnd:number = isNaN(end) ? currentEnd : Math.min(end, range);
 
     const maxStartValue = type === POINT
       ? 0
@@ -191,8 +192,8 @@ class Model implements ModelI {
     this.start = values.start;
     this.end = values.end;
     this.config.value = [
-      values.start + this.config.origin,
-      values.end + this.config.origin,
+      (values.start + this.config.origin).toLocaleString(),
+      values.end + this.config.origin.toLocaleString(),
     ];
   };
 

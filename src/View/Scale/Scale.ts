@@ -118,7 +118,7 @@ class Scale {
       cell.style.width = `${normalizedWidth}%`;
     }
 
-    cell.setAttribute('value', `${int}`);
+    cell.setAttribute('value', `${int.toLocaleString()}`);
 
     const amountContainer = document.createElement('span');
     amountContainer.className = 'range-slider__scale-value js-range-slider__scale-value';

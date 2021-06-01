@@ -34,7 +34,6 @@ class SliderObject implements SliderObjectI {
     this.model = new Model(this.config);
 
     this.presenter = new Presenter(this.view, this.model);
-    console.log(this.config.range, this.config.scaleInterval, this.config.step);
   }
 
   init(firValue:number, secValue:number) {

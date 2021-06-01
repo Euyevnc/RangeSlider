@@ -1,4 +1,5 @@
 import { POINT } from '../consts';
+
 import Observer from '../Observer/Observer';
 
 class Model implements ModelI {
@@ -31,11 +32,12 @@ class Model implements ModelI {
   };
 
   adaptValues = () => {
-    const { step, range } = this.config;
+    const { step, range, type } = this.config;
     let adaptedStart = Math.round(this.start / step) * step;
     let adaptedEnd = Math.round(this.end / step) * step;
 
     if (adaptedEnd > range) adaptedEnd = range;
+    if (adaptedEnd === 0 && type !== POINT) adaptedEnd = 0 + step;
     if (adaptedEnd <= adaptedStart) adaptedStart = Math.ceil(adaptedEnd / step) * step - step;
 
     this.#setValue({ start: adaptedStart, end: adaptedEnd });

@@ -7,7 +7,7 @@ import Config from './Config/Config';
 
 const sliderInst = (function ($) {
   // eslint-disable-next-line no-param-reassign
-  $.fn.rangeSlider = function (options:object) {
+  $.fn.rangeSlider = function (options: ConfigI) {
     const sliderObjects: Array<Object> = [];
     this.each((i:number, elem:HTMLElement) => {
       sliderObjects.push(new SliderObject(elem, options));
@@ -18,7 +18,7 @@ const sliderInst = (function ($) {
   };
 }(jQuery));
 
-class SliderObject implements sliderObjectI {
+class SliderObject implements SliderObjectI {
   config: ConfigI;
 
   view: ViewI;
@@ -27,13 +27,14 @@ class SliderObject implements sliderObjectI {
 
   model: ModelI;
 
-  constructor(root:HTMLElement, options:Object) {
+  constructor(root:HTMLElement, options: ConfigI) {
     this.config = new Config(options);
 
     this.view = new View(root, this.config);
     this.model = new Model(this.config);
 
     this.presenter = new Presenter(this.view, this.model);
+    console.log(this.config.range, this.config.scaleInterval, this.config.step);
   }
 
   init(firValue:number, secValue:number) {

@@ -1,49 +1,167 @@
+/* eslint-disable no-restricted-globals */
+import {
+  NONE, ALWAYS, CLICK,
+  VERTICAL, HORIZONTAL, RANGE, POINT,
+} from '../consts';
+
+import INITIALS from './initials';
+
 class Config implements ConfigI {
-  type: string;
+  #type: string;
 
-  orient: string;
+  #orient: string;
 
-  list: Array<number|string>;
+  #list: Array<number|string>;
 
-  range: number;
+  #range: number;
 
-  origin:number;
+  #origin:number;
 
-  step: number;
+  #step: number;
 
-  scale: boolean;
+  #scale: boolean;
 
-  scaleInterval: number;
+  #scaleInterval: number;
 
-  cloud: string;
+  #cloud: string;
 
-  value: Array<number>;
+  #value: Array<number>;
 
-  constructor({
-    type = 'range',
-    origin = 0,
-    range = 100,
-    step = 1,
-    list = <Array <number|string>>[],
-    orient = 'horizontal',
-    scale = true,
-    cloud = 'click',
-    scaleInterval = 10,
+  constructor(initialData: {
+    type: string,
+    orient: string,
+    cloud: string,
+    origin: number,
+    range: number,
+    step: number,
+    scaleInterval:number
+    list: Array<string|number>,
+    scale: boolean,
   }) {
-    const verifiedRange = list.length ? list.length - 1 : range;
-    const verifiedOrigin = list.length ? 0 : origin;
-    const verifiedStep = list.length ? 1 : step;
-    const verifiedInterval = list.length ? 1 : scaleInterval;
+    this.list = initialData.list;
 
-    this.type = type;
-    this.orient = orient;
-    this.list = list;
-    this.scale = scale;
-    this.cloud = cloud;
-    this.scaleInterval = verifiedInterval;
-    this.range = verifiedRange;
-    this.origin = verifiedOrigin;
-    this.step = verifiedStep;
+    this.range = initialData.range;
+    this.step = initialData.step;
+    this.origin = initialData.origin;
+    this.scaleInterval = initialData.scaleInterval;
+
+    this.type = initialData.type;
+    this.orient = initialData.orient;
+    this.cloud = initialData.cloud;
+
+    this.scale = initialData.scale;
+    this.value = INITIALS.value;
+  }
+
+  get type() {
+    return this.#type;
+  }
+
+  set type(type: string) {
+    this.#type = (type === RANGE || type === POINT)
+      ? type
+      : (this.#type || INITIALS.type);
+  }
+
+  get orient() {
+    return this.#orient;
+  }
+
+  set orient(orient: string) {
+    this.#orient = (orient === VERTICAL || orient === HORIZONTAL)
+      ? orient
+      : (this.#orient || INITIALS.orient);
+  }
+
+  get cloud() {
+    return this.#cloud;
+  }
+
+  set cloud(display: string) {
+    this.#cloud = (display === NONE || display === ALWAYS || display === CLICK)
+      ? display
+      : (this.#cloud || INITIALS.cloud);
+  }
+
+  get list() {
+    return this.#list;
+  }
+
+  set list(list: Array<number|string>) {
+    if (list && list.length) this.#list = list;
+    else {
+      this.#list = (this.#list && this.#list.length)
+        ? this.#list
+        : INITIALS.list;
+    }
+  }
+
+  get scale() {
+    return this.#scale;
+  }
+
+  set scale(display: boolean) {
+    this.#scale = Boolean(display);
+  }
+
+  get origin() {
+    return this.#origin;
+  }
+
+  set origin(origin: number) {
+    if (this.list.length) this.#origin = 0;
+    else {
+      this.#origin = isNaN(origin)
+        ? (this.#origin || INITIALS.origin)
+        : Number(origin);
+    }
+  }
+
+  get scaleInterval() {
+    return this.#scaleInterval;
+  }
+
+  set scaleInterval(interval: number) {
+    if (this.list.length) this.#scaleInterval = 1;
+    else {
+      this.#scaleInterval = isNaN(interval)
+        ? (this.#scaleInterval || INITIALS.scaleInterval)
+        : Math.min(this.#range, Math.max(1, Number(interval)));
+    }
+  }
+
+  get range() {
+    return this.#range;
+  }
+
+  set range(range: number) {
+    if (this.list.length) this.#range = this.list.length - 1;
+    else {
+      this.#range = isNaN(range)
+        ? (this.#range || INITIALS.range)
+        : Math.max(1, Number(range));
+    }
+  }
+
+  get step() {
+    return this.#step;
+  }
+
+  set step(step: number) {
+    if (this.list.length) this.#step = 1;
+    else {
+      this.#step = isNaN(step)
+        ? (this.#step || INITIALS.step)
+        : Math.min(this.#range, Math.max(1, Number(step)));
+    }
+  }
+
+  get value() {
+    return this.#value;
+  }
+
+  set value(value: Array<number>) {
+    this.#value = value;
   }
 }
 

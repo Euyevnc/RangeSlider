@@ -35,7 +35,7 @@ function initDemo() {
   });
 
   /// /
-  function connectThePanel(panelNode: JQuery, sliderObject:sliderObjectI) {
+  function connectThePanel(panelNode: JQuery, sliderObject:SliderObjectI) {
     const slider = sliderObject;
 
     if (slider.config.type === 'point') {

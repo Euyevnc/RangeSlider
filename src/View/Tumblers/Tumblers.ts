@@ -50,6 +50,17 @@ class Tumblers {
       firEl.style.left = `${firCoor}%`;
       secEl.style.left = `${secCoor}%`;
     }
+
+    if (firCoor === 100) {
+      firEl.style.zIndex = '11';
+      secEl.style.zIndex = '12';
+    } else if (secCoor === 100) {
+      firEl.style.zIndex = '12';
+      secEl.style.zIndex = '11';
+    } else {
+      firEl.style.zIndex = '11';
+      secEl.style.zIndex = '11';
+    }
     this.#updateClouds(firCoor, secCoor);
   }
 

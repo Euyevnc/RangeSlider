@@ -59,6 +59,7 @@ function connectThePanel(panelNode: JQuery, sliderObject:SliderObjectI) {
       sync();
     };
   });
+
   panelNode.find("[name='cloud']").each((i, e) => {
     e.onchange = () => {
       if (e.getAttribute('value') === 'yes') slider.config.cloud = 'always';
@@ -67,6 +68,7 @@ function connectThePanel(panelNode: JQuery, sliderObject:SliderObjectI) {
       sync();
     };
   });
+  
   panelNode.find("[name='orient']").each((i, e) => {
     e.onchange = () => {
       if (e.getAttribute('value') === 'vertical') {

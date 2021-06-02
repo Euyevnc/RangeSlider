@@ -139,31 +139,9 @@ function connectThePanel(panelNode: JQuery, sliderObject:SliderObjectI) {
 
 function syncPanel(panelNode: JQuery, slider: SliderObjectI) {
   slider.init();
-  if (slider.config.type === 'point') {
-    panelNode.find("[name='type'][value='point']").prop('checked', true);
-    panelNode.find("[name='first_pos']").prop('disabled', true);
-  } else {
-    panelNode.find("[name='type'][value='range']").prop('checked', true);
-    panelNode.find("[name='first_pos']").prop('disabled', false);
-  }
+  panelNode.find("[name='first_pos']").prop('value', slider.getValue()[0]);
+  panelNode.find("[name='second_pos']").prop('value', slider.getValue()[1]);
 
-  if (slider.config.cloud === 'always') panelNode.find("[name='cloud'][value='yes']").prop('checked', true);
-  else if (slider.config.cloud === 'click') panelNode.find("[name='cloud'][value='click']").prop('checked', true);
-  else panelNode.find("[name='cloud'][value='no']").prop('checked', true);
-
-  if (slider.config.orient === 'vertical') panelNode.find("[name='orient'][value='vertical']").prop('checked', true);
-  else panelNode.find("[name='orient'][value='horizontal']").prop('checked', true);
-
-  if (!slider.config.scale) {
-    panelNode.find("[name='scale'][value='no']").prop('checked', true);
-    panelNode.find("[name='interval']").prop('value', '');
-    panelNode.find("[name='interval']").prop('disabled', true);
-    // panelNode.find("[name='range']").prop('disabled', true);
-  } else {
-    panelNode.find("[name='scale'][value='yes']").prop('checked', true);
-    panelNode.find("[name='interval']").prop('disabled', false);
-    panelNode.find("[name='interval']").prop('value', slider.config.scaleInterval);
-  }
   if (!slider.config.list.length) {
     panelNode.find("[name='list']").prop('value', '');
     panelNode.find("[name='list']").prop('disabled', true);
@@ -180,12 +158,35 @@ function syncPanel(panelNode: JQuery, slider: SliderObjectI) {
     panelNode.find("[name='list']").prop('value', slider.config.list.toString());
   }
 
+  if (slider.config.type === 'point') {
+    panelNode.find("[name='type'][value='point']").prop('checked', true);
+    panelNode.find("[name='first_pos']").prop('disabled', true);
+    panelNode.find("[name='first_pos']").val('');
+  } else {
+    panelNode.find("[name='type'][value='range']").prop('checked', true);
+    panelNode.find("[name='first_pos']").prop('disabled', false);
+  }
+
+  if (slider.config.cloud === 'always') panelNode.find("[name='cloud'][value='yes']").prop('checked', true);
+  else if (slider.config.cloud === 'click') panelNode.find("[name='cloud'][value='click']").prop('checked', true);
+  else panelNode.find("[name='cloud'][value='no']").prop('checked', true);
+
+  if (slider.config.orient === 'vertical') panelNode.find("[name='orient'][value='vertical']").prop('checked', true);
+  else panelNode.find("[name='orient'][value='horizontal']").prop('checked', true);
+
+  if (!slider.config.scale) {
+    panelNode.find("[name='scale'][value='no']").prop('checked', true);
+    panelNode.find("[name='interval']").prop('value', '');
+    panelNode.find("[name='interval']").prop('disabled', true);
+  } else {
+    panelNode.find("[name='scale'][value='yes']").prop('checked', true);
+    panelNode.find("[name='interval']").prop('disabled', false);
+    panelNode.find("[name='interval']").prop('value', slider.config.scaleInterval);
+  }
+
   panelNode.find("[name='origin']").prop('value', slider.config.origin);
   panelNode.find("[name='range']").prop('value', slider.config.range);
   panelNode.find("[name='step']").prop('value', slider.config.step);
-
-  panelNode.find("[name='first_pos']").prop('value', slider.getValue()[0]);
-  panelNode.find("[name='second_pos']").prop('value', slider.getValue()[1]);
 }
 
 export default initDemo;

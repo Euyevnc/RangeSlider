@@ -1,5 +1,5 @@
 import {
-  SCALE_CLICK, POINT, VERTICAL,
+  DRAG, POINT, VERTICAL,
 } from '../../consts';
 
 class Scale {
@@ -62,23 +62,24 @@ class Scale {
   }
 
   #handlerCellClick = (event:MouseEvent) => {
-    const { orient } = this.config;
-    const value = +(<HTMLElement>event.target).closest('.js-range-slider__scale-cell').getAttribute('value');
+    const { orient, step, range } = this.config;
+    const cell = (<HTMLElement>event.target).closest('.js-range-slider__scale-cell') as HTMLElement;
+    const cellPosition = orient === 'horizontal'
+      ? cell.offsetLeft
+      : cell.offsetTop;
+    const tumblersPositions = orient === 'horizontal'
+      ? [...cell.closest('.js-range-slider').querySelectorAll('.js-range-slider__tumbler')].map((tum) => (<HTMLElement>tum).offsetLeft)
+      : [...cell.closest('.js-range-slider').querySelectorAll('.js-range-slider__tumbler')].map((tum) => (<HTMLElement>tum).offsetTop);
+    const distanceToFirst = Math.abs(cellPosition - tumblersPositions[0]);
+    const distanceToSecond = Math.abs(cellPosition - tumblersPositions[1]);
 
-    if (this.config.type === POINT) this.callback(SCALE_CLICK, { endPosition: value });
-    else {
-      const cell = (<HTMLElement>event.target).closest('.js-range-slider__scale-cell') as HTMLElement;
-      const cellPosition = orient === 'horizontal'
-        ? cell.offsetLeft
-        : cell.offsetTop;
-      const tumblersPositions = orient === 'horizontal'
-        ? [...cell.closest('.js-range-slider').querySelectorAll('.js-range-slider__tumbler')].map((tum) => (<HTMLElement>tum).offsetLeft)
-        : [...cell.closest('.js-range-slider').querySelectorAll('.js-range-slider__tumbler')].map((tum) => (<HTMLElement>tum).offsetTop);
-      const distanceToFirst = Math.abs(cellPosition - tumblersPositions[0]);
-      const distanceToSecond = Math.abs(cellPosition - tumblersPositions[1]);
-      if (distanceToFirst <= distanceToSecond) this.callback(SCALE_CLICK, { startPosition: value });
-      else this.callback(SCALE_CLICK, { endPosition: value });
-    }
+    const value = +(<HTMLElement>event.target).closest('.js-range-slider__scale-cell').getAttribute('value');
+    const percentedValue = ((Math.round(value / step) * step) / range) * 100;
+
+    if (this.config.type === POINT) this.callback(DRAG, { endPosition: percentedValue });
+    else if (distanceToFirst <= distanceToSecond) {
+      this.callback(DRAG, { startPosition: percentedValue });
+    } else this.callback(DRAG, { endPosition: percentedValue });
   };
 
   #handlerCellKeydown = (event:KeyboardEvent) => {
@@ -87,7 +88,7 @@ class Scale {
     const { orient } = this.config;
     const value = +(<HTMLElement>event.target).closest('.js-range-slider__scale-cell').getAttribute('value');
 
-    if (this.config.type === POINT) this.callback(SCALE_CLICK, { endPosition: value });
+    if (this.config.type === POINT) this.callback(DRAG, { endPosition: value });
     else {
       const cell = (<HTMLElement>event.target).closest('.js-range-slider__scale-cell') as HTMLElement;
       const cellPosition = orient === 'horizontal'
@@ -96,10 +97,12 @@ class Scale {
       const tumblersPositions = orient === 'horizontal'
         ? [...cell.closest('.js-range-slider').querySelectorAll('.js-range-slider__tumbler')].map((tum) => (<HTMLElement>tum).offsetLeft)
         : [...cell.closest('.js-range-slider').querySelectorAll('.js-range-slider__tumbler')].map((tum) => (<HTMLElement>tum).offsetTop);
+
       const distanceToFirst = Math.abs(cellPosition - tumblersPositions[0]);
       const distanceToSecond = Math.abs(cellPosition - tumblersPositions[1]);
-      if (distanceToFirst <= distanceToSecond) this.callback(SCALE_CLICK, { startPosition: value });
-      else this.callback(SCALE_CLICK, { endPosition: value });
+
+      if (distanceToFirst <= distanceToSecond) this.callback(DRAG, { startPosition: value });
+      else this.callback(DRAG, { endPosition: value });
     }
   };
 

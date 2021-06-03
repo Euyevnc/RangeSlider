@@ -33,8 +33,23 @@ class Model implements ModelI {
   };
 
   adaptValues = () => {
-    this.adaptStart();
-    this.adaptEnd();
+    const { step, range } = this.config;
+    let adaptedEnd = this.end === range
+      ? range
+      : Math.min(range, Math.round(this.end / step) * step);
+    let adaptedStart = Math.min(range, Math.round(this.start / step) * step);
+
+    if (adaptedStart !== adaptedEnd) {
+      adaptedEnd = Math.min(range, adaptedEnd);
+    } else {
+      const distansToStart = Math.abs(adaptedStart - this.start);
+      const distansToEnd = Math.abs(adaptedEnd - this.end);
+      if (distansToStart < distansToEnd) adaptedEnd = Math.min(range, adaptedEnd + step);
+      else adaptedStart = Math.ceil(adaptedEnd / step) * step - step;
+    }
+
+    this.#setValue({ start: adaptedStart, end: adaptedEnd });
+    this.#callTheBroadcast();
   };
 
   adaptStart = () => {
@@ -48,8 +63,11 @@ class Model implements ModelI {
 
   adaptEnd = () => {
     const { step, range } = this.config;
-    let adaptedEnd = Math.round(this.end / step) * step;
+    let adaptedEnd = this.end === range
+      ? range
+      : Math.round(this.end / step) * step;
     adaptedEnd = Math.min(range, Math.max(adaptedEnd, Math.floor(this.start / step) * step + step));
+
     this.#setValue({ start: this.start, end: adaptedEnd });
     this.#callTheBroadcast();
   };
@@ -203,7 +221,7 @@ class Model implements ModelI {
     this.end = values.end;
     this.config.value = [
       (values.start + this.config.origin).toLocaleString(),
-      values.end + this.config.origin.toLocaleString(),
+      (values.end + this.config.origin).toLocaleString(),
     ];
   };
 

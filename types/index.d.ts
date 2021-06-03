@@ -30,7 +30,10 @@ interface ModelI{
   updateDirectively: Function;
   updateFromPercent: Function;
   updateFromStep: Function;
+
   adaptValues: Function;
+  adaptStart: Function;
+  adaptEnd: Function;
 }
 
 interface PresenterI{

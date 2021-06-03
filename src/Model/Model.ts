@@ -33,15 +33,24 @@ class Model implements ModelI {
   };
 
   adaptValues = () => {
-    const { step, range, type } = this.config;
+    this.adaptStart();
+    this.adaptEnd();
+  };
+
+  adaptStart = () => {
+    const { step } = this.config;
     let adaptedStart = Math.round(this.start / step) * step;
+    adaptedStart = Math.max(0, Math.min(adaptedStart, Math.ceil(this.end / step) * step - step));
+
+    this.#setValue({ start: adaptedStart, end: this.end });
+    this.#callTheBroadcast();
+  };
+
+  adaptEnd = () => {
+    const { step, range } = this.config;
     let adaptedEnd = Math.round(this.end / step) * step;
-
-    if (adaptedEnd > range) adaptedEnd = range;
-    if (adaptedEnd === 0 && type !== POINT) adaptedEnd = 0 + step;
-    if (adaptedEnd <= adaptedStart) adaptedStart = Math.ceil(adaptedEnd / step) * step - step;
-
-    this.#setValue({ start: adaptedStart, end: adaptedEnd });
+    adaptedEnd = Math.min(range, Math.max(adaptedEnd, Math.floor(this.start / step) * step + step));
+    this.#setValue({ start: this.start, end: adaptedEnd });
     this.#callTheBroadcast();
   };
 
@@ -56,7 +65,7 @@ class Model implements ModelI {
         start: newStart,
         end: newEnd,
       });
-      this.#callTheBroadcast();
+      if (processing !== this.#valueProcessing) this.#callTheBroadcast();
     }
   };
 
@@ -97,8 +106,8 @@ class Model implements ModelI {
       const cursorFarEnough = (valueOfPosition - currentStart) >= step * 0.8
         || (currentStart - valueOfPosition) >= step * 0.8;
 
-      const cursorOverMakup = (valueOfPosition % step > step * 0.8
-        || valueOfPosition % step < step * 0.2);
+      const cursorOverMakup = (valueOfPosition % step > step * 0.7
+        || valueOfPosition % step < step * 0.3);
 
       const conditionOfTrigger = cursorFarEnough || cursorOverMakup;
 
@@ -113,11 +122,11 @@ class Model implements ModelI {
       const cursorFarEnough = (valueOfPosition - currentEnd >= step * 0.8)
         || (currentEnd - valueOfPosition >= step * 0.8);
 
-      const cursorOverMarkup = (valueOfPosition % step > step * 0.8
-        || valueOfPosition % step < step * 0.2);
+      const cursorOverMarkup = (valueOfPosition % step > step * 0.7
+        || valueOfPosition % step < step * 0.3);
 
       const cursorOverFinish = valueOfPosition
-        >= range - (0.5 * (range - Math.floor(range / step) * step));
+        >= range - (0.5 * (range % step));
 
       const conditionOfTrigger = cursorFarEnough || cursorOverMarkup || cursorOverFinish;
       if (conditionOfTrigger) {

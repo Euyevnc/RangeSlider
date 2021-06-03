@@ -1,4 +1,4 @@
-import { DRAG, TEPPEING } from '../consts';
+import { DRAG, TEPPEING, SCALE_CLICK } from '../consts';
 
 class Presenter implements PresenterI {
   view: ViewI;
@@ -15,6 +15,11 @@ class Presenter implements PresenterI {
     switch (method) {
       case DRAG:
         this.model.updateFromPercent(data);
+        break;
+      case SCALE_CLICK:
+        this.model.updateDirectively(data);
+        if (data.startPosition !== undefined) this.model.adaptStart();
+        else if (data.endPosition !== undefined) this.model.adaptEnd();
         break;
       case TEPPEING:
         this.model.updateFromStep(data);

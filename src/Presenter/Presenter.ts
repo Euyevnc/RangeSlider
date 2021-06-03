@@ -1,4 +1,4 @@
-import { SCALE_CLICK, DRAG, TEPPEING } from '../consts';
+import { DRAG, TEPPEING } from '../consts';
 
 class Presenter implements PresenterI {
   view: ViewI;
@@ -13,9 +13,6 @@ class Presenter implements PresenterI {
 
   reactToInteraction(method: string, data: DataForModel) {
     switch (method) {
-      case SCALE_CLICK:
-        this.model.updateDirectively(data);
-        break;
       case DRAG:
         this.model.updateFromPercent(data);
         break;

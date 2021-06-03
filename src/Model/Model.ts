@@ -116,7 +116,8 @@ class Model implements ModelI {
       const cursorOverMarkup = (valueOfPosition % step > step * 0.8
         || valueOfPosition % step < step * 0.2);
 
-      const cursorOverFinish = valueOfPosition >= range;
+      const cursorOverFinish = valueOfPosition
+        >= range - (0.5 * (range - Math.floor(range / step) * step));
 
       const conditionOfTrigger = cursorFarEnough || cursorOverMarkup || cursorOverFinish;
       if (conditionOfTrigger) {

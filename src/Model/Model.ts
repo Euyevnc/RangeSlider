@@ -33,15 +33,13 @@ class Model implements ModelI {
   };
 
   adaptValues = () => {
-    const { step, range } = this.config;
+    const { step, range, type } = this.config;
     let adaptedEnd = this.end === range
       ? range
       : Math.min(range, Math.round(this.end / step) * step);
     let adaptedStart = Math.min(range, Math.round(this.start / step) * step);
 
-    if (adaptedStart !== adaptedEnd) {
-      adaptedEnd = Math.min(range, adaptedEnd);
-    } else {
+    if (adaptedStart === adaptedEnd && type !== POINT) {
       const distansToStart = Math.abs(adaptedStart - this.start);
       const distansToEnd = Math.abs(adaptedEnd - this.end);
       if (distansToStart < distansToEnd) adaptedEnd = Math.min(range, adaptedEnd + step);
@@ -53,20 +51,24 @@ class Model implements ModelI {
   };
 
   adaptStart = () => {
-    const { step } = this.config;
+    const { step, type } = this.config;
     let adaptedStart = Math.round(this.start / step) * step;
-    adaptedStart = Math.max(0, Math.min(adaptedStart, Math.ceil(this.end / step) * step - step));
+    adaptedStart = type === POINT
+      ? 0
+      : Math.max(0, Math.min(adaptedStart, Math.ceil(this.end / step) * step - step));
 
     this.#setValue({ start: adaptedStart, end: this.end });
     this.#callTheBroadcast();
   };
 
   adaptEnd = () => {
-    const { step, range } = this.config;
+    const { step, range, type } = this.config;
     let adaptedEnd = this.end === range
       ? range
       : Math.round(this.end / step) * step;
-    adaptedEnd = Math.min(range, Math.max(adaptedEnd, Math.floor(this.start / step) * step + step));
+    adaptedEnd = type === POINT
+      ? Math.min(range, Math.max(adaptedEnd, 0))
+      : Math.min(range, Math.max(adaptedEnd, Math.floor(this.start / step) * step + step));
 
     this.#setValue({ start: this.start, end: adaptedEnd });
     this.#callTheBroadcast();

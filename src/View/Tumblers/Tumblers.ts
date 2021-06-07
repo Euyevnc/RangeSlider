@@ -44,8 +44,8 @@ class Tumblers {
     const secEl = this.elements[1] as HTMLElement;
 
     if (config.orient === VERTICAL) {
-      firEl.style.bottom = `${firCoor}%`;
-      secEl.style.bottom = `${secCoor}%`;
+      firEl.style.top = `${100 - firCoor}%`;
+      secEl.style.top = `${100 - secCoor}%`;
     } else {
       firEl.style.left = `${firCoor}%`;
       secEl.style.left = `${secCoor}%`;
@@ -121,9 +121,9 @@ class Tumblers {
   #handlerDocumentMove = (event:MouseEvent, isFirstTumbler: Boolean) => {
     const sliderZone = this.elements[0].closest('.js-range-slider');
     const bias = this.config.orient === VERTICAL
-      ? -((event.clientY - sliderZone.getBoundingClientRect().bottom)
+      ? ((sliderZone.getBoundingClientRect().bottom - event.clientY)
       / sliderZone.getBoundingClientRect().height) * 100
-      : ((event.clientX - sliderZone.getBoundingClientRect().x)
+      : ((event.clientX - sliderZone.getBoundingClientRect().left)
       / sliderZone.getBoundingClientRect().width) * 100;
     if (isFirstTumbler) {
       this.callback(DRAG, { startPosition: bias });

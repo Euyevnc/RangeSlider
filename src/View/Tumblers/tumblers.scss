@@ -8,16 +8,15 @@
     background-color: rgb(54, 157, 134);
     border: 1px solid white;
     border-radius: 50%;
+    transform: translate(-50%, -50%);
     cursor: pointer;
 
     &_for_vertical {
       left: 50%;
-      transform: translate(-50%, 50%);
     }
 
     &_for_horizontal {
       top: 50%;
-      transform: translate(-50%, -50%);
     }
   }
 

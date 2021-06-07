@@ -45,7 +45,7 @@ class Line {
           .getBoundingClientRect().left + (<HTMLElement>tum).offsetWidth / 2);
     const distanceToFirst = Math.abs(clickPosition - tumblersPositions[0]);
     const distanceToSecond = Math.abs(clickPosition - tumblersPositions[1]);
-    if (type === POINT || distanceToFirst > distanceToSecond) {
+    if (type === POINT || distanceToFirst >= distanceToSecond) {
       this.callback(DRAG, { endPosition: bias });
     } else this.callback(DRAG, { startPosition: bias });
   };

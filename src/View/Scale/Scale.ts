@@ -67,18 +67,19 @@ class Scale {
     const cell = (<HTMLElement>event.target).closest('.js-range-slider__scale-cell') as HTMLElement;
     const value = +cell.getAttribute('value');
 
-    const cellPosition = orient === 'horizontal'
-      ? cell.offsetLeft
-      : cell.offsetTop;
+    const cellPosition = orient === VERTICAL
+      ? cell.offsetTop + cell.offsetHeight
+      : cell.offsetLeft;
 
     const tumblersPositions = orient === VERTICAL
-      ? [...cell.closest('.js-range-slider').querySelectorAll('.js-range-slider__tumbler')].map((tum) => (<HTMLElement>tum).offsetTop)
+      ? [...cell.closest('.js-range-slider').querySelectorAll('.js-range-slider__tumbler')]
+        .map((tum) => (<HTMLElement>tum).offsetTop)
       : [...cell.closest('.js-range-slider').querySelectorAll('.js-range-slider__tumbler')].map((tum) => (<HTMLElement>tum).offsetLeft);
 
     const distanceToFirst = Math.abs(cellPosition - tumblersPositions[0]);
     const distanceToSecond = Math.abs(cellPosition - tumblersPositions[1]);
 
-    if (this.config.type === POINT || distanceToFirst > distanceToSecond) {
+    if (this.config.type === POINT || distanceToFirst >= distanceToSecond) {
       this.callback(SCALE_CLICK, { endPosition: value });
     } else this.callback(SCALE_CLICK, { startPosition: value });
   };
@@ -87,21 +88,23 @@ class Scale {
     if (event.code !== 'Enter') return;
 
     const { orient } = this.config;
+
     const cell = (<HTMLElement>event.target).closest('.js-range-slider__scale-cell') as HTMLElement;
     const value = +cell.getAttribute('value');
 
-    const cellPosition = orient === 'horizontal'
-      ? cell.offsetLeft
-      : cell.offsetTop;
+    const cellPosition = orient === VERTICAL
+      ? cell.offsetTop + cell.offsetHeight
+      : cell.offsetLeft;
 
-    const tumblersPositions = orient === 'horizontal'
-      ? [...cell.closest('.js-range-slider').querySelectorAll('.js-range-slider__tumbler')].map((tum) => (<HTMLElement>tum).offsetLeft + (<HTMLElement>tum).offsetWidth / 2)
-      : [...cell.closest('.js-range-slider').querySelectorAll('.js-range-slider__tumbler')].map((tum) => (<HTMLElement>tum).offsetTop + (<HTMLElement>tum).offsetHeight / 2);
+    const tumblersPositions = orient === VERTICAL
+      ? [...cell.closest('.js-range-slider').querySelectorAll('.js-range-slider__tumbler')]
+        .map((tum) => (<HTMLElement>tum).offsetTop + (<HTMLElement>tum).offsetHeight)
+      : [...cell.closest('.js-range-slider').querySelectorAll('.js-range-slider__tumbler')].map((tum) => (<HTMLElement>tum).offsetLeft + (<HTMLElement>tum).offsetWidth / 2);
 
     const distanceToFirst = Math.abs(cellPosition - tumblersPositions[0]);
     const distanceToSecond = Math.abs(cellPosition - tumblersPositions[1]);
 
-    if (this.config.type === POINT || distanceToFirst > distanceToSecond) {
+    if (this.config.type === POINT || distanceToFirst >= distanceToSecond) {
       this.callback(SCALE_CLICK, { endPosition: value });
     } else this.callback(SCALE_CLICK, { startPosition: value });
   };

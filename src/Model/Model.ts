@@ -21,7 +21,6 @@ class Model implements ModelI {
 
   updateDirectively = (data: DataForModel) => {
     this.#update(this.#valueProcessing, data);
-    this.#callTheBroadcast();
   };
 
   updateFromPercent = (data: DataForModel) => {
@@ -80,12 +79,23 @@ class Model implements ModelI {
 
     const { newStart, newEnd } = processing(data);
 
-    if (newStart !== currentStart || newEnd !== currentEnd) {
-      this.#setValue({
-        start: newStart,
-        end: newEnd,
-      });
-      if (processing !== this.#valueProcessing) this.#callTheBroadcast();
+    switch (processing) {
+      case this.#valueProcessing:
+        this.#setValue({
+          start: newStart,
+          end: newEnd,
+        });
+        this.#callTheBroadcast();
+        break;
+      default:
+        if (newStart !== currentStart || newEnd !== currentEnd) {
+          this.#setValue({
+            start: newStart,
+            end: newEnd,
+          });
+          this.#callTheBroadcast();
+        }
+        break;
     }
   };
 

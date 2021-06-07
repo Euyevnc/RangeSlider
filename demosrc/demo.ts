@@ -143,6 +143,7 @@ function syncPanel(panelNode: JQuery, slider: SliderObjectI) {
   slider.init();
   panelNode.find("[name='first_pos']").prop('value', slider.getValue()[0]);
   panelNode.find("[name='second_pos']").prop('value', slider.getValue()[1]);
+  console.log(slider.getValue()[0]);
 
   if (!slider.config.list.length) {
     panelNode.find("[name='list']").prop('value', '');

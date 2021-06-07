@@ -18,8 +18,6 @@ class Presenter implements PresenterI {
         break;
       case SCALE_CLICK:
         this.model.updateDirectively(data);
-        if (data.startPosition !== undefined) this.model.adaptStart();
-        if (data.endPosition !== undefined) this.model.adaptEnd();
         break;
       case TEPPEING:
         this.model.updateFromStep(data);

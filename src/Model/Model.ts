@@ -49,30 +49,6 @@ class Model implements ModelI {
     this.#callTheBroadcast();
   };
 
-  adaptStart = () => {
-    const { step, type } = this.config;
-    let adaptedStart = Math.round(this.start / step) * step;
-    adaptedStart = type === POINT
-      ? 0
-      : Math.max(0, Math.min(adaptedStart, Math.ceil(this.end / step) * step - step));
-
-    this.#setValue({ start: adaptedStart, end: this.end });
-    this.#callTheBroadcast();
-  };
-
-  adaptEnd = () => {
-    const { step, range, type } = this.config;
-    let adaptedEnd = this.end === range
-      ? range
-      : Math.round(this.end / step) * step;
-    adaptedEnd = type === POINT
-      ? Math.min(range, Math.max(adaptedEnd, 0))
-      : Math.min(range, Math.max(adaptedEnd, Math.floor(this.start / step) * step + step));
-
-    this.#setValue({ start: this.start, end: adaptedEnd });
-    this.#callTheBroadcast();
-  };
-
   #update = (processing: Function, data: DataForModel):void => {
     const currentStart = this.start;
     const currentEnd = this.end;
@@ -123,9 +99,6 @@ class Model implements ModelI {
   #percentProcessing = (data: DataForModel) => {
     const { range, step } = this.config;
 
-    const currentStart = this.start;
-    const currentEnd = this.end;
-
     const { startPosition, endPosition } = data;
     let newStart: number;
     let newEnd: number;
@@ -133,37 +106,17 @@ class Model implements ModelI {
     if (startPosition || startPosition === 0) {
       const valueOfPosition = this.#convertToValue(startPosition);
 
-      const cursorFarEnough = (valueOfPosition - currentStart) >= step * 0.8
-        || (currentStart - valueOfPosition) >= step * 0.8;
-
-      const cursorOverMakup = (valueOfPosition % step > step * 0.7
-        || valueOfPosition % step < step * 0.3);
-
-      const conditionOfTrigger = cursorFarEnough || cursorOverMakup;
-
-      if (conditionOfTrigger) {
-        newStart = Math.round(valueOfPosition / step) * step;
-      }
+      newStart = Math.round(valueOfPosition / step) * step;
     }
 
     if (endPosition || endPosition === 0) {
       const valueOfPosition = this.#convertToValue(endPosition);
 
-      const cursorFarEnough = (valueOfPosition - currentEnd >= step * 0.8)
-        || (currentEnd - valueOfPosition >= step * 0.8);
+      const cursorOverFinish = valueOfPosition >= range - (0.5 * (range % step));
 
-      const cursorOverMarkup = (valueOfPosition % step > step * 0.7
-        || valueOfPosition % step < step * 0.3);
-
-      const cursorOverFinish = valueOfPosition
-        >= range - (0.5 * (range % step));
-
-      const conditionOfTrigger = cursorFarEnough || cursorOverMarkup || cursorOverFinish;
-      if (conditionOfTrigger) {
-        newEnd = cursorOverFinish
-          ? range
-          : Math.round(valueOfPosition / step) * step;
-      }
+      newEnd = cursorOverFinish
+        ? range
+        : Math.round(valueOfPosition / step) * step;
     }
 
     return this.#accordinateTheCoordinates([newStart, newEnd]);

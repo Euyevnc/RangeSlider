@@ -1,5 +1,5 @@
 import {
-  DRAG, POINT, VERTICAL, SCALE_CLICK,
+  POINT, VERTICAL, SCALE_CLICK,
 } from '../../consts';
 
 class Scale {
@@ -63,49 +63,47 @@ class Scale {
 
   #handlerCellClick = (event:MouseEvent) => {
     const { orient } = this.config;
+
     const cell = (<HTMLElement>event.target).closest('.js-range-slider__scale-cell') as HTMLElement;
+    const value = +cell.getAttribute('value');
 
     const cellPosition = orient === 'horizontal'
       ? cell.offsetLeft
       : cell.offsetTop;
 
-    const tumblersPositions = orient === 'horizontal'
-      ? [...cell.closest('.js-range-slider').querySelectorAll('.js-range-slider__tumbler')].map((tum) => (<HTMLElement>tum).offsetLeft)
-      : [...cell.closest('.js-range-slider').querySelectorAll('.js-range-slider__tumbler')].map((tum) => (<HTMLElement>tum).offsetTop);
+    const tumblersPositions = orient === VERTICAL
+      ? [...cell.closest('.js-range-slider').querySelectorAll('.js-range-slider__tumbler')].map((tum) => (<HTMLElement>tum).offsetTop)
+      : [...cell.closest('.js-range-slider').querySelectorAll('.js-range-slider__tumbler')].map((tum) => (<HTMLElement>tum).offsetLeft);
 
     const distanceToFirst = Math.abs(cellPosition - tumblersPositions[0]);
     const distanceToSecond = Math.abs(cellPosition - tumblersPositions[1]);
 
-    const value = +(<HTMLElement>event.target).closest('.js-range-slider__scale-cell').getAttribute('value');
-
-    if (this.config.type === POINT) this.callback(SCALE_CLICK, { endPosition: value });
-    else if (distanceToFirst <= distanceToSecond) {
-      this.callback(SCALE_CLICK, { startPosition: value });
-    } else this.callback(SCALE_CLICK, { endPosition: value });
+    if (this.config.type === POINT || distanceToFirst > distanceToSecond) {
+      this.callback(SCALE_CLICK, { endPosition: value });
+    } else this.callback(SCALE_CLICK, { startPosition: value });
   };
 
   #handlerCellKeydown = (event:KeyboardEvent) => {
     if (event.code !== 'Enter') return;
 
     const { orient } = this.config;
-    const value = +(<HTMLElement>event.target).closest('.js-range-slider__scale-cell').getAttribute('value');
+    const cell = (<HTMLElement>event.target).closest('.js-range-slider__scale-cell') as HTMLElement;
+    const value = +cell.getAttribute('value');
 
-    if (this.config.type === POINT) this.callback(DRAG, { endPosition: value });
-    else {
-      const cell = (<HTMLElement>event.target).closest('.js-range-slider__scale-cell') as HTMLElement;
-      const cellPosition = orient === 'horizontal'
-        ? cell.offsetLeft
-        : cell.offsetTop;
-      const tumblersPositions = orient === 'horizontal'
-        ? [...cell.closest('.js-range-slider').querySelectorAll('.js-range-slider__tumbler')].map((tum) => (<HTMLElement>tum).offsetLeft)
-        : [...cell.closest('.js-range-slider').querySelectorAll('.js-range-slider__tumbler')].map((tum) => (<HTMLElement>tum).offsetTop);
+    const cellPosition = orient === 'horizontal'
+      ? cell.offsetLeft
+      : cell.offsetTop;
 
-      const distanceToFirst = Math.abs(cellPosition - tumblersPositions[0]);
-      const distanceToSecond = Math.abs(cellPosition - tumblersPositions[1]);
+    const tumblersPositions = orient === 'horizontal'
+      ? [...cell.closest('.js-range-slider').querySelectorAll('.js-range-slider__tumbler')].map((tum) => (<HTMLElement>tum).offsetLeft + (<HTMLElement>tum).offsetWidth / 2)
+      : [...cell.closest('.js-range-slider').querySelectorAll('.js-range-slider__tumbler')].map((tum) => (<HTMLElement>tum).offsetTop + (<HTMLElement>tum).offsetHeight / 2);
 
-      if (distanceToFirst <= distanceToSecond) this.callback(DRAG, { startPosition: value });
-      else this.callback(DRAG, { endPosition: value });
-    }
+    const distanceToFirst = Math.abs(cellPosition - tumblersPositions[0]);
+    const distanceToSecond = Math.abs(cellPosition - tumblersPositions[1]);
+
+    if (this.config.type === POINT || distanceToFirst > distanceToSecond) {
+      this.callback(SCALE_CLICK, { endPosition: value });
+    } else this.callback(SCALE_CLICK, { startPosition: value });
   };
 
   #createCell = (int:number) => {

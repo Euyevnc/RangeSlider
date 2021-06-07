@@ -34,7 +34,7 @@ class View implements ViewI {
     this.tumblers = new Tumblers(option, this.observer.broadcast);
     this.scale = new Scale(option, this.observer.broadcast);
 
-    this.line = new Line(option);
+    this.line = new Line(option, this.observer.broadcast);
     this.selected = new Selected(option);
   }
 

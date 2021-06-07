@@ -146,6 +146,8 @@ class Config implements ConfigI {
         ? (this.#range || INITIALS.range)
         : Math.max(1, Number(range));
     }
+    this.scaleInterval = this.#scaleInterval;
+    this.step = this.#step;
   }
 
   get step() {

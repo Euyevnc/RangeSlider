@@ -118,7 +118,7 @@ class Config implements ConfigI {
     else {
       this.#origin = isNaN(origin)
         ? (this.#origin || INITIALS.origin)
-        : Number(origin);
+        : Math.round(+origin);
     }
   }
 
@@ -131,7 +131,7 @@ class Config implements ConfigI {
     else {
       this.#scaleInterval = isNaN(interval)
         ? (this.#scaleInterval || INITIALS.scaleInterval)
-        : Math.min(this.#range, Math.max(1, Number(interval)));
+        : Math.min(this.#range, Math.max(1, Math.round(+interval)));
     }
   }
 
@@ -144,7 +144,7 @@ class Config implements ConfigI {
     else {
       this.#range = isNaN(range)
         ? (this.#range || INITIALS.range)
-        : Math.max(1, Number(range));
+        : Math.max(1, Math.round(+range));
     }
     this.scaleInterval = this.#scaleInterval;
     this.step = this.#step;
@@ -159,7 +159,7 @@ class Config implements ConfigI {
     else {
       this.#step = isNaN(step)
         ? (this.#step || INITIALS.step)
-        : Math.min(this.#range, Math.max(1, Number(step)));
+        : Math.min(this.#range, Math.max(1, Math.round(+step)));
     }
   }
 

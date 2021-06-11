@@ -5,12 +5,12 @@
     background-color: rgb(244, 255, 255);
     border-radius: 10px;
 
-    &_for_vertical {
+    &_orient_vertical {
       width: 16px;
       height: 100%;
     }
 
-    &_for_horizontal {
+    &_orient_horizontal {
       width: 100%;
       height: 16px;
     }

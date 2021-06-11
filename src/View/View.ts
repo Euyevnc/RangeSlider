@@ -40,7 +40,7 @@ class View implements ViewType {
     const { root, config } = this;
 
     const mainElement = document.createElement('div');
-    mainElement.className = `range-slider  js-range-slider  range-slider_for_${config.orient}`;
+    mainElement.className = `range-slider  js-range-slider  range-slider_orient_${config.orient}`;
 
     mainElement.append(this.line.render());
     mainElement.append(this.scale.render());

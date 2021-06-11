@@ -11,11 +11,11 @@
     transform: translate(-50%, -50%);
     cursor: pointer;
 
-    &_for_vertical {
+    &_orient_vertical {
       left: 50%;
     }
 
-    &_for_horizontal {
+    &_orient_horizontal {
       top: 50%;
     }
   }
@@ -44,7 +44,7 @@
       content: '';
     }
 
-    &_for_vertical {
+    &_orient_vertical {
       top: 50%;
       right: 130%;
       transform: translateY(-50%);
@@ -57,7 +57,7 @@
       }
     }
 
-    &_for_horizontal {
+    &_orient_horizontal {
       bottom: 130%;
       left: 50%;
       transform: translateX(-50%);

@@ -6,13 +6,13 @@
     background-color: rgb(107, 192, 174);
     border-radius: 10px;
 
-    &_for_vertical {
+    &_orient_vertical {
       left: 50%;
       width: 22px;
       transform: translateX(-50%);
     }
 
-    &_for_horizontal {
+    &_orient_horizontal {
       top: 50%;
       height: 22px;
       transform: translateY(-50%);

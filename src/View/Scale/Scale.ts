@@ -22,7 +22,7 @@ class Scale implements ViewElement {
     const numberOfIntervals = Math.ceil(config.range / config.scaleInterval);
     const scaleElement = document.createElement('div');
 
-    scaleElement.className = `range-slider__scale  range-slider__scale_for_${config.orient}`;
+    scaleElement.className = `range-slider__scale  range-slider__scale_orient_${config.orient}`;
 
     scaleElement.append(this.#createCell(config.origin));
     for (let i = 1; i < numberOfIntervals; i += 1) {
@@ -44,16 +44,16 @@ class Scale implements ViewElement {
     return this.element;
   };
 
-  update(firCoor: number, secCoor:number) {
+  update(firstCoor: number, secondCoor:number) {
     const { config } = this;
     const scaleElement = this.element;
 
-    const firValue = (config.range / 100) * firCoor + config.origin;
-    const secValue = (config.range / 100) * secCoor + config.origin;
+    const firstValue = (config.range / 100) * firstCoor + config.origin;
+    const secondValue = (config.range / 100) * secondCoor + config.origin;
     scaleElement.querySelectorAll('.js-range-slider__scale-cell').forEach((el) => {
       const elem = el as HTMLElement;
       const valueInCell = +el.getAttribute('value');
-      if (valueInCell >= firValue && valueInCell <= secValue) {
+      if (valueInCell >= firstValue && valueInCell <= secondValue) {
         elem.classList.add('range-slider__scale-cell_status_active');
       } else {
         elem.classList.remove('range-slider__scale-cell_status_active');
@@ -114,7 +114,7 @@ class Scale implements ViewElement {
     const isList = Boolean(config.list.length);
 
     const cell = document.createElement('span');
-    cell.className = (`js-range-slider__scale-cell range-slider__scale-cell  range-slider__scale-cell_for_${config.orient}`);
+    cell.className = (`js-range-slider__scale-cell range-slider__scale-cell  range-slider__scale-cell_orient_${config.orient}`);
 
     if (config.orient === VERTICAL) {
       const normalizedHeight = Math.min((config.scaleInterval / config.range) * 100, 100);

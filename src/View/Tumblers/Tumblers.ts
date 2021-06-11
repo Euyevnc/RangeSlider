@@ -20,7 +20,7 @@ class Tumblers implements ViewElement {
 
     for (let i = 0; i < 2; i += 1) {
       const tumblerElement = document.createElement('div');
-      tumblerElement.className = `js-range-slider__tumbler range-slider__tumbler  range-slider__tumbler_for_${config.orient}`;
+      tumblerElement.className = `js-range-slider__tumbler range-slider__tumbler  range-slider__tumbler_orient_${config.orient}`;
       tumblerElement.tabIndex = 0;
 
       const cloud = this.#createTheCloud();
@@ -36,30 +36,30 @@ class Tumblers implements ViewElement {
     return this.element;
   };
 
-  update(firCoor: number, secCoor:number) {
+  update(firstCoor: number, secondCoor:number) {
     const { config } = this;
-    const firEl = this.element[0];
-    const secEl = this.element[1];
+    const firstEl = this.element[0];
+    const secondEl = this.element[1];
 
     if (config.orient === VERTICAL) {
-      firEl.style.top = `${100 - firCoor}%`;
-      secEl.style.top = `${100 - secCoor}%`;
+      firstEl.style.top = `${100 - firstCoor}%`;
+      secondEl.style.top = `${100 - secondCoor}%`;
     } else {
-      firEl.style.left = `${firCoor}%`;
-      secEl.style.left = `${secCoor}%`;
+      firstEl.style.left = `${firstCoor}%`;
+      secondEl.style.left = `${secondCoor}%`;
     }
 
-    if (firCoor === 100) {
-      firEl.style.zIndex = '11';
-      secEl.style.zIndex = '12';
-    } else if (secCoor === 100) {
-      firEl.style.zIndex = '12';
-      secEl.style.zIndex = '11';
+    if (firstCoor === 100) {
+      firstEl.style.zIndex = '11';
+      secondEl.style.zIndex = '12';
+    } else if (secondCoor === 100) {
+      firstEl.style.zIndex = '12';
+      secondEl.style.zIndex = '11';
     } else {
-      firEl.style.zIndex = '11';
-      secEl.style.zIndex = '11';
+      firstEl.style.zIndex = '11';
+      secondEl.style.zIndex = '11';
     }
-    this.#updateClouds(firCoor, secCoor);
+    this.#updateClouds(firstCoor, secondCoor);
   }
 
   #handleTumblerMousedown = (e:MouseEvent) => {
@@ -130,7 +130,7 @@ class Tumblers implements ViewElement {
 
   #createTheCloud = () => {
     const cloud = document.createElement('div');
-    cloud.className = `js-range-slider__cloud range-slider__cloud  range-slider__cloud_for_${this.config.orient}`;
+    cloud.className = `js-range-slider__cloud range-slider__cloud  range-slider__cloud_orient_${this.config.orient}`;
     const valueCont = document.createElement('b');
     valueCont.className = 'js-range-slider__cloud-value range-slider__cloud-value';
     cloud.append(valueCont);
@@ -138,20 +138,20 @@ class Tumblers implements ViewElement {
     return cloud;
   };
 
-  #updateClouds = (firPerc:number, secPerc:number) => {
+  #updateClouds = (firstPerc:number, secondPerc:number) => {
     const { config, element } = this;
-    let firValue: string;
-    let secValue: string;
-    firValue = ((config.range / 100) * firPerc + config.origin).toLocaleString();
-    secValue = ((config.range / 100) * secPerc + config.origin).toLocaleString();
+    let firstValue: string;
+    let secondValue: string;
+    firstValue = ((config.range / 100) * firstPerc + config.origin).toLocaleString();
+    secondValue = ((config.range / 100) * secondPerc + config.origin).toLocaleString();
 
     if (config.list.length) {
-      firValue = config.list[+firValue].toString();
-      secValue = config.list[+secValue].toString();
+      firstValue = config.list[+firstValue].toString();
+      secondValue = config.list[+secondValue].toString();
     }
 
-    element[0].querySelector('b').innerText = firValue;
-    element[1].querySelector('b').innerText = secValue;
+    element[0].querySelector('b').innerText = firstValue;
+    element[1].querySelector('b').innerText = secondValue;
   };
 }
 

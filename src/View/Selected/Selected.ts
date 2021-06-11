@@ -13,22 +13,22 @@ class Selected {
     const { config } = this;
 
     const selectedElement = document.createElement('div');
-    selectedElement.className = `range-slider__selected  range-slider__selected_for_${config.orient}`;
+    selectedElement.className = `range-slider__selected  range-slider__selected_orient_${config.orient}`;
 
     this.element = selectedElement;
     return this.element;
   }
 
-  update(firCoor: number, secCoor: number) {
+  update(firstCoor: number, secondCoor: number) {
     const { config } = this;
     const selectedElement = this.element;
 
     if (config.orient === VERTICAL) {
-      selectedElement.style.bottom = `${firCoor}%`;
-      selectedElement.style.top = `${100 - secCoor}%`;
+      selectedElement.style.bottom = `${firstCoor}%`;
+      selectedElement.style.top = `${100 - secondCoor}%`;
     } else {
-      selectedElement.style.left = `${firCoor}%`;
-      selectedElement.style.right = `${100 - secCoor}%`;
+      selectedElement.style.left = `${firstCoor}%`;
+      selectedElement.style.right = `${100 - secondCoor}%`;
     }
   }
 }

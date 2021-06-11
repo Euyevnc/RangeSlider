@@ -6,11 +6,11 @@
 .range-slider {
   display: flex;
 
-  &_for_vertical {
+  &_orient_vertical {
     height: 100%;
   }
 
-  &_for_horizontal {
+  &_orient_horizontal {
     flex-direction: column;
     width: 100%;
   }

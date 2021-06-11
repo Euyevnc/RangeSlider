@@ -6,7 +6,7 @@ import {
 
 import INITIALS from './initials';
 
-class Config implements ConfigI {
+class Config implements ConfigType {
   #type: string;
 
   #orient: string;

@@ -2,16 +2,16 @@ import {
   POINT, VERTICAL, SCALE_CLICK,
 } from '../../consts';
 
-class Scale {
+class Scale implements ViewElement {
   element: HTMLElement;
 
-  config: ConfigI;
+  config: ConfigType;
 
   cells: Array<HTMLElement>;
 
-  callback: Function;
+  callback: CallbackForView;
 
-  constructor(option: ConfigI, callback:Function) {
+  constructor(option: ConfigType, callback: CallbackForView) {
     this.config = option;
     this.callback = callback;
     this.cells = [];

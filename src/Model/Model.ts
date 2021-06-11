@@ -3,16 +3,16 @@ import { POINT } from '../consts';
 
 import Observer from '../Observer/Observer';
 
-class Model implements ModelI {
-  config: ConfigI;
+class Model implements ModelType {
+  config: ConfigType;
 
-  observer: ObserverI;
+  observer: ObserverType;
 
   private start: number;
 
   private end: number;
 
-  constructor(options:ConfigI) {
+  constructor(options:ConfigType) {
     this.config = options;
     this.observer = new Observer();
     this.start = 0;

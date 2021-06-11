@@ -1,13 +1,13 @@
 import { DRAG, VERTICAL, POINT } from '../../consts';
 
-class Line {
+class Line implements ViewElement {
   element: HTMLElement;
 
-  config: ConfigI;
+  config: ConfigType;
 
-  callback: Function;
+  callback: CallbackForView;
 
-  constructor(option: ConfigI, callback: Function) {
+  constructor(option: ConfigType, callback: CallbackForView) {
     this.config = option;
     this.callback = callback;
   }

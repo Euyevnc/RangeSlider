@@ -3,9 +3,9 @@ import { VERTICAL } from '../../consts';
 class Selected {
   element: HTMLElement;
 
-  config: ConfigI;
+  config: ConfigType;
 
-  constructor(option: ConfigI) {
+  constructor(option: ConfigType) {
     this.config = option;
   }
 

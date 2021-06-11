@@ -7,14 +7,14 @@ import Selected from './Selected/Selected';
 import Scale from './Scale/Scale';
 import Line from './Line/Line';
 
-class View implements ViewI {
+class View implements ViewType {
   root:HTMLElement;
 
   element: HTMLElement;
 
-  config: ConfigI;
+  config: ConfigType;
 
-  observer: ObserverI;
+  observer: ObserverType;
 
   tumblers: Tumblers;
 
@@ -24,9 +24,7 @@ class View implements ViewI {
 
   scale: Scale;
 
-  callback: Function;
-
-  constructor(root: HTMLElement, option: ConfigI) {
+  constructor(root: HTMLElement, option: ConfigType) {
     this.observer = new Observer();
 
     this.root = root;
@@ -38,7 +36,7 @@ class View implements ViewI {
     this.selected = new Selected(option);
   }
 
-  render():void {
+  render() {
     const { root, config } = this;
 
     const mainElement = document.createElement('div');

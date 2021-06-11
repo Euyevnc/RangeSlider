@@ -1,6 +1,6 @@
 import { CLICK, HORIZONTAL, RANGE } from '../consts';
 
-const initials: ConfigI = {
+const initials: ConfigType = {
   type: RANGE,
   orient: HORIZONTAL,
   cloud: CLICK,

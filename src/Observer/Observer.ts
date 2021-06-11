@@ -1,4 +1,4 @@
-class Observer implements ObserverI {
+class Observer implements ObserverType {
   observers: Array<Function>;
 
   constructor() {

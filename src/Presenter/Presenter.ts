@@ -1,11 +1,11 @@
 import { DRAG, TEPPEING, SCALE_CLICK } from '../consts';
 
-class Presenter implements PresenterI {
-  view: ViewI;
+class Presenter implements PresenterType {
+  view: ViewType;
 
-  model: ModelI;
+  model: ModelType;
 
-  constructor(view:ViewI, model:ModelI) {
+  constructor(view:ViewType, model:ModelType) {
     this.view = view;
     this.model = model;
     this.connectLayers();

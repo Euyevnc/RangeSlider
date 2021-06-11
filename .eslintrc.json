@@ -17,6 +17,7 @@
   "rules": {
     "@typescript-eslint/space-infix-ops": ["error", { "int32Hint": false }],
     "@typescript-eslint/no-use-before-define": ["error", { "functions": false, "classes": false }],
-    "no-restricted-properties": [0, "isNaN"]
+    "no-restricted-properties": [0, "isNaN"],
+    "linebreak-style": 0
   }
 }

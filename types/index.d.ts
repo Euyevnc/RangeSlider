@@ -1,17 +1,18 @@
-interface SliderObjectI{
-  config: ConfigI;
+type SliderObjectType = {
+  config: ConfigType;
 
-  model: ModelI;
-  view:ViewI;
-  presenter:PresenterI;
+  model: ModelType;
+  view:ViewType;
+  presenter:PresenterType;
 
-  init: Function;
-  getValue: Function;
-  setValue: Function;
-  adaptValues: Function;
+  init: (startValue?: number, endValue?: number) => void;
 
-}
-interface ConfigI{
+  getValue: () => Array<string>;
+  setValue: (startValue?: number, endValue?: number) => void;
+  adaptValues: () => void;
+
+};
+type ConfigType = {
   type: string;
   orient: string;
   list: Array<number|string>;
@@ -22,64 +23,70 @@ interface ConfigI{
   scaleInterval: number;
   cloud: string;
   value: Array<string>;
-}
-interface ModelI{
-  config: ConfigI;
-  observer: ObserverI;
+};
 
-  updateDirectively: Function;
-  updateFromPercent: Function;
-  updateFromStep: Function;
+type ModelType = {
+  config: ConfigType;
+  observer: ObserverType;
 
-  adaptValues: Function;
-}
+  updateDirectively: (data: DataForModel) => void;
+  updateFromPercent: (data: DataForModel) => void;
+  updateFromStep: (data: DataForModel) => void;
 
-interface PresenterI{
-  view: ViewI;
-  model: ModelI;
+  adaptValues: () => void;
+};
 
-  reactToInteraction: Function;
-  reactToUpdate: Function;
+type PresenterType = {
+  view: ViewType;
+  model: ModelType;
 
-  connectLayers: Function;
-}
+  reactToInteraction: CallbackForView;
+  reactToUpdate: CallbackForModel;
 
-interface ViewI{
+  connectLayers: () => void;
+};
+
+type ViewType = {
   root:HTMLElement;
   element: HTMLElement;
-  config: ConfigI;
-  observer: ObserverI;
+  config: ConfigType;
+  observer: ObserverType;
 
-  tumblers: Object;
-  line: Object;
-  selected: Object;
-  scale: Object;
-  callback: Function;
-  render: Function;
-  updateView: Function;
-}
+  tumblers: ViewElement;
+  line: ViewElement;
+  selected: ViewElement;
+  scale: ViewElement;
+  render: () => void;
+  updateView: (data: DataForView) => void;
+};
 
-interface ObserverI{
-  observers: Array<Function>;
-  subscribe: Function;
-  unsubscribe: Function;
-  broadcast: Function;
-}
+type ViewElement = {
+  element: HTMLElement | HTMLElement[];
+  config: ConfigType;
+  callback?: CallbackForView
+};
 
-interface DataForModel{
+type DataForModel = {
   startPosition?: number;
   endPosition?: number;
-}
+};
 
-interface DataForView{
+type DataForView = {
   firstCoordinate:number;
   secondCoordinate: number;
-}
+};
+
+type CallbackForView = (method: string, data: DataForModel) => void;
+
+type CallbackForModel = (data: DataForView) => void;
+
+type ObserverType = {
+  observers: Array<Function>;
+  subscribe: (subscriber: Function) => void;
+  unsubscribe: (unsubscriber: Function) => void;
+  broadcast: (args?: any) => void;
+};
 
 interface JQuery {
-  rangeSlider: Function;
-}
-
-interface JQueryStatic {
-  rangeSlider: Function;
+  rangeSlider: (config : Object) => SliderObjectType | SliderObjectType[];
 }

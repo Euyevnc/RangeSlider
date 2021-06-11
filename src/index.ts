@@ -7,8 +7,8 @@ import Config from './Config/Config';
 
 const sliderInst = (function ($) {
   // eslint-disable-next-line no-param-reassign
-  $.fn.rangeSlider = function (options: ConfigI) {
-    const sliderObjects: Array<Object> = [];
+  $.fn.rangeSlider = function (options: ConfigType) {
+    const sliderObjects: Array<SliderObjectType> = [];
     this.each((i:number, elem:HTMLElement) => {
       sliderObjects.push(new SliderObject(elem, options));
     });
@@ -18,16 +18,16 @@ const sliderInst = (function ($) {
   };
 }(jQuery));
 
-class SliderObject implements SliderObjectI {
-  config: ConfigI;
+class SliderObject implements SliderObjectType {
+  config: ConfigType;
 
-  view: ViewI;
+  view: ViewType;
 
-  presenter: PresenterI;
+  presenter: PresenterType;
 
-  model: ModelI;
+  model: ModelType;
 
-  constructor(root:HTMLElement, options: ConfigI) {
+  constructor(root:HTMLElement, options: ConfigType) {
     this.config = new Config(options);
 
     this.view = new View(root, this.config);
@@ -36,9 +36,9 @@ class SliderObject implements SliderObjectI {
     this.presenter = new Presenter(this.view, this.model);
   }
 
-  init(firValue:number, secValue:number) {
+  init(startValue:number, endValue:number) {
     this.view.render();
-    this.setValue(firValue, secValue);
+    this.setValue(startValue, endValue);
   }
 
   adaptValues() {
@@ -49,10 +49,10 @@ class SliderObject implements SliderObjectI {
     return this.config.value;
   }
 
-  setValue(start:number, end:number) {
+  setValue(startValue:number, endValue:number) {
     if (this.config.type === POINT) {
-      this.model.updateDirectively({ startPosition: this.config.origin, endPosition: start });
-    } else this.model.updateDirectively({ startPosition: start, endPosition: end });
+      this.model.updateDirectively({ startPosition: this.config.origin, endPosition: startValue });
+    } else this.model.updateDirectively({ startPosition: startValue, endPosition: endValue });
   }
 }
 

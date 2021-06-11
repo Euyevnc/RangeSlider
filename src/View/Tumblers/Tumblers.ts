@@ -2,23 +2,21 @@ import {
   TEPPEING, DRAG, POINT, VERTICAL, ALWAYS, CLICK,
 } from '../../consts';
 
-class Tumblers {
-  elements: HTMLDivElement[];
+class Tumblers implements ViewElement {
+  element: HTMLElement[];
 
-  root: HTMLElement;
+  config: ConfigType;
 
-  config: ConfigI;
+  callback: CallbackForView;
 
-  callback: Function;
-
-  constructor(option: ConfigI, callback: Function) {
+  constructor(option: ConfigType, callback: CallbackForView) {
     this.config = option;
     this.callback = callback;
   }
 
   render = () => {
     const { config } = this;
-    const list:Array<HTMLDivElement> = [];
+    const list:Array<HTMLElement> = [];
 
     for (let i = 0; i < 2; i += 1) {
       const tumblerElement = document.createElement('div');
@@ -34,14 +32,14 @@ class Tumblers {
       list.push(tumblerElement);
     }
 
-    this.elements = list;
-    return this.elements;
+    this.element = list;
+    return this.element;
   };
 
   update(firCoor: number, secCoor:number) {
     const { config } = this;
-    const firEl = this.elements[0] as HTMLElement;
-    const secEl = this.elements[1] as HTMLElement;
+    const firEl = this.element[0];
+    const secEl = this.element[1];
 
     if (config.orient === VERTICAL) {
       firEl.style.top = `${100 - firCoor}%`;
@@ -70,7 +68,7 @@ class Tumblers {
     const tumbler = (e.target as HTMLElement).closest('.js-range-slider__tumbler');
     const cloud = tumbler.querySelector('.js-range-slider__cloud ') as HTMLElement;
 
-    const isFirstTumbler = (tumbler === this.elements[0]);
+    const isFirstTumbler = (tumbler === this.element[0]);
 
     if (config.cloud === CLICK) cloud.style.display = 'block';
     document.body.style.cursor = 'pointer';
@@ -103,7 +101,7 @@ class Tumblers {
   #handlerTumblerKeydown = (event:KeyboardEvent) => {
     const { config, callback } = this;
     const tumbler = (<HTMLElement>event.target);
-    const isFirstTumbler = tumbler === this.elements[0];
+    const isFirstTumbler = tumbler === this.element[0];
 
     if ((event.key === 'ArrowDown' && config.orient === VERTICAL) || (event.key === 'ArrowLeft' && config.orient !== VERTICAL)) {
       const obj = { endPosition: -1 };
@@ -119,7 +117,7 @@ class Tumblers {
   };
 
   #handlerDocumentMove = (event:MouseEvent, isFirstTumbler: Boolean) => {
-    const sliderZone = this.elements[0].closest('.js-range-slider');
+    const sliderZone = this.element[0].closest('.js-range-slider');
     const bias = this.config.orient === VERTICAL
       ? ((sliderZone.getBoundingClientRect().bottom - event.clientY)
       / sliderZone.getBoundingClientRect().height) * 100
@@ -141,7 +139,7 @@ class Tumblers {
   };
 
   #updateClouds = (firPerc:number, secPerc:number) => {
-    const { config, elements } = this;
+    const { config, element } = this;
     let firValue: string;
     let secValue: string;
     firValue = ((config.range / 100) * firPerc + config.origin).toLocaleString();
@@ -152,8 +150,8 @@ class Tumblers {
       secValue = config.list[+secValue].toString();
     }
 
-    elements[0].querySelector('b').innerText = firValue;
-    elements[1].querySelector('b').innerText = secValue;
+    element[0].querySelector('b').innerText = firValue;
+    element[1].querySelector('b').innerText = secValue;
   };
 }
 

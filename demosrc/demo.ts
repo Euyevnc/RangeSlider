@@ -11,7 +11,6 @@ function initDemo() {
     const slider1 = jQuery('.first_wrapper>div:last-child').rangeSlider({
       type: 'range', step: 1, scale: false, cloud: 'always',
     }) as SliderObjectType;
-    slider1.init(20, 80);
 
     connectThePanel(block1, slider1);
 
@@ -19,21 +18,18 @@ function initDemo() {
     const slider2 = jQuery('.second_wrapper>div:last-child').rangeSlider({
       type: 'point', origin: 10, range: 90, step: 5, scaleInterval: 20, scale: true,
     }) as SliderObjectType;
-    slider2.init(30);
     connectThePanel(block2, slider2);
 
     const block3 = jQuery('.third_wrapper>.panel');
     const slider3 = jQuery('.third_wrapper>div:last-child').rangeSlider({
       type: 'point', orient: 'vertical', origin: 0, scaleInterval: 5, range: 10, scale: true,
     }) as SliderObjectType;
-    slider3.init(5);
     connectThePanel(block3, slider3);
 
     const block4 = jQuery('.fourt_wrapper>.panel');
     const slider4 = jQuery('.fourt_wrapper>div:last-child').rangeSlider({
       type: 'range', list: ['ἄ', 'β', 'γ', 'λ', 'Ξ', 'ζ', 'π', 'θ', 'ψ'], cloud: 'none', scale: true,
     }) as SliderObjectType;
-    slider4.init(1, 3);
     connectThePanel(block4, slider4);
   });
 }

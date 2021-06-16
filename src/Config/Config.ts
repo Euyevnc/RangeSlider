@@ -7,11 +7,11 @@ import {
 import INITIALS from './initials';
 
 class Config implements ConfigType {
-  #type: string;
+  #type: typeof RANGE | typeof POINT;
 
-  #orient: string;
+  #orient: typeof HORIZONTAL | typeof VERTICAL;
 
-  #list: Array<number|string>;
+  #cloud: typeof NONE | typeof ALWAYS | typeof CLICK;
 
   #range: number;
 
@@ -23,21 +23,11 @@ class Config implements ConfigType {
 
   #scaleInterval: number;
 
-  #cloud: string;
+  #list: Array<number|string>;
 
   #value: Array<string>;
 
-  constructor(initialData: {
-    type: string,
-    orient: string,
-    cloud: string,
-    origin: number,
-    range: number,
-    step: number,
-    scaleInterval:number
-    list: Array<string|number>,
-    scale: boolean,
-  }) {
+  constructor(initialData: ConfigType) {
     this.list = initialData.list;
 
     this.range = initialData.range;
@@ -50,14 +40,13 @@ class Config implements ConfigType {
     this.cloud = initialData.cloud;
 
     this.scale = initialData.scale;
-    this.value = INITIALS.value;
   }
 
   get type() {
     return this.#type;
   }
 
-  set type(type: string) {
+  set type(type: typeof RANGE | typeof POINT) {
     this.#type = (type === RANGE || type === POINT)
       ? type
       : (this.#type || INITIALS.type);
@@ -67,7 +56,7 @@ class Config implements ConfigType {
     return this.#orient;
   }
 
-  set orient(orient: string) {
+  set orient(orient: typeof VERTICAL | typeof HORIZONTAL) {
     this.#orient = (orient === VERTICAL || orient === HORIZONTAL)
       ? orient
       : (this.#orient || INITIALS.orient);
@@ -77,7 +66,7 @@ class Config implements ConfigType {
     return this.#cloud;
   }
 
-  set cloud(display: string) {
+  set cloud(display: typeof NONE | typeof ALWAYS | typeof CLICK) {
     this.#cloud = (display === NONE || display === ALWAYS || display === CLICK)
       ? display
       : (this.#cloud || INITIALS.cloud);

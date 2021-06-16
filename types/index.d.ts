@@ -13,15 +13,16 @@ type SliderObjectType = {
 
 };
 type ConfigType = {
-  type: string;
-  orient: string;
+  type: 'range' | 'point';
+  orient: 'vertical' | 'horizontal';
+  cloud: 'always' | 'click' | 'none' ;
+
   list: Array<number|string>;
   range: number;
   origin:number;
   step: number;
   scale: boolean;
   scaleInterval: number;
-  cloud: string;
   value: Array<string>;
 };
 

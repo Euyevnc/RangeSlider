@@ -100,24 +100,15 @@ class Model implements ModelType {
     const { range, step } = this.config;
 
     const { startPosition, endPosition } = data;
-    let newStart: number;
-    let newEnd: number;
 
-    if (startPosition || startPosition === 0) {
-      const valueOfPosition = this.#convertToValue(startPosition);
+    const valueOfStart = this.#convertToValue(startPosition);
+    const newStart = Math.round(valueOfStart / step) * step;
 
-      newStart = Math.round(valueOfPosition / step) * step;
-    }
-
-    if (endPosition || endPosition === 0) {
-      const valueOfPosition = this.#convertToValue(endPosition);
-
-      const cursorOverFinish = valueOfPosition >= range - (0.5 * (range % step));
-
-      newEnd = cursorOverFinish
-        ? range
-        : Math.round(valueOfPosition / step) * step;
-    }
+    const valueOfEnd = this.#convertToValue(endPosition);
+    const cursorOverFinish = valueOfEnd >= range - (0.5 * (range % step));
+    const newEnd = cursorOverFinish
+      ? range
+      : Math.round(valueOfEnd / step) * step;
 
     return this.#accordinateTheCoordinates([newStart, newEnd]);
   };

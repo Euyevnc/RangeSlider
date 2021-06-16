@@ -13,7 +13,7 @@ class Config implements ConfigType {
 
   #cloud: typeof NONE | typeof ALWAYS | typeof CLICK;
 
-  #range: number;
+  #rangeOffset: number;
 
   #origin:number;
 
@@ -30,7 +30,7 @@ class Config implements ConfigType {
   constructor(initialData: ConfigType) {
     this.list = initialData.list;
 
-    this.range = initialData.range;
+    this.rangeOffset = initialData.rangeOffset;
     this.step = initialData.step;
     this.origin = initialData.origin;
     this.scaleInterval = initialData.scaleInterval;
@@ -79,7 +79,7 @@ class Config implements ConfigType {
   set list(list: Array<number|string>) {
     if (list && list.length) {
       this.#list = list;
-      this.range = list.length;
+      this.rangeOffset = list.length;
       this.origin = 0;
       this.step = 1;
       this.scaleInterval = 1;
@@ -120,19 +120,19 @@ class Config implements ConfigType {
     else {
       this.#scaleInterval = isNaN(interval)
         ? (this.#scaleInterval || INITIALS.scaleInterval)
-        : Math.min(this.#range, Math.max(1, Math.round(+interval)));
+        : Math.min(this.#rangeOffset, Math.max(1, Math.round(+interval)));
     }
   }
 
-  get range() {
-    return this.#range;
+  get rangeOffset() {
+    return this.#rangeOffset;
   }
 
-  set range(range: number) {
-    if (this.list.length) this.#range = this.list.length - 1;
+  set rangeOffset(range: number) {
+    if (this.list.length) this.#rangeOffset = this.list.length - 1;
     else {
-      this.#range = isNaN(range)
-        ? (this.#range || INITIALS.range)
+      this.#rangeOffset = isNaN(range)
+        ? (this.#rangeOffset || INITIALS.rangeOffset)
         : Math.max(1, Math.round(+range));
     }
     this.scaleInterval = this.#scaleInterval;
@@ -148,7 +148,7 @@ class Config implements ConfigType {
     else {
       this.#step = isNaN(step)
         ? (this.#step || INITIALS.step)
-        : Math.min(this.#range, Math.max(1, Math.round(+step)));
+        : Math.min(this.#rangeOffset, Math.max(1, Math.round(+step)));
     }
   }
 

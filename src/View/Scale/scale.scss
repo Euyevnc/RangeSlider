@@ -20,18 +20,18 @@
     }
   }
 
-  &__scale-cell {
+  &__scale-value {
+    position: absolute;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  &__scale-division {
     position: relative;
     flex-shrink: 0;
     box-sizing: border-box;
     color: rgb(107, 192, 174);
     font-size: 18px;
-
-    & .range-slider__scale-value {
-      position: absolute;
-      cursor: pointer;
-      user-select: none;
-    }
 
     &_orient_vertical {
       width: 20px;

@@ -18,7 +18,7 @@ type ConfigType = {
   cloud: 'always' | 'click' | 'none' ;
 
   list: Array<number|string>;
-  range: number;
+  rangeOffset: number;
   origin:number;
   step: number;
   scale: boolean;
@@ -30,7 +30,7 @@ type ModelType = {
   config: ConfigType;
   observer: ObserverType;
 
-  updateDirectively: (data: DataForModel) => void;
+  updateDirectly : (data: DataForModel) => void;
   updateFromPercent: (data: DataForModel) => void;
   updateFromStep: (data: DataForModel) => void;
 
@@ -62,8 +62,10 @@ type ViewType = {
 };
 
 type ViewElement = {
-  element: HTMLElement | HTMLElement[];
   config: ConfigType;
+
+  element?: HTMLElement;
+  elements?: HTMLElement[];
   callback?: CallbackForView
 };
 

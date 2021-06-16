@@ -5,7 +5,7 @@ const initials: ConfigType = {
   orient: HORIZONTAL,
   cloud: CLICK,
 
-  range: 100,
+  rangeOffset: 100,
   origin: 0,
   scaleInterval: 10,
   step: 1,

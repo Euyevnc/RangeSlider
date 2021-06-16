@@ -16,13 +16,13 @@ function initDemo() {
 
     const block2 = jQuery('.second_wrapper>.panel');
     const slider2 = jQuery('.second_wrapper>div:last-child').rangeSlider({
-      type: 'point', origin: 10, range: 90, step: 5, scaleInterval: 20, scale: true,
+      type: 'point', origin: 10, rangeOffset: 90, step: 5, scaleInterval: 20, scale: true,
     }) as SliderObjectType;
     connectThePanel(block2, slider2);
 
     const block3 = jQuery('.third_wrapper>.panel');
     const slider3 = jQuery('.third_wrapper>div:last-child').rangeSlider({
-      type: 'point', orient: 'vertical', origin: 0, scaleInterval: 5, range: 10, scale: true,
+      type: 'point', orient: 'vertical', origin: 0, scaleInterval: 5, rangeOffset: 10, scale: true,
     }) as SliderObjectType;
     connectThePanel(block3, slider3);
 
@@ -88,7 +88,7 @@ function connectThePanel(panelNode: JQuery, sliderObject: SliderObjectType) {
   panelNode.find("input[name='range']").on('change', (e) => {
     e.preventDefault();
     const value = Number((e.target as HTMLInputElement).value);
-    slider.config.range = value;
+    slider.config.rangeOffset = value;
     sync();
   });
 
@@ -183,7 +183,7 @@ function syncPanel(panelNode: JQuery, slider: SliderObjectType) {
   }
 
   panelNode.find("[name='origin']").prop('value', slider.config.origin);
-  panelNode.find("[name='range']").prop('value', slider.config.range);
+  panelNode.find("[name='range']").prop('value', slider.config.rangeOffset);
   panelNode.find("[name='step']").prop('value', slider.config.step);
 }
 

@@ -17,7 +17,7 @@ class Presenter implements PresenterType {
         this.model.updateFromPercent(data);
         break;
       case SCALE_CLICK:
-        this.model.updateDirectively(data);
+        this.model.updateDirectly(data);
         break;
       case TEPPEING:
         this.model.updateFromStep(data);

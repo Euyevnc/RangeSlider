@@ -30,11 +30,14 @@ class Line implements ViewElement {
       : event.clientX;
     const sliderZone = this.element.closest('.js-range-slider');
 
-    const bias = orient === VERTICAL
-      ? -((clickPosition - sliderZone.getBoundingClientRect().bottom)
-    / sliderZone.getBoundingClientRect().height) * 100
-      : ((clickPosition - sliderZone.getBoundingClientRect().left)
-    / sliderZone.getBoundingClientRect().width) * 100;
+    const verticalOffset = ((sliderZone.getBoundingClientRect().bottom - clickPosition)
+      / sliderZone.getBoundingClientRect().height) * 100;
+    const horizontalOffset = ((clickPosition - sliderZone.getBoundingClientRect().left)
+      / sliderZone.getBoundingClientRect().width) * 100;
+
+    const offsetToTransfer = this.config.orient === VERTICAL
+      ? verticalOffset
+      : horizontalOffset;
 
     const tumblersPositions = orient === VERTICAL
       ? [...(event.target as HTMLElement).closest('.js-range-slider').querySelectorAll('.js-range-slider__tumbler')]
@@ -43,11 +46,13 @@ class Line implements ViewElement {
       : [...(event.target as HTMLElement).closest('.js-range-slider').querySelectorAll('.js-range-slider__tumbler')]
         .map((tum) => (<HTMLElement>tum)
           .getBoundingClientRect().left + (<HTMLElement>tum).offsetWidth / 2);
+
     const distanceToFirst = Math.abs(clickPosition - tumblersPositions[0]);
     const distanceToSecond = Math.abs(clickPosition - tumblersPositions[1]);
+
     if (type === POINT || distanceToFirst >= distanceToSecond) {
-      this.callback(DRAG, { endPosition: bias });
-    } else this.callback(DRAG, { startPosition: bias });
+      this.callback(DRAG, { endPosition: offsetToTransfer });
+    } else this.callback(DRAG, { startPosition: offsetToTransfer });
   };
 }
 

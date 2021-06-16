@@ -3,7 +3,7 @@ import {
 } from '../../consts';
 
 class Tumblers implements ViewElement {
-  element: HTMLElement[];
+  elements: HTMLElement[];
 
   config: ConfigType;
 
@@ -32,14 +32,14 @@ class Tumblers implements ViewElement {
       list.push(tumblerElement);
     }
 
-    this.element = list;
-    return this.element;
+    this.elements = list;
+    return this.elements;
   };
 
   update(firstCoor: number, secondCoor:number) {
     const { config } = this;
-    const firstEl = this.element[0];
-    const secondEl = this.element[1];
+    const firstEl = this.elements[0];
+    const secondEl = this.elements[1];
 
     if (config.orient === VERTICAL) {
       firstEl.style.top = `${100 - firstCoor}%`;
@@ -68,7 +68,7 @@ class Tumblers implements ViewElement {
     const tumbler = (e.target as HTMLElement).closest('.js-range-slider__tumbler');
     const cloud = tumbler.querySelector('.js-range-slider__cloud ') as HTMLElement;
 
-    const isFirstTumbler = (tumbler === this.element[0]);
+    const isFirstTumbler = (tumbler === this.elements[0]);
 
     if (config.cloud === CLICK) cloud.style.display = 'block';
     document.body.style.cursor = 'pointer';
@@ -101,7 +101,7 @@ class Tumblers implements ViewElement {
   #handlerTumblerKeydown = (event:KeyboardEvent) => {
     const { config, callback } = this;
     const tumbler = (<HTMLElement>event.target);
-    const isFirstTumbler = tumbler === this.element[0];
+    const isFirstTumbler = tumbler === this.elements[0];
 
     if ((event.key === 'ArrowDown' && config.orient === VERTICAL) || (event.key === 'ArrowLeft' && config.orient !== VERTICAL)) {
       const obj = { endPosition: -1 };
@@ -117,41 +117,46 @@ class Tumblers implements ViewElement {
   };
 
   #handlerDocumentMove = (event:MouseEvent, isFirstTumbler: Boolean) => {
-    const sliderZone = this.element[0].closest('.js-range-slider');
-    const bias = this.config.orient === VERTICAL
-      ? ((sliderZone.getBoundingClientRect().bottom - event.clientY)
-      / sliderZone.getBoundingClientRect().height) * 100
-      : ((event.clientX - sliderZone.getBoundingClientRect().left)
+    const sliderZone = this.elements[0].closest('.js-range-slider');
+
+    const verticalOffset = ((sliderZone.getBoundingClientRect().bottom - event.clientY)
+      / sliderZone.getBoundingClientRect().height) * 100;
+    const horizontalOffset = ((event.clientX - sliderZone.getBoundingClientRect().left)
       / sliderZone.getBoundingClientRect().width) * 100;
+
+    const offsetToTransfer = this.config.orient === VERTICAL
+      ? verticalOffset
+      : horizontalOffset;
+
     if (isFirstTumbler) {
-      this.callback(DRAG, { startPosition: bias });
-    } else (this.callback(DRAG, { endPosition: bias }));
+      this.callback(DRAG, { startPosition: offsetToTransfer });
+    } else (this.callback(DRAG, { endPosition: offsetToTransfer }));
   };
 
   #createTheCloud = () => {
     const cloud = document.createElement('div');
     cloud.className = `js-range-slider__cloud range-slider__cloud  range-slider__cloud_orient_${this.config.orient}`;
-    const valueCont = document.createElement('b');
-    valueCont.className = 'js-range-slider__cloud-value range-slider__cloud-value';
-    cloud.append(valueCont);
+    const elementWithValue = document.createElement('b');
+    elementWithValue.className = 'js-range-slider__cloud-value range-slider__cloud-value';
+    cloud.append(elementWithValue);
     if (this.config.cloud !== ALWAYS) cloud.style.display = 'none';
     return cloud;
   };
 
   #updateClouds = (firstPerc:number, secondPerc:number) => {
-    const { config, element } = this;
+    const { config, elements } = this;
     let firstValue: string;
     let secondValue: string;
-    firstValue = ((config.range / 100) * firstPerc + config.origin).toLocaleString();
-    secondValue = ((config.range / 100) * secondPerc + config.origin).toLocaleString();
+    firstValue = ((config.rangeOffset / 100) * firstPerc + config.origin).toLocaleString();
+    secondValue = ((config.rangeOffset / 100) * secondPerc + config.origin).toLocaleString();
 
     if (config.list.length) {
       firstValue = config.list[+firstValue].toString();
       secondValue = config.list[+secondValue].toString();
     }
 
-    element[0].querySelector('b').innerText = firstValue;
-    element[1].querySelector('b').innerText = secondValue;
+    elements[0].querySelector('b').innerText = firstValue;
+    elements[1].querySelector('b').innerText = secondValue;
   };
 }
 

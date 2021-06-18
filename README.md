@@ -24,7 +24,7 @@ let slider = container.rangeSlider(params)
 
 ```
 Выглядеть это будет примерно так:  
-![demo](https://github.com/Euyevnc/RangeSlider/blob/master/readme_assets/readme3.png)
+![demo](https://github.com/Euyevnc/RangeSlider/blob/master/readme_assets/readme.png)
 
 
 

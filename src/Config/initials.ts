@@ -13,8 +13,6 @@ const initials: ConfigType = {
 
   list: [] as Array<string>,
   value: [] as Array<string>,
-
-  initialStart: 0,
 };
 
 export default initials;

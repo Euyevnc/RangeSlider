@@ -173,7 +173,7 @@ class Config implements ConfigType {
 
   set initialStart(value: number) {
     this.#initialStart = isNaN(value)
-      ? INITIALS.initialStart
+      ? this.origin
       : value;
   }
 

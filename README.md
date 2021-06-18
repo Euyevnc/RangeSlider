@@ -42,7 +42,7 @@ let slider = container.rangeSlider(params)
 |    scaleInterval| Тип: number; (Интервал отображаемых делений шкалы) | 10|
 |    list         | Тип: Array <number/string> (Альтернативный способ)  | []|
 |    initialStart | Тип: number; (Начальное положение первого ползунка) | = origin|
-|    initialStart | Тип: number; (Начальное положение второго ползунка) | = rangeOffset|
+|    initialEnd   | Тип: number; (Начальное положение второго ползунка) | = rangeOffset|
     
 
 **Если длинна массива _list_ более нуля, то свойства _step_, _origin_, _scaleInterval_ задаются по-умолчанию, а _rangeOffset_ - исходя из длинны .**

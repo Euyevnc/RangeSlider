@@ -15,8 +15,11 @@ class Model implements ModelType {
   constructor(options:ConfigType) {
     this.config = options;
     this.observer = new Observer();
-    this.start = 0;
-    this.end = this.config.rangeOffset;
+
+    this.updateDirectly({
+      startPosition: options.initialStart,
+      endPosition: options.initialEnd,
+    });
   }
 
   updateDirectly = (data: DataForModel) => {
@@ -83,8 +86,8 @@ class Model implements ModelType {
     const currentStart = this.start;
     const currentEnd = this.end;
 
-    let newStart = window.isNaN(startPosition) ? currentStart : (startPosition - origin);
-    let newEnd = window.isNaN(endPosition) ? currentEnd : (endPosition - origin);
+    let newStart = isNaN(startPosition) ? currentStart : (startPosition - origin);
+    let newEnd = isNaN(endPosition) ? currentEnd : (endPosition - origin);
 
     newEnd = type === POINT
       ? Math.max(0, Math.min(newEnd, range))
@@ -175,10 +178,15 @@ class Model implements ModelType {
   #setValue = (values: { start:number, end : number }) => {
     this.start = values.start;
     this.end = values.end;
-    this.config.value = [
-      (values.start + this.config.origin).toLocaleString(),
-      (values.end + this.config.origin).toLocaleString(),
-    ];
+    this.config.value = this.config.list.length
+      ? [
+        this.config.list[values.start],
+        this.config.list[values.end],
+      ]
+      : [
+        (values.start + this.config.origin).toLocaleString(),
+        (values.end + this.config.origin).toLocaleString(),
+      ];
   };
 
   #callTheBroadcast = () => {

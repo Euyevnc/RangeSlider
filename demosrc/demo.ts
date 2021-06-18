@@ -9,26 +9,26 @@ function initDemo() {
   document.addEventListener('DOMContentLoaded', () => {
     const panel1 = jQuery('.demonstration_order_first .demonstration__panel');
     const slider1 = jQuery('.demonstration_order_first .demonstration__container').rangeSlider({
-      type: 'range', step: 1, scale: false, cloud: 'always',
+      type: 'range', step: 1, scale: false, cloud: 'always', initialStart: 20, initialEnd: 80,
     }) as SliderObjectType;
 
     connectThePanel(panel1, slider1);
 
     const panel2 = jQuery('.demonstration_order_second .demonstration__panel');
     const slider2 = jQuery('.demonstration_order_second .demonstration__container').rangeSlider({
-      type: 'point', origin: 10, rangeOffset: 90, step: 5, scaleInterval: 20, scale: true,
+      type: 'point', origin: 10, rangeOffset: 90, step: 5, scaleInterval: 20, scale: true, initialEnd: 50,
     }) as SliderObjectType;
     connectThePanel(panel2, slider2);
 
     const panel3 = jQuery('.demonstration_order_third .demonstration__panel');
     const slider3 = jQuery('.demonstration_order_third .demonstration__container').rangeSlider({
-      type: 'point', orient: 'vertical', origin: 0, scaleInterval: 5, rangeOffset: 10, scale: true,
+      type: 'point', orient: 'vertical', origin: 0, scaleInterval: 5, rangeOffset: 10, scale: true, initialEnd: 5,
     }) as SliderObjectType;
     connectThePanel(panel3, slider3);
 
     const panel4 = jQuery('.demonstration_order_fourth .demonstration__panel');
     const slider4 = jQuery('.demonstration_order_fourth .demonstration__container').rangeSlider({
-      type: 'range', list: ['ἄ', 'β', 'γ', 'λ', 'Ξ', 'ζ', 'π', 'θ', 'ψ'], cloud: 'none', scale: true,
+      type: 'range', list: ['ἄ', 'β', 'γ', 'λ', 'Ξ', 'ζ', 'π', 'θ', 'ψ'], cloud: 'none', scale: true, initialStart: 3, initialEnd: 6,
     }) as SliderObjectType;
     connectThePanel(panel4, slider4);
   });
@@ -136,7 +136,8 @@ function connectThePanel(panelNode: JQuery, sliderObject: SliderObjectType) {
 }
 
 function syncPanel(panelNode: JQuery, slider: SliderObjectType) {
-  slider.init();
+  slider.render();
+
   panelNode.find("[name='first_pos']").prop('value', slider.getValue()[0]);
   panelNode.find("[name='second_pos']").prop('value', slider.getValue()[1]);
 

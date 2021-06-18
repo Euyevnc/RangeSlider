@@ -30,15 +30,17 @@ class SliderObject implements SliderObjectType {
   constructor(root:HTMLElement, options: ConfigType) {
     this.config = new Config(options);
 
-    this.view = new View(root, this.config);
     this.model = new Model(this.config);
+    this.view = new View(root, this.config);
 
     this.presenter = new Presenter(this.view, this.model);
+
+    this.render();
   }
 
-  init(startValue:number, endValue:number) {
+  render() {
     this.view.render();
-    this.setValue(startValue, endValue);
+    this.model.updateDirectly({});
   }
 
   adaptValues() {

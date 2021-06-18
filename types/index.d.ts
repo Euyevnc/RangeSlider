@@ -5,13 +5,12 @@ type SliderObjectType = {
   view:ViewType;
   presenter:PresenterType;
 
-  init: (startValue?: number, endValue?: number) => void;
-
-  getValue: () => Array<string>;
+  render: () => void;
+  getValue: () => Array<number|string>;
   setValue: (startValue?: number, endValue?: number) => void;
   adaptValues: () => void;
-
 };
+
 type ConfigType = {
   type: 'range' | 'point';
   orient: 'vertical' | 'horizontal';
@@ -23,7 +22,10 @@ type ConfigType = {
   step: number;
   scale: boolean;
   scaleInterval: number;
-  value: Array<string>;
+  value: Array<number | string>;
+
+  initialStart?: number;
+  initialEnd?: number
 };
 
 type ModelType = {

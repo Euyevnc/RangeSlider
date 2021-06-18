@@ -11,8 +11,10 @@ const initials: ConfigType = {
   step: 1,
   scale: false,
 
-  list: [] as Array<string|number>,
+  list: [] as Array<string>,
   value: [] as Array<string>,
+
+  initialStart: 0,
 };
 
 export default initials;

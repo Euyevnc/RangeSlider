@@ -27,6 +27,10 @@ class Config implements ConfigType {
 
   #value: Array<string>;
 
+  #initialStart: number;
+
+  #initialEnd: number;
+
   constructor(initialData: ConfigType) {
     this.list = initialData.list;
 
@@ -40,6 +44,9 @@ class Config implements ConfigType {
     this.cloud = initialData.cloud;
 
     this.scale = initialData.scale;
+
+    this.initialStart = initialData.initialStart;
+    this.initialEnd = initialData.initialEnd;
   }
 
   get type() {
@@ -158,6 +165,26 @@ class Config implements ConfigType {
 
   set value(value: Array<string>) {
     this.#value = value;
+  }
+
+  get initialStart() {
+    return this.#initialStart;
+  }
+
+  set initialStart(value: number) {
+    this.#initialStart = isNaN(value)
+      ? INITIALS.initialStart
+      : value;
+  }
+
+  get initialEnd() {
+    return this.#initialEnd;
+  }
+
+  set initialEnd(value: number) {
+    this.#initialEnd = isNaN(value)
+      ? this.rangeOffset + this.origin
+      : value;
   }
 }
 

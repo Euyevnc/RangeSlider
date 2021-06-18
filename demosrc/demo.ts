@@ -7,30 +7,30 @@ initDemo();
 
 function initDemo() {
   document.addEventListener('DOMContentLoaded', () => {
-    const block1 = jQuery('.first_wrapper>.panel');
-    const slider1 = jQuery('.first_wrapper>div:last-child').rangeSlider({
+    const panel1 = jQuery('.demonstration_order_first .demonstration__panel');
+    const slider1 = jQuery('.demonstration_order_first .demonstration__container').rangeSlider({
       type: 'range', step: 1, scale: false, cloud: 'always',
     }) as SliderObjectType;
 
-    connectThePanel(block1, slider1);
+    connectThePanel(panel1, slider1);
 
-    const block2 = jQuery('.second_wrapper>.panel');
-    const slider2 = jQuery('.second_wrapper>div:last-child').rangeSlider({
+    const panel2 = jQuery('.demonstration_order_second .demonstration__panel');
+    const slider2 = jQuery('.demonstration_order_second .demonstration__container').rangeSlider({
       type: 'point', origin: 10, rangeOffset: 90, step: 5, scaleInterval: 20, scale: true,
     }) as SliderObjectType;
-    connectThePanel(block2, slider2);
+    connectThePanel(panel2, slider2);
 
-    const block3 = jQuery('.third_wrapper>.panel');
-    const slider3 = jQuery('.third_wrapper>div:last-child').rangeSlider({
+    const panel3 = jQuery('.demonstration_order_third .demonstration__panel');
+    const slider3 = jQuery('.demonstration_order_third .demonstration__container').rangeSlider({
       type: 'point', orient: 'vertical', origin: 0, scaleInterval: 5, rangeOffset: 10, scale: true,
     }) as SliderObjectType;
-    connectThePanel(block3, slider3);
+    connectThePanel(panel3, slider3);
 
-    const block4 = jQuery('.fourt_wrapper>.panel');
-    const slider4 = jQuery('.fourt_wrapper>div:last-child').rangeSlider({
+    const panel4 = jQuery('.demonstration_order_fourth .demonstration__panel');
+    const slider4 = jQuery('.demonstration_order_fourth .demonstration__container').rangeSlider({
       type: 'range', list: ['ἄ', 'β', 'γ', 'λ', 'Ξ', 'ζ', 'π', 'θ', 'ψ'], cloud: 'none', scale: true,
     }) as SliderObjectType;
-    connectThePanel(block4, slider4);
+    connectThePanel(panel4, slider4);
   });
 }
 

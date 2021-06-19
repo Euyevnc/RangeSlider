@@ -69,10 +69,10 @@ function connectThePanel(panelNode: JQuery, sliderObject: SliderObjectType) {
     e.onchange = () => {
       if (e.getAttribute('value') === 'vertical') {
         slider.config.orient = 'vertical';
-        panelNode.next().addClass('for_vertical');
+        panelNode.next().addClass('demonstration__container_for_vertical');
       } else {
         slider.config.orient = 'horizontal';
-        panelNode.next().removeClass('for_vertical');
+        panelNode.next().removeClass('demonstration__container_for_vertical');
       }
       sync();
     };

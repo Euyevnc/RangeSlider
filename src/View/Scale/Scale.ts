@@ -22,7 +22,7 @@ class Scale implements ViewElement {
     const numberOfIntervals = Math.ceil(config.rangeOffset / config.scaleInterval);
     const scaleElement = document.createElement('div');
 
-    scaleElement.className = `range-slider__scale  range-slider__scale_orient_${config.orient}`;
+    scaleElement.className = `js-range-slider__scale range-slider__scale  range-slider__scale_orient_${config.orient}`;
 
     scaleElement.append(this.#createDivision(config.beginning));
     for (let i = 1; i < numberOfIntervals; i += 1) {
@@ -65,7 +65,6 @@ class Scale implements ViewElement {
     const { orient } = this.config;
 
     const division = (<HTMLElement>event.target).closest('.js-range-slider__scale-division') as HTMLElement;
-    const value = Number(division.getAttribute('value'));
 
     const divisionPosition = orient === VERTICAL
       ? division.offsetTop + division.offsetHeight
@@ -80,9 +79,15 @@ class Scale implements ViewElement {
     const distanceToFirst = Math.abs(divisionPosition - tumblersPositions[0]);
     const distanceToSecond = Math.abs(divisionPosition - tumblersPositions[1]);
 
+    const divisionValue = orient === VERTICAL
+      ? 100 - (100 / (division.closest('.js-range-slider__scale') as HTMLElement).offsetHeight) * divisionPosition
+      : (100 / (division.closest('.js-range-slider__scale') as HTMLElement).offsetWidth) * divisionPosition;
+
+    console.log(divisionValue);
+
     if (this.config.type === POINT || distanceToFirst >= distanceToSecond) {
-      this.callback(SCALE_CLICK, { endPosition: value });
-    } else this.callback(SCALE_CLICK, { startPosition: value });
+      this.callback(SCALE_CLICK, { endPosition: divisionValue });
+    } else this.callback(SCALE_CLICK, { startPosition: divisionValue });
   };
 
   #handlerDivisionKeydown = (event:KeyboardEvent) => {

@@ -3,7 +3,7 @@ import './view.scss';
 import Observer from '../Observer/Observer';
 
 import Tumblers from './Tumblers/Tumblers';
-import Selected from './Selected/Selected';
+import Indicator from './Indicator/Indicator';
 import Scale from './Scale/Scale';
 import Line from './Line/Line';
 
@@ -20,7 +20,7 @@ class View implements ViewType {
 
   line: Line;
 
-  selected: Selected;
+  indicator: Indicator;
 
   scale: Scale;
 
@@ -33,7 +33,7 @@ class View implements ViewType {
     this.scale = new Scale(option, this.observer.broadcast);
 
     this.line = new Line(option, this.observer.broadcast);
-    this.selected = new Selected(option);
+    this.indicator = new Indicator(option);
   }
 
   render() {
@@ -48,7 +48,7 @@ class View implements ViewType {
     this.tumblers.render().forEach((el:HTMLElement) => {
       this.line.element.append(el);
     });
-    this.line.element.append(this.selected.render());
+    this.line.element.append(this.indicator.render());
 
     this.element = mainElement;
     root.innerHTML = '';
@@ -60,7 +60,7 @@ class View implements ViewType {
 
     this.tumblers.update(firstCoordinate, secondCoordinate);
 
-    this.selected.update(firstCoordinate, secondCoordinate);
+    this.indicator.update(firstCoordinate, secondCoordinate);
 
     this.scale.update(firstCoordinate, secondCoordinate);
   }

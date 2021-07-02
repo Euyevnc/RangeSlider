@@ -52,7 +52,8 @@ class SliderObject implements SliderObjectType {
 
   setValue(startValue:number, endValue:number) {
     if (this.#config.type === POINT) {
-      this.#model.updateDirectly({ startPosition: this.#config.origin, endPosition: startValue });
+      this.#model
+        .updateDirectly({ startPosition: this.#config.beginning, endPosition: startValue });
     } else this.#model.updateDirectly({ startPosition: startValue, endPosition: endValue });
   }
 

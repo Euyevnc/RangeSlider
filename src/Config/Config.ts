@@ -15,7 +15,7 @@ class Config implements ConfigType {
 
   #rangeOffset: number;
 
-  #origin:number;
+  #beginning:number;
 
   #step: number;
 
@@ -27,16 +27,16 @@ class Config implements ConfigType {
 
   #value: Array<string>;
 
-  #initialStart: number;
+  #start: number;
 
-  #initialEnd: number;
+  #end: number;
 
   constructor(initialData: UserConfigType) {
     this.list = initialData.list;
 
     this.rangeOffset = initialData.rangeOffset;
     this.step = initialData.step;
-    this.origin = initialData.origin;
+    this.beginning = initialData.beginning;
     this.scaleInterval = initialData.scaleInterval;
 
     this.type = initialData.type;
@@ -45,8 +45,8 @@ class Config implements ConfigType {
 
     this.scale = initialData.scale;
 
-    this.initialStart = initialData.initialStart;
-    this.initialEnd = initialData.initialEnd;
+    this.start = initialData.start;
+    this.end = initialData.end;
   }
 
   get type() {
@@ -87,7 +87,7 @@ class Config implements ConfigType {
     if (list && list.length) {
       this.#list = list;
       this.rangeOffset = list.length;
-      this.origin = 0;
+      this.beginning = 0;
       this.step = 1;
       this.scaleInterval = 1;
     } else {
@@ -105,16 +105,16 @@ class Config implements ConfigType {
     this.#scale = Boolean(display);
   }
 
-  get origin() {
-    return this.#origin;
+  get beginning() {
+    return this.#beginning;
   }
 
-  set origin(origin: number) {
-    if (this.list.length) this.#origin = 0;
+  set beginning(beginning: number) {
+    if (this.list.length) this.#beginning = 0;
     else {
-      this.#origin = isNaN(origin)
-        ? (this.#origin || INITIALS.origin)
-        : Math.round(+origin);
+      this.#beginning = isNaN(beginning)
+        ? (this.#beginning || INITIALS.beginning)
+        : Math.round(+beginning);
     }
   }
 
@@ -167,23 +167,23 @@ class Config implements ConfigType {
     this.#value = value;
   }
 
-  get initialStart() {
-    return this.#initialStart;
+  get start() {
+    return this.#start;
   }
 
-  set initialStart(value: number) {
-    this.#initialStart = isNaN(value)
-      ? this.origin
+  set start(value: number) {
+    this.#start = isNaN(value)
+      ? this.beginning
       : value;
   }
 
-  get initialEnd() {
-    return this.#initialEnd;
+  get end() {
+    return this.#end;
   }
 
-  set initialEnd(value: number) {
-    this.#initialEnd = isNaN(value)
-      ? this.rangeOffset + this.origin
+  set end(value: number) {
+    this.#end = isNaN(value)
+      ? this.rangeOffset + this.beginning
       : value;
   }
 }

@@ -6,7 +6,7 @@ const initials: ConfigType = {
   cloud: CLICK,
 
   rangeOffset: 100,
-  origin: 0,
+  beginning: 0,
   scaleInterval: 10,
   step: 1,
   scale: false,
@@ -14,8 +14,8 @@ const initials: ConfigType = {
   list: [] as Array<string>,
   value: [] as Array<string>,
 
-  initialStart: 0,
-  initialEnd: 0,
+  start: 0,
+  end: 0,
 };
 
 export default initials;

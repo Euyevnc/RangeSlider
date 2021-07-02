@@ -21,14 +21,14 @@ type ConfigType = {
 
   list: Array<number|string>;
   rangeOffset: number;
-  origin:number;
+  beginning:number;
   step: number;
   scale: boolean;
   scaleInterval: number;
   value: Array<number | string>;
 
-  initialStart: number;
-  initialEnd: number
+  start: number;
+  end: number
 };
 
 type UserConfigType = {
@@ -40,14 +40,14 @@ type UserConfigType = {
 
   list?: Array<number|string>;
   rangeOffset?: number;
-  origin?:number;
+  beginning?:number;
   step?: number;
   scale?: boolean;
   scaleInterval?: number;
   value?: Array<number | string>;
 
-  initialStart?: number;
-  initialEnd?: number
+  start?: number;
+  end?: number
 };
 
 type ModelType = {
@@ -74,7 +74,7 @@ type ViewType = {
 
   tumblers: ViewElement;
   line: ViewElement;
-  selected: ViewElement;
+  indicator: ViewElement;
   scale: ViewElement;
   render: () => void;
   updateView: (data: DataForView) => void;

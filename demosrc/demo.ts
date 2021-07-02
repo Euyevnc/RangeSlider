@@ -9,26 +9,26 @@ function initDemo() {
   document.addEventListener('DOMContentLoaded', () => {
     const panel1 = jQuery('.demonstration_order_first .demonstration__panel');
     const slider1 = jQuery('.demonstration_order_first .demonstration__container').rangeSlider({
-      type: 'range', step: 1, scale: false, cloud: 'always', initialStart: 20, initialEnd: 80,
+      type: 'range', step: 1, scale: false, cloud: 'always', start: 20, end: 80,
     }) as SliderObjectType;
 
     connectThePanel(panel1, slider1);
 
     const panel2 = jQuery('.demonstration_order_second .demonstration__panel');
     const slider2 = jQuery('.demonstration_order_second .demonstration__container').rangeSlider({
-      type: 'point', origin: 10, rangeOffset: 90, step: 5, scaleInterval: 20, scale: true, initialEnd: 50,
+      type: 'point', beginning: 10, rangeOffset: 90, step: 5, scaleInterval: 20, scale: true, end: 50,
     }) as SliderObjectType;
     connectThePanel(panel2, slider2);
 
     const panel3 = jQuery('.demonstration_order_third .demonstration__panel');
     const slider3 = jQuery('.demonstration_order_third .demonstration__container').rangeSlider({
-      type: 'point', orient: 'vertical', origin: 0, scaleInterval: 5, rangeOffset: 10, scale: true, initialEnd: 5,
+      type: 'point', orient: 'vertical', beginning: 0, scaleInterval: 5, rangeOffset: 10, scale: true, end: 5,
     }) as SliderObjectType;
     connectThePanel(panel3, slider3);
 
     const panel4 = jQuery('.demonstration_order_fourth .demonstration__panel');
     const slider4 = jQuery('.demonstration_order_fourth .demonstration__container').rangeSlider({
-      type: 'range', list: ['ἄ', 'β', 'γ', 'λ', 'Ξ', 'ζ', 'π', 'θ', 'ψ'], cloud: 'none', scale: true, initialStart: 3, initialEnd: 6,
+      type: 'range', list: ['ἄ', 'β', 'γ', 'λ', 'Ξ', 'ζ', 'π', 'θ', 'ψ'], cloud: 'none', scale: true, start: 3, end: 6,
     }) as SliderObjectType;
     connectThePanel(panel4, slider4);
   });
@@ -75,10 +75,10 @@ function connectThePanel(panelNode: JQuery, sliderObject: SliderObjectType) {
     };
   });
 
-  panelNode.find("input[name='origin']").on('change', (e) => {
+  panelNode.find("input[name='beginning']").on('change', (e) => {
     e.preventDefault();
     const value = Number((e.target as HTMLInputElement).value);
-    slider.changeConfig({ origin: value });
+    slider.changeConfig({ beginning: value });
   });
 
   panelNode.find("input[name='range']").on('change', (e) => {
@@ -136,13 +136,13 @@ function syncPanel(panelNode: JQuery, slider: SliderObjectType) {
     panelNode.find("[name='list']").prop('disabled', true);
     panelNode.find("[name='range']").prop('disabled', false);
     panelNode.find("[name='step']").prop('disabled', false);
-    panelNode.find("[name='origin']").prop('disabled', false);
+    panelNode.find("[name='beginning']").prop('disabled', false);
     panelNode.find("[name='interval']").prop('disabled', false);
   } else {
     panelNode.find("[name='list']").prop('disabled', false);
     panelNode.find("[name='range']").prop('disabled', true);
     panelNode.find("[name='step']").prop('disabled', true);
-    panelNode.find("[name='origin']").prop('disabled', true);
+    panelNode.find("[name='beginning']").prop('disabled', true);
     panelNode.find("[name='interval']").prop('disabled', true);
     panelNode.find("[name='list']").prop('value', config.list.toString());
   }
@@ -173,7 +173,7 @@ function syncPanel(panelNode: JQuery, slider: SliderObjectType) {
     panelNode.find("[name='interval']").prop('value', config.scaleInterval);
   }
 
-  panelNode.find("[name='origin']").prop('value', config.origin);
+  panelNode.find("[name='beginning']").prop('value', config.beginning);
   panelNode.find("[name='range']").prop('value', config.rangeOffset);
   panelNode.find("[name='step']").prop('value', config.step);
 }

@@ -17,8 +17,8 @@ class Model implements ModelType {
     this.observer = new Observer();
 
     this.updateDirectly({
-      startPosition: options.initialStart,
-      endPosition: options.initialEnd,
+      startPosition: options.start,
+      endPosition: options.end,
     });
   }
 
@@ -42,9 +42,9 @@ class Model implements ModelType {
     let adaptedStart = Math.min(range, Math.round(this.start / step) * step);
 
     if (adaptedStart === adaptedEnd && type !== POINT) {
-      const distansToStart = Math.abs(adaptedStart - this.start);
-      const distansToEnd = Math.abs(adaptedEnd - this.end);
-      if (distansToStart < distansToEnd) adaptedEnd = Math.min(range, adaptedEnd + step);
+      const distanceToStart = Math.abs(adaptedStart - this.start);
+      const distanceToEnd = Math.abs(adaptedEnd - this.end);
+      if (distanceToStart < distanceToEnd) adaptedEnd = Math.min(range, adaptedEnd + step);
       else adaptedStart = Math.ceil(adaptedEnd / step) * step - step;
     }
 
@@ -52,13 +52,13 @@ class Model implements ModelType {
     this.#callTheBroadcast();
   };
 
-  #update = (processing: Function, data: DataForModel):void => {
+  #update = (process: Function, data: DataForModel):void => {
     const currentStart = this.start;
     const currentEnd = this.end;
 
-    const { newStart, newEnd } = processing(data);
+    const { newStart, newEnd } = process(data);
 
-    switch (processing) {
+    switch (process) {
       case this.#processValue:
         this.#setValue({
           start: newStart,
@@ -79,15 +79,15 @@ class Model implements ModelType {
   };
 
   #processValue = (data: { startPosition:number, endPosition:number }) => {
-    const { origin, type, rangeOffset: range } = this.config;
+    const { beginning, type, rangeOffset: range } = this.config;
 
     const { startPosition, endPosition } = data;
 
     const currentStart = this.start;
     const currentEnd = this.end;
 
-    let newStart = isNaN(startPosition) ? currentStart : (startPosition - origin);
-    let newEnd = isNaN(endPosition) ? currentEnd : (endPosition - origin);
+    let newStart = isNaN(startPosition) ? currentStart : (startPosition - beginning);
+    let newEnd = isNaN(endPosition) ? currentEnd : (endPosition - beginning);
 
     newEnd = type === POINT
       ? Math.max(0, Math.min(newEnd, range))
@@ -184,8 +184,8 @@ class Model implements ModelType {
         this.config.list[values.end],
       ]
       : [
-        (values.start + this.config.origin).toLocaleString(),
-        (values.end + this.config.origin).toLocaleString(),
+        (values.start + this.config.beginning).toLocaleString(),
+        (values.end + this.config.beginning).toLocaleString(),
       ];
   };
 

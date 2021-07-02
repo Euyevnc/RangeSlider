@@ -24,20 +24,20 @@ class Scale implements ViewElement {
 
     scaleElement.className = `range-slider__scale  range-slider__scale_orient_${config.orient}`;
 
-    scaleElement.append(this.#createDivision(config.origin));
+    scaleElement.append(this.#createDivision(config.beginning));
     for (let i = 1; i < numberOfIntervals; i += 1) {
       if (i !== numberOfIntervals - 1 && numberOfIntervals !== 1) {
-        scaleElement.append(this.#createDivision(i * config.scaleInterval + config.origin));
+        scaleElement.append(this.#createDivision(i * config.scaleInterval + config.beginning));
       } else {
-        const shrinkingCell = this.#createDivision(i * config.scaleInterval + config.origin);
-        shrinkingCell.style.flexShrink = '1';
-        scaleElement.append(shrinkingCell);
+        const shrinkingDivision = this.#createDivision(i * config.scaleInterval + config.beginning);
+        shrinkingDivision.style.flexShrink = '1';
+        scaleElement.append(shrinkingDivision);
       }
     }
-    const lastCell = this.#createDivision(config.rangeOffset + config.origin);
-    if (config.orient === VERTICAL) lastCell.style.height = '0px';
-    else lastCell.style.width = '0px';
-    scaleElement.append(lastCell);
+    const lastDivision = this.#createDivision(config.rangeOffset + config.beginning);
+    if (config.orient === VERTICAL) lastDivision.style.height = '0px';
+    else lastDivision.style.width = '0px';
+    scaleElement.append(lastDivision);
 
     if (!config.scale) scaleElement.style.display = 'none';
     this.element = scaleElement;
@@ -48,20 +48,20 @@ class Scale implements ViewElement {
     const { config } = this;
     const scaleElement = this.element;
 
-    const firstValue = (config.rangeOffset / 100) * firstCoor + config.origin;
-    const secondValue = (config.rangeOffset / 100) * secondCoor + config.origin;
+    const firstValue = (config.rangeOffset / 100) * firstCoor + config.beginning;
+    const secondValue = (config.rangeOffset / 100) * secondCoor + config.beginning;
     scaleElement.querySelectorAll('.js-range-slider__scale-division').forEach((el) => {
       const elem = el as HTMLElement;
-      const valueInCell = +el.getAttribute('value');
-      if (valueInCell >= firstValue && valueInCell <= secondValue) {
-        elem.classList.add('range-slider__scale-division_status_active');
+      const valueInDivision = +el.getAttribute('value');
+      if (valueInDivision >= firstValue && valueInDivision <= secondValue) {
+        elem.classList.add('range-slider__scale-division_active');
       } else {
-        elem.classList.remove('range-slider__scale-division_status_active');
+        elem.classList.remove('range-slider__scale-division_active');
       }
     });
   }
 
-  #handlerCellClick = (event:MouseEvent) => {
+  #handlerDivisionClick = (event:MouseEvent) => {
     const { orient } = this.config;
 
     const division = (<HTMLElement>event.target).closest('.js-range-slider__scale-division') as HTMLElement;
@@ -85,7 +85,7 @@ class Scale implements ViewElement {
     } else this.callback(SCALE_CLICK, { startPosition: value });
   };
 
-  #handlerCellKeydown = (event:KeyboardEvent) => {
+  #handlerDivisionKeydown = (event:KeyboardEvent) => {
     if (event.code !== 'Enter') return;
 
     const { orient } = this.config;
@@ -134,8 +134,8 @@ class Scale implements ViewElement {
       ? config.list[int].toString()
       : int.toLocaleString();
     elementWithValue.tabIndex = 0;
-    elementWithValue.addEventListener('click', this.#handlerCellClick);
-    elementWithValue.addEventListener('keydown', this.#handlerCellKeydown);
+    elementWithValue.addEventListener('click', this.#handlerDivisionClick);
+    elementWithValue.addEventListener('keydown', this.#handlerDivisionKeydown);
 
     division.append(elementWithValue);
     this.divisions.push(division);

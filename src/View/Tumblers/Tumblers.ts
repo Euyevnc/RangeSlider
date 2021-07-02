@@ -150,16 +150,16 @@ class Tumblers implements ViewElement {
     const { config, elements } = this;
     let firstValue: string;
     let secondValue: string;
-    firstValue = ((config.rangeOffset / 100) * firstPerc + config.origin).toLocaleString();
-    secondValue = ((config.rangeOffset / 100) * secondPerc + config.origin).toLocaleString();
+    firstValue = ((config.rangeOffset / 100) * firstPerc + config.beginning).toLocaleString();
+    secondValue = ((config.rangeOffset / 100) * secondPerc + config.beginning).toLocaleString();
 
     if (config.list.length) {
       firstValue = config.list[+firstValue].toString();
       secondValue = config.list[+secondValue].toString();
     }
 
-    (elements[0].querySelector('.js-range-slider__cloud-value range-slider__cloud-value') as HTMLElement).innerText = firstValue;
-    (elements[1].querySelector('.js-range-slider__cloud-value range-slider__cloud-value') as HTMLElement).innerText = secondValue;
+    (elements[0].querySelector('.js-range-slider__cloud-value') as HTMLElement).innerText = firstValue;
+    (elements[1].querySelector('.js-range-slider__cloud-value') as HTMLElement).innerText = secondValue;
   };
 }
 

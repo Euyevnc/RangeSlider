@@ -39,109 +39,99 @@ function connectThePanel(panelNode: JQuery, sliderObject: SliderObjectType) {
 
   const sync = syncPanel.bind(this, panelNode, sliderObject);
   sync();
+  slider.addConfigChangeListener(sync);
 
   panelNode.find("[name='type']").each((i, e) => {
     e.onchange = () => {
-      if (e.getAttribute('value') === 'point') slider.config.type = 'point';
-      else slider.config.type = 'range';
-      sync();
+      if (e.getAttribute('value') === 'point') slider.changeConfig({ type: 'point' });
+      else slider.changeConfig({ type: 'range' });
     };
   });
 
   panelNode.find("[name='scale']").each((i, e) => {
     e.onchange = () => {
-      if (e.getAttribute('value') === 'yes') slider.config.scale = true;
-      else slider.config.scale = false;
-      sync();
+      if (e.getAttribute('value') === 'yes') slider.changeConfig({ scale: true });
+      else slider.changeConfig({ scale: false });
     };
   });
 
   panelNode.find("[name='cloud']").each((i, e) => {
     e.onchange = () => {
-      if (e.getAttribute('value') === 'yes') slider.config.cloud = 'always';
-      else if (e.getAttribute('value') === 'click') slider.config.cloud = 'click';
-      else slider.config.cloud = 'none';
-      sync();
+      if (e.getAttribute('value') === 'yes') slider.changeConfig({ cloud: 'always' });
+      else if (e.getAttribute('value') === 'click') slider.changeConfig({ cloud: 'click' });
+      else slider.changeConfig({ cloud: 'none' });
     };
   });
 
   panelNode.find("[name='orient']").each((i, e) => {
     e.onchange = () => {
       if (e.getAttribute('value') === 'vertical') {
-        slider.config.orient = 'vertical';
+        slider.changeConfig({ orient: 'vertical' });
         panelNode.next().addClass('demonstration__container_for_vertical');
       } else {
-        slider.config.orient = 'horizontal';
+        slider.changeConfig({ orient: 'horizontal' });
         panelNode.next().removeClass('demonstration__container_for_vertical');
       }
-      sync();
     };
   });
 
   panelNode.find("input[name='origin']").on('change', (e) => {
     e.preventDefault();
     const value = Number((e.target as HTMLInputElement).value);
-    slider.config.origin = value;
-    sync();
+    slider.changeConfig({ origin: value });
   });
 
   panelNode.find("input[name='range']").on('change', (e) => {
     e.preventDefault();
     const value = Number((e.target as HTMLInputElement).value);
-    slider.config.rangeOffset = value;
-    sync();
+    slider.changeConfig({ rangeOffset: value });
   });
 
   panelNode.find("input[name='interval']").on('change', (e) => {
     e.preventDefault();
     const value = Number((e.target as HTMLInputElement).value);
-    slider.config.scaleInterval = value;
-    sync();
+    slider.changeConfig({ scaleInterval: value });
   });
 
   panelNode.find("input[name='list']").on('change', (e) => {
     e.preventDefault();
     const value = (e.target as HTMLInputElement).value.split(',');
-    slider.config.list = value;
-    sync();
+    slider.changeConfig({ list: value });
   });
 
   panelNode.find("input[name='step']").on('change', (e) => {
     e.preventDefault();
     const value = Number((e.target as HTMLInputElement).value);
-    slider.config.step = value;
-    sync();
-    slider.adaptValues();
+    slider.changeConfig({ step: value });
   });
 
   panelNode.find("input[name='first_pos']").on('change', (e) => {
     const value = Number((e.target as HTMLInputElement).value);
     slider.setValue(value);
-    sync();
   });
 
   panelNode.find("input[name='second_pos']").on('change', (e) => {
     const value = Number((e.target as HTMLInputElement).value);
     slider.setValue(undefined, value);
-    sync();
   });
+
   panelNode.find('form').on('submit', (e) => {
     e.preventDefault();
   });
 
-  slider.model.observer.subscribe(() => {
+  slider.addValuesUpdateListener(() => {
     panelNode.find("input[name='first_pos']").prop('value', slider.getValue()[0]);
     panelNode.find("input[name='second_pos']").prop('value', slider.getValue()[1]);
   });
 }
 
 function syncPanel(panelNode: JQuery, slider: SliderObjectType) {
-  slider.render();
+  const config = slider.getConfig();
 
   panelNode.find("[name='first_pos']").prop('value', slider.getValue()[0]);
   panelNode.find("[name='second_pos']").prop('value', slider.getValue()[1]);
 
-  if (!slider.config.list.length) {
+  if (!config.list.length) {
     panelNode.find("[name='list']").prop('value', '');
     panelNode.find("[name='list']").prop('disabled', true);
     panelNode.find("[name='range']").prop('disabled', false);
@@ -154,10 +144,10 @@ function syncPanel(panelNode: JQuery, slider: SliderObjectType) {
     panelNode.find("[name='step']").prop('disabled', true);
     panelNode.find("[name='origin']").prop('disabled', true);
     panelNode.find("[name='interval']").prop('disabled', true);
-    panelNode.find("[name='list']").prop('value', slider.config.list.toString());
+    panelNode.find("[name='list']").prop('value', config.list.toString());
   }
 
-  if (slider.config.type === 'point') {
+  if (config.type === 'point') {
     panelNode.find("[name='type'][value='point']").prop('checked', true);
     panelNode.find("[name='first_pos']").prop('disabled', true);
     panelNode.find("[name='first_pos']").val('');
@@ -166,26 +156,26 @@ function syncPanel(panelNode: JQuery, slider: SliderObjectType) {
     panelNode.find("[name='first_pos']").prop('disabled', false);
   }
 
-  if (slider.config.cloud === 'always') panelNode.find("[name='cloud'][value='yes']").prop('checked', true);
-  else if (slider.config.cloud === 'click') panelNode.find("[name='cloud'][value='click']").prop('checked', true);
+  if (config.cloud === 'always') panelNode.find("[name='cloud'][value='yes']").prop('checked', true);
+  else if (config.cloud === 'click') panelNode.find("[name='cloud'][value='click']").prop('checked', true);
   else panelNode.find("[name='cloud'][value='no']").prop('checked', true);
 
-  if (slider.config.orient === 'vertical') panelNode.find("[name='orient'][value='vertical']").prop('checked', true);
+  if (config.orient === 'vertical') panelNode.find("[name='orient'][value='vertical']").prop('checked', true);
   else panelNode.find("[name='orient'][value='horizontal']").prop('checked', true);
 
-  if (!slider.config.scale) {
+  if (!config.scale) {
     panelNode.find("[name='scale'][value='no']").prop('checked', true);
     panelNode.find("[name='interval']").prop('value', '');
     panelNode.find("[name='interval']").prop('disabled', true);
   } else {
     panelNode.find("[name='scale'][value='yes']").prop('checked', true);
     panelNode.find("[name='interval']").prop('disabled', false);
-    panelNode.find("[name='interval']").prop('value', slider.config.scaleInterval);
+    panelNode.find("[name='interval']").prop('value', config.scaleInterval);
   }
 
-  panelNode.find("[name='origin']").prop('value', slider.config.origin);
-  panelNode.find("[name='range']").prop('value', slider.config.rangeOffset);
-  panelNode.find("[name='step']").prop('value', slider.config.step);
+  panelNode.find("[name='origin']").prop('value', config.origin);
+  panelNode.find("[name='range']").prop('value', config.rangeOffset);
+  panelNode.find("[name='step']").prop('value', config.step);
 }
 
 export default initDemo;

@@ -4,6 +4,7 @@ import Model from './Model/Model';
 import Presenter from './Presenter/Presenter';
 
 import Config from './Config/Config';
+import Observer from './Observer/Observer';
 
 const sliderInst = (function ($) {
   // eslint-disable-next-line no-param-reassign
@@ -19,43 +20,80 @@ const sliderInst = (function ($) {
 }(jQuery));
 
 class SliderObject implements SliderObjectType {
-  config: ConfigType;
+  #config: ConfigType;
 
-  view: ViewType;
+  #view: ViewType;
 
-  presenter: PresenterType;
+  #presenter: PresenterType;
 
-  model: ModelType;
+  #model: ModelType;
 
-  constructor(root:HTMLElement, options: ConfigType) {
-    this.config = new Config(options);
+  #configChangeObserver = new Observer();
 
-    this.model = new Model(this.config);
-    this.view = new View(root, this.config);
+  constructor(root:HTMLElement, options: UserConfigType) {
+    this.#config = new Config(options);
 
-    this.presenter = new Presenter(this.view, this.model);
+    this.#model = new Model(this.#config);
+    this.#view = new View(root, this.#config);
+
+    this.#presenter = new Presenter(this.#view, this.#model);
 
     this.render();
   }
 
   render() {
-    this.view.render();
-    this.model.updateDirectly({});
-  }
-
-  adaptValues() {
-    this.model.adaptValues();
+    this.#view.render();
+    this.#model.updateDirectly({});
   }
 
   getValue() {
-    return this.config.value;
+    return this.#config.value;
   }
 
   setValue(startValue:number, endValue:number) {
-    if (this.config.type === POINT) {
-      this.model.updateDirectly({ startPosition: this.config.origin, endPosition: startValue });
-    } else this.model.updateDirectly({ startPosition: startValue, endPosition: endValue });
+    if (this.#config.type === POINT) {
+      this.#model.updateDirectly({ startPosition: this.#config.origin, endPosition: startValue });
+    } else this.#model.updateDirectly({ startPosition: startValue, endPosition: endValue });
   }
+
+  getConfig = () => {
+    const getters = Object.getOwnPropertyNames(Object.getPrototypeOf(this.#config));
+    const configClone = {};
+    getters.forEach((prop, index) => {
+      if (index !== 0) Object.defineProperty(configClone, prop, { value: this.#config[prop] });
+    });
+
+    return configClone;
+  };
+
+  addValuesUpdateListener = (f: () => void) => {
+    this.#presenter.addCallback(f);
+  };
+
+  removeValuesUpdateListener = (f: () => void) => {
+    this.#presenter.removeCallback(f);
+  };
+
+  changeConfig = (newConfig: UserConfigType) => {
+    const stepBeforeChange = this.#config.step;
+
+    Object.keys(newConfig).forEach((key) => {
+      this.#config[key] = newConfig[key];
+    });
+
+    this.render();
+
+    if (stepBeforeChange !== this.#config.step) this.#model.adaptValues();
+    this.#configChangeObserver.broadcast();
+  };
+
+  addConfigChangeListener = (f: () => void) => {
+    this.#configChangeObserver.subscribe(f);
+  };
+
+  removeConfigChangeListener = (f: () => void) => {
+    this.#configChangeObserver.unsubscribe(f);
+  };
 }
 
 export default sliderInst;

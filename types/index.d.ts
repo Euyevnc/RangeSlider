@@ -1,17 +1,20 @@
 type SliderObjectType = {
-  config: ConfigType;
-
-  model: ModelType;
-  view:ViewType;
-  presenter:PresenterType;
-
   render: () => void;
   getValue: () => Array<number|string>;
   setValue: (startValue?: number, endValue?: number) => void;
-  adaptValues: () => void;
+  getConfig: () => any
+
+  changeConfig: (config: UserConfigType) => void
+
+  addValuesUpdateListener: (f: () => void) => void
+  removeValuesUpdateListener: (f: () => void) => void
+
+  addConfigChangeListener: (f: () => void) => void
+  removeConfigChangeListener: (f: () => void) => void
 };
 
 type ConfigType = {
+  [index: string]: any;
   type: 'range' | 'point';
   orient: 'vertical' | 'horizontal';
   cloud: 'always' | 'click' | 'none' ;
@@ -23,6 +26,25 @@ type ConfigType = {
   scale: boolean;
   scaleInterval: number;
   value: Array<number | string>;
+
+  initialStart: number;
+  initialEnd: number
+};
+
+type UserConfigType = {
+  [index: string]: any;
+
+  type?: 'range' | 'point';
+  orient?: 'vertical' | 'horizontal';
+  cloud?: 'always' | 'click' | 'none' ;
+
+  list?: Array<number|string>;
+  rangeOffset?: number;
+  origin?:number;
+  step?: number;
+  scale?: boolean;
+  scaleInterval?: number;
+  value?: Array<number | string>;
 
   initialStart?: number;
   initialEnd?: number
@@ -40,13 +62,8 @@ type ModelType = {
 };
 
 type PresenterType = {
-  view: ViewType;
-  model: ModelType;
-
-  reactToInteraction: CallbackForView;
-  reactToUpdate: CallbackForModel;
-
-  connectLayers: () => void;
+  addCallback: (f: () => void) => void
+  removeCallback: (f: () => void) => void
 };
 
 type ViewType = {

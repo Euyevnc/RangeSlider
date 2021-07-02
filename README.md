@@ -17,10 +17,19 @@ import"range-slider-for-ml/dist/styles.css"
 Добавленный плагином метод носит имя rangeSlider. При применении он отрендерит слайдер/слайдеры с заданными свойствами и вернёт объект слайдера или массив объектов в случае, если jquery-объект содержит более одного элемента. Функция принимает один аргумент - объект. Через его параметры определяются параметры создаваемого слайдера. Котрые будут приведены в таблице ниже. 
 
 ```
-let params = {type: "range", orient:"horizontal", scale: true, scaleInterval: 2500, cloud: "click", origin: 2000, rangeOffset: 10000, step: 100}
+let params = {type: "range", orient:"horizontal", scale: true, scaleInterval: 1000, cloud: "click", origin: 0, rangeOffset: 15000, step: 100}
 
 let container = $(".js-parent-container")
 let slider = container.rangeSlider(params)
+
+```
+
+Для изменения параметров уже созданного слайдера можно использовать метод changeConfig, передав в качестве аргумента объект с параметрами, которые нужно изменить и их значениями:
+
+```
+let newParams = {scaleInterval: 2500, origin: 2000, rangeOffset: 10000}
+
+slider.changeConfig(newParams)
 
 ```
 Выглядеть это будет примерно так:  
@@ -56,8 +65,6 @@ let slider = container.rangeSlider(params)
 Слои _view_ и _model_ имеют свойство _observer_, через который они сообщаются со слоем _presenter_ . И _model_, и _view_(его под-слои _tumblers_ и _scale_, если быть точным) вызывают функцию _observer.broadcast_ при определённых условиях. 
 
 _Presenter_ подписывает свои функции _reactToInteraction_ и _reactToUpdate_ на соответствующие обсерверы, а эти функции в свою очередь вызывают метод для обновления _view_ или _model_, передавая полученные аргументы
-
-Параметры слайдера, будь то шаг, интервал шкалы или диапазон, можно внести изменив соответствующие свойства в объекте *slider*.config и перерендерить слайдер при помощи вызова метода _render_
 
 Действо попытался отобразить да UML-диаграмме. 
 https://drive.google.com/file/d/1nYSpW9N7zwQJ2vJgMtDh5ux6BseQ3ryB/view?usp=sharing

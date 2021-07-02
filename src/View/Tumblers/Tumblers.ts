@@ -158,8 +158,8 @@ class Tumblers implements ViewElement {
       secondValue = config.list[+secondValue].toString();
     }
 
-    elements[0].querySelector('b').innerText = firstValue;
-    elements[1].querySelector('b').innerText = secondValue;
+    (elements[0].querySelector('.js-range-slider__cloud-value range-slider__cloud-value') as HTMLElement).innerText = firstValue;
+    (elements[1].querySelector('.js-range-slider__cloud-value range-slider__cloud-value') as HTMLElement).innerText = secondValue;
   };
 }
 

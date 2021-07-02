@@ -84,7 +84,7 @@ class SliderObject implements SliderObjectType {
     this.render();
 
     if (stepBeforeChange !== this.#config.step) this.#model.adaptValues();
-    this.#configChangeObserver.broadcast(); 
+    this.#configChangeObserver.broadcast();
   };
 
   addConfigChangeListener = (f: () => void) => {

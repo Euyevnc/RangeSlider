@@ -77,13 +77,16 @@ class Tumblers implements ViewElement {
       this.#handlerDocumentMove(event, isFirstTumbler);
     };
 
-    document.addEventListener('mousemove', handlerDocumentMove);
-    document.onmouseup = () => {
-      document.removeEventListener('mousemove', handlerDocumentMove);
+    const handlerDocumentClick = (event: MouseEvent) => {
+      event.preventDefault();
+      event.stopPropagation();
       if (config.cloud === CLICK) cloud.style.display = 'none';
       document.body.style.cursor = 'auto';
-      document.onmouseup = null;
+      document.removeEventListener('mousemove', handlerDocumentMove);
     };
+
+    document.addEventListener('mousemove', handlerDocumentMove);
+    document.addEventListener('click', handlerDocumentClick, { capture: true, once: true });
   };
 
   #handleTumblerFocus = (event:FocusEvent) => {

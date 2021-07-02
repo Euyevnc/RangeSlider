@@ -83,7 +83,7 @@ class Scale implements ViewElement {
       ? 100 - (100 / (division.closest('.js-range-slider__scale') as HTMLElement).offsetHeight) * divisionPosition
       : (100 / (division.closest('.js-range-slider__scale') as HTMLElement).offsetWidth) * divisionPosition;
 
-    if (this.config.type === POINT || distanceToFirst > distanceToSecond) {
+    if (this.config.type === POINT || distanceToFirst >= distanceToSecond) {
       this.callback(SCALE_CLICK, { endPosition: divisionValue });
     } else this.callback(SCALE_CLICK, { startPosition: divisionValue });
   };

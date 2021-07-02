@@ -72,9 +72,9 @@ class Scale implements ViewElement {
 
     const tumblersPositions = orient === VERTICAL
       ? [...division.closest('.js-range-slider').querySelectorAll('.js-range-slider__tumbler')]
-        .map((tum) => (<HTMLElement>tum).offsetTop + (<HTMLElement>tum).offsetHeight)
+        .map((tum) => (<HTMLElement>tum).offsetTop)
       : [...division.closest('.js-range-slider').querySelectorAll('.js-range-slider__tumbler')]
-        .map((tum) => (<HTMLElement>tum).offsetLeft + (<HTMLElement>tum).offsetWidth / 2);
+        .map((tum) => (<HTMLElement>tum).offsetLeft);
 
     const distanceToFirst = Math.abs(divisionPosition - tumblersPositions[0]);
     const distanceToSecond = Math.abs(divisionPosition - tumblersPositions[1]);

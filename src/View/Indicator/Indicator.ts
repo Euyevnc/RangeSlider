@@ -1,25 +1,30 @@
 import { VERTICAL } from '../../consts';
 
 class Indicator {
-  element: HTMLElement;
+  public element: HTMLElement;
 
-  config: ConfigType;
+  private parent: HTMLElement;
 
-  constructor(option: ConfigType) {
+  private config: ConfigType;
+
+  public constructor(option: ConfigType, parent: HTMLElement) {
     this.config = option;
+    this.parent = parent;
+
+    this.render();
   }
 
-  render() {
+  private render() {
     const { config } = this;
 
     const indicatorElement = document.createElement('div');
     indicatorElement.className = `range-slider__indicator  range-slider__indicator_orient_${config.orient}`;
 
     this.element = indicatorElement;
-    return this.element;
+    this.parent.append(this.element);
   }
 
-  update(firstCoor: number, secondCoor: number) {
+  public update(firstCoor: number, secondCoor: number) {
     const { config } = this;
     const indicatorElement = this.element;
 

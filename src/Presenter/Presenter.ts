@@ -2,51 +2,53 @@ import Observer from '../Observer/Observer';
 import { DRAG, TEPPEING, SCALE_CLICK } from '../consts';
 
 class Presenter implements PresenterType {
-  #view: ViewType;
+  private view: ViewType;
 
-  #model: ModelType;
+  private model: ModelType;
 
-  #valueUpdateObserver;
+  private valueUpdateObserver;
 
-  constructor(view:ViewType, model:ModelType) {
-    this.#view = view;
-    this.#model = model;
-    this.#valueUpdateObserver = new Observer();
-    this.#connectLayers();
+  public constructor(view:ViewType, model:ModelType) {
+    this.valueUpdateObserver = new Observer();
+
+    this.view = view;
+    this.model = model;
+    this.connectLayers();
+    this.model.updateDirectly({});
   }
 
-  #reactToInteraction = (method: string, data: DataForModel) => {
+  private reactToInteraction = (method: string, data: DataForModel) => {
     switch (method) {
       case DRAG:
-        this.#model.updateFromPercent(data);
+        this.model.updateFromPercent(data);
         break;
       case SCALE_CLICK:
-        this.#model.updateFromPercent(data);
+        this.model.updateFromPercent(data);
         break;
       case TEPPEING:
-        this.#model.updateFromStep(data);
+        this.model.updateFromStep(data);
         break;
       default:
         break;
     }
   };
 
-  #reactToUpdate = (data: DataForView) => {
-    this.#view.updateView(data);
-    this.#valueUpdateObserver.broadcast();
+  private reactToUpdate = (data: DataForView) => {
+    this.view.updateView(data);
+    this.valueUpdateObserver.broadcast(data);
   };
 
-  #connectLayers = () => {
-    this.#model.observer.subscribe(this.#reactToUpdate.bind(this));
-    this.#view.observer.subscribe(this.#reactToInteraction.bind(this));
+  private connectLayers = () => {
+    this.model.observer.subscribe(this.reactToUpdate.bind(this));
+    this.view.observer.subscribe(this.reactToInteraction.bind(this));
   };
 
-  addCallback = (f: () => void) => {
-    this.#valueUpdateObserver.subscribe(f);
+  public addValueUpdateCallback = (f: (data: DataForView) => void) => {
+    this.valueUpdateObserver.subscribe(f);
   };
 
-  removeCallback = (f: () => void) => {
-    this.#valueUpdateObserver.unsubscribe(f);
+  public removeValueUpdateCallback = (f: (data: DataForView) => void) => {
+    this.valueUpdateObserver.unsubscribe(f);
   };
 }
 

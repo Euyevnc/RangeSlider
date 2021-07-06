@@ -2,49 +2,54 @@ import {
   POINT, VERTICAL, SCALE_CLICK,
 } from '../../consts';
 
-class Scale implements ViewElement {
-  element: HTMLElement;
+class Scale {
+  public element: HTMLElement;
 
-  config: ConfigType;
+  private parent: HTMLElement;
 
-  divisions: Array<HTMLElement>;
+  private config: ConfigType;
 
-  callback: CallbackForView;
+  private divisions: Array<HTMLElement>;
 
-  constructor(option: ConfigType, callback: CallbackForView) {
+  private callback: CallbackForView;
+
+  public constructor(option: ConfigType, parent: HTMLElement, callback: CallbackForView) {
     this.config = option;
-    this.callback = callback;
+    this.parent = parent;
     this.divisions = [];
+    this.callback = callback;
+
+    this.render();
   }
 
-  render = () => {
+  private render = () => {
     const { config } = this;
     const numberOfIntervals = Math.ceil(config.rangeOffset / config.scaleInterval);
     const scaleElement = document.createElement('div');
 
     scaleElement.className = `js-range-slider__scale range-slider__scale  range-slider__scale_orient_${config.orient}`;
 
-    scaleElement.append(this.#createDivision(config.beginning));
+    scaleElement.append(this.createDivision(config.beginning));
     for (let i = 1; i < numberOfIntervals; i += 1) {
       if (i !== numberOfIntervals - 1 && numberOfIntervals !== 1) {
-        scaleElement.append(this.#createDivision(i * config.scaleInterval + config.beginning));
+        scaleElement.append(this.createDivision(i * config.scaleInterval + config.beginning));
       } else {
-        const shrinkingDivision = this.#createDivision(i * config.scaleInterval + config.beginning);
+        const shrinkingDivision = this.createDivision(i * config.scaleInterval + config.beginning);
         shrinkingDivision.style.flexShrink = '1';
         scaleElement.append(shrinkingDivision);
       }
     }
-    const lastDivision = this.#createDivision(config.rangeOffset + config.beginning);
+    const lastDivision = this.createDivision(config.rangeOffset + config.beginning);
     if (config.orient === VERTICAL) lastDivision.style.height = '0px';
     else lastDivision.style.width = '0px';
     scaleElement.append(lastDivision);
 
     if (!config.scale) scaleElement.style.display = 'none';
     this.element = scaleElement;
-    return this.element;
+    this.parent.append(this.element);
   };
 
-  update(firstCoor: number, secondCoor:number) {
+  public update(firstCoor: number, secondCoor:number) {
     const { config } = this;
     const scaleElement = this.element;
 
@@ -61,7 +66,7 @@ class Scale implements ViewElement {
     });
   }
 
-  #handlerDivisionClick = (event:MouseEvent) => {
+  private handlerDivisionClick = (event:MouseEvent) => {
     const { orient } = this.config;
 
     const division = (<HTMLElement>event.target).closest('.js-range-slider__scale-division') as HTMLElement;
@@ -88,7 +93,7 @@ class Scale implements ViewElement {
     } else this.callback(SCALE_CLICK, { startPosition: divisionValue });
   };
 
-  #handlerDivisionKeydown = (event:KeyboardEvent) => {
+  private handlerDivisionKeydown = (event:KeyboardEvent) => {
     if (event.code !== 'Enter') return;
 
     const { orient } = this.config;
@@ -114,7 +119,7 @@ class Scale implements ViewElement {
     } else this.callback(SCALE_CLICK, { startPosition: value });
   };
 
-  #createDivision = (int:number) => {
+  private createDivision = (int:number) => {
     const { config } = this;
     const isList = Boolean(config.list.length);
 
@@ -137,8 +142,8 @@ class Scale implements ViewElement {
       ? config.list[int].toString()
       : int.toLocaleString();
     elementWithValue.tabIndex = 0;
-    elementWithValue.addEventListener('click', this.#handlerDivisionClick);
-    elementWithValue.addEventListener('keydown', this.#handlerDivisionKeydown);
+    elementWithValue.addEventListener('click', this.handlerDivisionClick);
+    elementWithValue.addEventListener('keydown', this.handlerDivisionKeydown);
 
     division.append(elementWithValue);
     this.divisions.push(division);

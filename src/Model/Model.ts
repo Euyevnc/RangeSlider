@@ -4,15 +4,15 @@ import { POINT } from '../consts';
 import Observer from '../Observer/Observer';
 
 class Model implements ModelType {
-  config: ConfigType;
+  public observer: ObserverType;
 
-  observer: ObserverType;
+  private config: ConfigType;
 
   private start: number;
 
   private end: number;
 
-  constructor(options:ConfigType) {
+  public constructor(options: ConfigType) {
     this.config = options;
     this.observer = new Observer();
 
@@ -22,19 +22,19 @@ class Model implements ModelType {
     });
   }
 
-  updateDirectly = (data: DataForModel) => {
-    this.#update(this.#processValue, data);
+  public updateDirectly = (data: DataForModel) => {
+    this.update(this.processValue, data);
   };
 
-  updateFromPercent = (data: DataForModel) => {
-    this.#update(this.#processPercent, data);
+  public updateFromPercent = (data: DataForModel) => {
+    this.update(this.processPercent, data);
   };
 
-  updateFromStep = (data:DataForModel) => {
-    this.#update(this.#processStep, data);
+  public updateFromStep = (data:DataForModel) => {
+    this.update(this.processStep, data);
   };
 
-  adaptValues = () => {
+  public adaptValues = () => {
     const { step, rangeOffset: range, type } = this.config;
     let adaptedEnd = this.end === range
       ? range
@@ -48,37 +48,37 @@ class Model implements ModelType {
       else adaptedStart = Math.ceil(adaptedEnd / step) * step - step;
     }
 
-    this.#setValue({ start: adaptedStart, end: adaptedEnd });
-    this.#callTheBroadcast();
+    this.setValue({ start: adaptedStart, end: adaptedEnd });
+    this.callTheBroadcast();
   };
 
-  #update = (process: Function, data: DataForModel):void => {
+  private update = (process: Function, data: DataForModel):void => {
     const currentStart = this.start;
     const currentEnd = this.end;
 
     const { newStart, newEnd } = process(data);
 
     switch (process) {
-      case this.#processValue:
-        this.#setValue({
+      case this.processValue:
+        this.setValue({
           start: newStart,
           end: newEnd,
         });
-        this.#callTheBroadcast();
+        this.callTheBroadcast();
         break;
       default:
         if (newStart !== currentStart || newEnd !== currentEnd) {
-          this.#setValue({
+          this.setValue({
             start: newStart,
             end: newEnd,
           });
-          this.#callTheBroadcast();
+          this.callTheBroadcast();
         }
         break;
     }
   };
 
-  #processValue = (data: { startPosition:number, endPosition:number }) => {
+  private processValue = (data: { startPosition:number, endPosition:number }) => {
     const { beginning, type, rangeOffset: range } = this.config;
 
     const { startPosition, endPosition } = data;
@@ -99,24 +99,24 @@ class Model implements ModelType {
     return { newStart, newEnd };
   };
 
-  #processPercent = (data: DataForModel) => {
+  private processPercent = (data: DataForModel) => {
     const { rangeOffset: range, step } = this.config;
 
     const { startPosition, endPosition } = data;
 
-    const valueOfStart = this.#convertToValue(startPosition);
+    const valueOfStart = this.convertToValue(startPosition);
     const newStart = Math.round(valueOfStart / step) * step;
 
-    const valueOfEnd = this.#convertToValue(endPosition);
+    const valueOfEnd = this.convertToValue(endPosition);
     const cursorOverFinish = valueOfEnd >= range - (0.5 * (range % step));
     const newEnd = cursorOverFinish
       ? range
       : Math.round(valueOfEnd / step) * step;
 
-    return this.#accordinateTheCoordinates([newStart, newEnd]);
+    return this.accordinateTheCoordinates([newStart, newEnd]);
   };
 
-  #processStep = (data: DataForModel) => {
+  private processStep = (data: DataForModel) => {
     const { step } = this.config;
 
     const currentStart = this.start;
@@ -140,10 +140,10 @@ class Model implements ModelType {
       if (endPosition > 0) newEnd = Math.floor(currentEnd / step) * step + step * endPosition;
     }
 
-    return this.#accordinateTheCoordinates([newStart, newEnd]);
+    return this.accordinateTheCoordinates([newStart, newEnd]);
   };
 
-  #accordinateTheCoordinates = (coordinates: Array<number>) => {
+  private accordinateTheCoordinates = (coordinates: Array<number>) => {
     const { type, rangeOffset: range, step } = this.config;
 
     const [start, end] = coordinates;
@@ -171,11 +171,11 @@ class Model implements ModelType {
     };
   };
 
-  #convertToPercent = (value: number) => value / (this.config.rangeOffset / 100);
+  private convertToPercent = (value: number) => value / (this.config.rangeOffset / 100);
 
-  #convertToValue = (percent: number) => percent / (100 / this.config.rangeOffset);
+  private convertToValue = (percent: number) => percent / (100 / this.config.rangeOffset);
 
-  #setValue = (values: { start:number, end : number }) => {
+  private setValue = (values: { start:number, end : number }) => {
     this.start = values.start;
     this.end = values.end;
     this.config.value = this.config.list.length
@@ -189,10 +189,10 @@ class Model implements ModelType {
       ];
   };
 
-  #callTheBroadcast = () => {
+  private callTheBroadcast = () => {
     this.observer.broadcast({
-      firstCoordinate: this.#convertToPercent(this.start),
-      secondCoordinate: this.#convertToPercent(this.end),
+      firstCoordinate: this.convertToPercent(this.start),
+      secondCoordinate: this.convertToPercent(this.end),
     });
   };
 }

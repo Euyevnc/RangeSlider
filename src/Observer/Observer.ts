@@ -1,19 +1,19 @@
 class Observer implements ObserverType {
-  observers: Array<Function>;
+  public observers: Array<Function>;
 
-  constructor() {
+  public constructor() {
     this.observers = [];
   }
 
-  subscribe = (fn: Function) => {
+  public subscribe = (fn: Function) => {
     this.observers.push(fn);
   };
 
-  unsubscribe = (fn: Function) => {
+  public unsubscribe = (fn: Function) => {
     this.observers = this.observers.filter((subscriber) => subscriber !== fn);
   };
 
-  broadcast = (...args: Array<any>) => {
+  public broadcast = (...args: Array<any>) => {
     this.observers.forEach((subscriber) => subscriber(...args));
   };
 }

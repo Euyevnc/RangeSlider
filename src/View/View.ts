@@ -8,54 +8,49 @@ import Scale from './Scale/Scale';
 import Line from './Line/Line';
 
 class View implements ViewType {
-  root:HTMLElement;
+  public observer: ObserverType;
 
-  element: HTMLElement;
+  private root:HTMLElement;
 
-  config: ConfigType;
+  private element: HTMLElement;
 
-  observer: ObserverType;
+  private config: ConfigType;
 
-  tumblers: Tumblers;
+  private tumblers: Tumblers;
 
-  line: Line;
+  private line: Line;
 
-  indicator: Indicator;
+  private indicator: Indicator;
 
-  scale: Scale;
+  private scale: Scale;
 
-  constructor(root: HTMLElement, option: ConfigType) {
+  public constructor(root: HTMLElement, config: ConfigType) {
     this.observer = new Observer();
 
     this.root = root;
-    this.config = option;
-    this.tumblers = new Tumblers(option, this.observer.broadcast);
-    this.scale = new Scale(option, this.observer.broadcast);
+    this.config = config;
 
-    this.line = new Line(option, this.observer.broadcast);
-    this.indicator = new Indicator(option);
+    this.render();
   }
 
-  render() {
-    const { root, config } = this;
+  public render() {
+    const { config, root } = this;
 
     const mainElement = document.createElement('div');
     mainElement.className = `range-slider  js-range-slider  range-slider_orient_${config.orient}`;
-
-    mainElement.append(this.line.render());
-    mainElement.append(this.scale.render());
-
-    this.tumblers.render().forEach((el:HTMLElement) => {
-      this.line.element.append(el);
-    });
-    this.line.element.append(this.indicator.render());
-
     this.element = mainElement;
+
+    this.scale = new Scale(config, mainElement, this.observer.broadcast);
+    this.line = new Line(config, mainElement, this.observer.broadcast);
+
+    this.tumblers = new Tumblers(config, this.line.element, this.observer.broadcast);
+    this.indicator = new Indicator(config, this.line.element);
+
     root.innerHTML = '';
     root.append(this.element);
   }
 
-  updateView(data: DataForView) {
+  public updateView(data: DataForView) {
     const { firstCoordinate, secondCoordinate } = data;
 
     this.tumblers.update(firstCoordinate, secondCoordinate);

@@ -1,28 +1,33 @@
 import { DRAG, VERTICAL, POINT } from '../../consts';
 
-class Line implements ViewElement {
-  element: HTMLElement;
+class Line {
+  public element: HTMLElement;
 
-  config: ConfigType;
+  private parent: HTMLElement;
 
-  callback: CallbackForView;
+  private config: ConfigType;
 
-  constructor(option: ConfigType, callback: CallbackForView) {
+  private callback: CallbackForView;
+
+  public constructor(option: ConfigType, parent:HTMLElement, callback: CallbackForView) {
     this.config = option;
+    this.parent = parent;
     this.callback = callback;
+
+    this.render();
   }
 
-  render() {
+  private render() {
     const { config } = this;
 
     const lineElement = document.createElement('div');
     lineElement.className = `range-slider__line  range-slider__line_orient_${config.orient}`;
-    lineElement.addEventListener('click', this.#handlerLineClick);
+    lineElement.addEventListener('click', this.handlerLineClick);
     this.element = lineElement;
-    return this.element;
+    this.parent.append(this.element);
   }
 
-  #handlerLineClick = (event: MouseEvent) => {
+  private handlerLineClick = (event: MouseEvent) => {
     const { orient, type } = this.config;
 
     const clickPosition = orient === VERTICAL

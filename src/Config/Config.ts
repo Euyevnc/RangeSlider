@@ -31,7 +31,7 @@ class Config implements ConfigType {
 
   #end: number;
 
-  constructor(initialData: UserConfigType) {
+  public constructor(initialData: UserConfigType) {
     this.list = initialData.list;
 
     this.rangeOffset = initialData.rangeOffset;

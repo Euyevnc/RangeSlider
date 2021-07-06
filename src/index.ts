@@ -20,6 +20,8 @@ const sliderInst = (function ($) {
 }(jQuery));
 
 class SliderObject implements SliderObjectType {
+  private root: HTMLElement;
+
   #config: ConfigType;
 
   #view: ViewType;
@@ -30,15 +32,14 @@ class SliderObject implements SliderObjectType {
 
   #configChangeObserver = new Observer();
 
-  constructor(root:HTMLElement, options: UserConfigType) {
+  public constructor(root:HTMLElement, options: UserConfigType) {
+    this.root = root;
     this.#config = new Config(options);
 
     this.#model = new Model(this.#config);
-    this.#view = new View(root, this.#config);
+    this.#view = new View(this.root, this.#config);
 
     this.#presenter = new Presenter(this.#view, this.#model);
-
-    this.render();
   }
 
   render() {
@@ -67,16 +68,16 @@ class SliderObject implements SliderObjectType {
     return configClone;
   };
 
-  addValuesUpdateListener = (f: () => void) => {
-    this.#presenter.addCallback(f);
+  addValuesUpdateListener = (f: (data: DataForView) => void) => {
+    this.#presenter.addValueUpdateCallback(f);
   };
 
-  removeValuesUpdateListener = (f: () => void) => {
-    this.#presenter.removeCallback(f);
+  removeValuesUpdateListener = (f: (data: DataForView) => void) => {
+    this.#presenter.removeValueUpdateCallback(f);
   };
 
   changeConfig = (newConfig: UserConfigType) => {
-    const stepBeforeChange = this.#config.step;
+    const oldConfig = this.#config.step;
 
     Object.keys(newConfig).forEach((key) => {
       this.#config[key] = newConfig[key];
@@ -84,15 +85,15 @@ class SliderObject implements SliderObjectType {
 
     this.render();
 
-    if (stepBeforeChange !== this.#config.step) this.#model.adaptValues();
-    this.#configChangeObserver.broadcast();
+    // if (stepBeforeChange !== this.#config.step) this.#model.adaptValues();
+    this.#configChangeObserver.broadcast(oldConfig, this.#configChangeObserver);
   };
 
-  addConfigChangeListener = (f: () => void) => {
+  addConfigChangeListener = (f: (oldConfig: ConfigType, newConfig: ConfigType) => void) => {
     this.#configChangeObserver.subscribe(f);
   };
 
-  removeConfigChangeListener = (f: () => void) => {
+  removeConfigChangeListener = (f: (oldConfig: ConfigType, newConfig: ConfigType) => void) => {
     this.#configChangeObserver.unsubscribe(f);
   };
 }

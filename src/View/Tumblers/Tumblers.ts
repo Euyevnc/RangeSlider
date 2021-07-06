@@ -2,19 +2,25 @@ import {
   TEPPEING, DRAG, POINT, VERTICAL, ALWAYS, CLICK,
 } from '../../consts';
 
-class Tumblers implements ViewElement {
-  elements: HTMLElement[];
+class Tumblers {
+  public elements: HTMLElement[];
 
-  config: ConfigType;
+  private config: ConfigType;
 
-  callback: CallbackForView;
+  private parent: HTMLElement;
 
-  constructor(option: ConfigType, callback: CallbackForView) {
+  private callback: CallbackForView;
+
+  public constructor(option: ConfigType, parent: HTMLElement, callback: CallbackForView) {
     this.config = option;
+    this.parent = parent;
+
     this.callback = callback;
+
+    this.render();
   }
 
-  render = () => {
+  private render = () => {
     const { config } = this;
     const list:Array<HTMLElement> = [];
 
@@ -23,20 +29,22 @@ class Tumblers implements ViewElement {
       tumblerElement.className = `js-range-slider__tumbler range-slider__tumbler  range-slider__tumbler_orient_${config.orient}`;
       tumblerElement.tabIndex = 0;
 
-      const cloud = this.#createTheCloud();
+      const cloud = this.createTheCloud();
       tumblerElement.append(cloud);
-      tumblerElement.addEventListener('mousedown', this.#handleTumblerMousedown);
-      tumblerElement.addEventListener('keydown', this.#handlerTumblerKeydown);
-      tumblerElement.addEventListener('focus', this.#handleTumblerFocus);
+      tumblerElement.addEventListener('mousedown', this.handleTumblerMousedown);
+      tumblerElement.addEventListener('keydown', this.handlerTumblerKeydown);
+      tumblerElement.addEventListener('focus', this.handleTumblerFocus);
       if (config.type === POINT && i === 0) tumblerElement.style.display = 'none';
       list.push(tumblerElement);
     }
 
     this.elements = list;
-    return this.elements;
+    this.elements.forEach((tumbler) => {
+      this.parent.append(tumbler);
+    });
   };
 
-  update(firstCoor: number, secondCoor:number) {
+  public update(firstCoor: number, secondCoor:number) {
     const { config } = this;
     const firstEl = this.elements[0];
     const secondEl = this.elements[1];
@@ -59,10 +67,10 @@ class Tumblers implements ViewElement {
       firstEl.style.zIndex = '11';
       secondEl.style.zIndex = '11';
     }
-    this.#updateClouds(firstCoor, secondCoor);
+    this.updateClouds(firstCoor, secondCoor);
   }
 
-  #handleTumblerMousedown = (e:MouseEvent) => {
+  private handleTumblerMousedown = (e:MouseEvent) => {
     e.preventDefault();
     const { config } = this;
     const tumbler = (e.target as HTMLElement).closest('.js-range-slider__tumbler');
@@ -74,7 +82,7 @@ class Tumblers implements ViewElement {
     document.body.style.cursor = 'pointer';
 
     const handlerDocumentMove = (event: MouseEvent) => {
-      this.#handlerDocumentMove(event, isFirstTumbler);
+      this.handlerDocumentMove(event, isFirstTumbler);
     };
 
     const handlerDocumentClick = (event: MouseEvent) => {
@@ -89,7 +97,7 @@ class Tumblers implements ViewElement {
     document.addEventListener('click', handlerDocumentClick, { capture: true, once: true });
   };
 
-  #handleTumblerFocus = (event:FocusEvent) => {
+  private handleTumblerFocus = (event:FocusEvent) => {
     const { config } = this;
     const tumbler = (<HTMLElement>event.target);
     const cloud = tumbler.querySelector('.js-range-slider__cloud ') as HTMLElement;
@@ -101,7 +109,7 @@ class Tumblers implements ViewElement {
     };
   };
 
-  #handlerTumblerKeydown = (event:KeyboardEvent) => {
+  private handlerTumblerKeydown = (event:KeyboardEvent) => {
     const { config, callback } = this;
     const tumbler = (<HTMLElement>event.target);
     const isFirstTumbler = tumbler === this.elements[0];
@@ -119,7 +127,7 @@ class Tumblers implements ViewElement {
     }
   };
 
-  #handlerDocumentMove = (event:MouseEvent, isFirstTumbler: Boolean) => {
+  private handlerDocumentMove = (event:MouseEvent, isFirstTumbler: Boolean) => {
     const sliderZone = this.elements[0].closest('.js-range-slider');
 
     const verticalOffset = ((sliderZone.getBoundingClientRect().bottom - event.clientY)
@@ -136,7 +144,7 @@ class Tumblers implements ViewElement {
     } else (this.callback(DRAG, { endPosition: offsetToTransfer }));
   };
 
-  #createTheCloud = () => {
+  private createTheCloud = () => {
     const cloud = document.createElement('div');
     cloud.className = `js-range-slider__cloud range-slider__cloud  range-slider__cloud_orient_${this.config.orient}`;
     const elementWithValue = document.createElement('b');
@@ -146,7 +154,7 @@ class Tumblers implements ViewElement {
     return cloud;
   };
 
-  #updateClouds = (firstPerc:number, secondPerc:number) => {
+  private updateClouds = (firstPerc:number, secondPerc:number) => {
     const { config, elements } = this;
     let firstValue: string;
     let secondValue: string;

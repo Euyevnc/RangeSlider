@@ -6,11 +6,11 @@ type SliderObjectType = {
 
   changeConfig: (config: UserConfigType) => void
 
-  addValuesUpdateListener: (f: () => void) => void
-  removeValuesUpdateListener: (f: () => void) => void
+  addValuesUpdateListener: (f: (data: DataForView) => void) => void
+  removeValuesUpdateListener: (f: (data: DataForView) => void) => void
 
-  addConfigChangeListener: (f: () => void) => void
-  removeConfigChangeListener: (f: () => void) => void
+  addConfigChangeListener: (f: (oldConfig: ConfigType, newConfig: ConfigType) => void) => void
+  removeConfigChangeListener: (f: (oldConfig: ConfigType, newConfig: ConfigType) => void) => void
 };
 
 type ConfigType = {
@@ -51,9 +51,7 @@ type UserConfigType = {
 };
 
 type ModelType = {
-  config: ConfigType;
   observer: ObserverType;
-
   updateDirectly : (data: DataForModel) => void;
   updateFromPercent: (data: DataForModel) => void;
   updateFromStep: (data: DataForModel) => void;
@@ -62,30 +60,16 @@ type ModelType = {
 };
 
 type PresenterType = {
-  addCallback: (f: () => void) => void
-  removeCallback: (f: () => void) => void
+  addValueUpdateCallback: (f: (data: DataForView) => void) => void
+  removeValueUpdateCallback: (f: (data: DataForView) => void) => void
 };
 
 type ViewType = {
-  root:HTMLElement;
-  element: HTMLElement;
-  config: ConfigType;
   observer: ObserverType;
 
-  tumblers: ViewElement;
-  line: ViewElement;
-  indicator: ViewElement;
-  scale: ViewElement;
   render: () => void;
+
   updateView: (data: DataForView) => void;
-};
-
-type ViewElement = {
-  config: ConfigType;
-
-  element?: HTMLElement;
-  elements?: HTMLElement[];
-  callback?: CallbackForView
 };
 
 type DataForModel = {

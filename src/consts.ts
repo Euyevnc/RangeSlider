@@ -1,7 +1,7 @@
 export const DIRECT = 'direct';
 export const DRAG = 'drag';
 export const SCALE_CLICK = 'scaleClick';
-export const TEPPEING = 'tepping';
+export const STRIDE = 'stride';
 export const POINT = 'point';
 export const RANGE = 'range';
 export const VERTICAL = 'vertical';

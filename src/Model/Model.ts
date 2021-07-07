@@ -25,7 +25,7 @@ class Model implements ModelType {
     this.update(this.processPercent, data);
   };
 
-  public updateFromStep = (data:DataForModel) => {
+  public updateFromStride = (data:DataForModel) => {
     this.update(this.processStep, data);
   };
 

@@ -41,7 +41,7 @@ type ModelType = {
   observer: ObserverType;
   updateDirectly : (data: DataForModel) => void;
   updateFromPercent: (data: DataForModel) => void;
-  updateFromStep: (data: DataForModel) => void;
+  updateFromStride: (data: DataForModel) => void;
 
   adaptValues: () => void;
 
@@ -70,7 +70,7 @@ type DataForView = {
   values: Values;
 };
 
-type CallbackForView = (method: 'drag' | 'scaleClick' | 'tepping', data: DataForModel) => void;
+type CallbackForView = (method: 'drag' | 'scaleClick' | 'stride', data: DataForModel) => void;
 
 type CallbackForModel = (data: DataForView) => void;
 

@@ -1,5 +1,5 @@
 import {
-  TEPPEING, DRAG, POINT, VERTICAL, ALWAYS, CLICK,
+  STRIDE, DRAG, POINT, VERTICAL, ALWAYS, CLICK,
 } from '../../consts';
 
 class Tumblers {
@@ -30,7 +30,7 @@ class Tumblers {
       tumblerElement.className = `js-range-slider__tumbler range-slider__tumbler  range-slider__tumbler_orient_${orient}`;
       tumblerElement.tabIndex = 0;
 
-      const cloud = this.createTheCloud();
+      const cloud = this.createCloud();
       tumblerElement.append(cloud);
       tumblerElement.addEventListener('mousedown', this.handleTumblerMousedown);
       tumblerElement.addEventListener('keydown', this.handlerTumblerKeydown);
@@ -122,13 +122,13 @@ class Tumblers {
 
     if ((event.key === 'ArrowDown' && orient === VERTICAL) || (event.key === 'ArrowLeft' && orient !== VERTICAL)) {
       const obj = { endPosition: -1 };
-      if (isFirstTumbler) callback(TEPPEING, { startPosition: -1 });
-      else callback(TEPPEING, obj);
+      if (isFirstTumbler) callback(STRIDE, { startPosition: -1 });
+      else callback(STRIDE, obj);
 
       event.preventDefault();
     } else if ((event.key === 'ArrowUp' && orient === VERTICAL) || (event.key === 'ArrowRight' && orient !== VERTICAL)) {
-      if (isFirstTumbler) callback(TEPPEING, { startPosition: 1 });
-      else callback(TEPPEING, { endPosition: 1 });
+      if (isFirstTumbler) callback(STRIDE, { startPosition: 1 });
+      else callback(STRIDE, { endPosition: 1 });
       event.preventDefault();
     }
   };
@@ -152,7 +152,7 @@ class Tumblers {
     } else (this.callback(DRAG, { endPosition: offsetToTransfer }));
   };
 
-  private createTheCloud = () => {
+  private createCloud = () => {
     const { orient, cloud: displayCloud } = this.config.getData();
 
     const cloud = document.createElement('div');

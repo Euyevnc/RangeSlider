@@ -1,4 +1,4 @@
-import { DRAG, TEPPEING, SCALE_CLICK } from '../consts';
+import { DRAG, STRIDE, SCALE_CLICK } from '../consts';
 
 class Presenter {
   private view: ViewType;
@@ -19,8 +19,8 @@ class Presenter {
       case SCALE_CLICK:
         this.model.updateFromPercent(data);
         break;
-      case TEPPEING:
-        this.model.updateFromStep(data);
+      case STRIDE:
+        this.model.updateFromStride(data);
         break;
       default:
         break;

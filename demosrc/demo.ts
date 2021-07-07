@@ -107,12 +107,12 @@ function connectThePanel(panelNode: JQuery, sliderObject: SliderObjectType) {
 
   panelNode.find("input[name='first_pos']").on('change', (e) => {
     const value = Number((e.target as HTMLInputElement).value);
-    slider.setValue(value);
+    slider.setValues(value);
   });
 
   panelNode.find("input[name='second_pos']").on('change', (e) => {
     const value = Number((e.target as HTMLInputElement).value);
-    slider.setValue(undefined, value);
+    slider.setValues(undefined, value);
   });
 
   panelNode.find('form').on('submit', (e) => {

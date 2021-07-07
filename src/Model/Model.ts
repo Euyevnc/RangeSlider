@@ -51,7 +51,7 @@ class Model implements ModelType {
       else adaptedStart = Math.ceil(adaptedEnd / step) * step - step;
     }
 
-    this.setValue({ start: adaptedStart, end: adaptedEnd });
+    this.setValues({ start: adaptedStart, end: adaptedEnd });
     this.callTheBroadcast();
   };
 
@@ -71,7 +71,7 @@ class Model implements ModelType {
 
     switch (process) {
       case this.processValue:
-        this.setValue({
+        this.setValues({
           start: newStart,
           end: newEnd,
         });
@@ -79,7 +79,7 @@ class Model implements ModelType {
         break;
       default:
         if (newStart !== currentStart || newEnd !== currentEnd) {
-          this.setValue({
+          this.setValues({
             start: newStart,
             end: newEnd,
           });
@@ -186,7 +186,7 @@ class Model implements ModelType {
 
   private convertToValue = (percent: number) => percent / (100 / this.config.getData().rangeOffset);
 
-  private setValue = (values: Values) => {
+  private setValues = (values: Values) => {
     this.start = values.start;
     this.end = values.end;
   };

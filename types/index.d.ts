@@ -1,6 +1,6 @@
 type SliderObjectType = {
   getValues: () => Values;
-  setValue: (startValue?: number, endValue?: number) => void;
+  setValues: (startValue?: number, endValue?: number) => void;
   getConfig: () => UserConfigType
 
   changeConfig: (config: UserConfigType) => void

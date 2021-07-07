@@ -42,7 +42,7 @@ class SliderObject implements SliderObjectType {
     this.presenter = new Presenter(this.view, this.model);
 
     this.addConfigChangeListener(() => {
-      this.rerender();
+      this.reRender();
     });
 
     this.addConfigChangeListener((oldConfig: UserConfigType, newConfig: UserConfigType) => {
@@ -56,16 +56,11 @@ class SliderObject implements SliderObjectType {
     });
   }
 
-  private rerender() {
-    this.view.render();
-    this.model.updateDirectly({});
-  }
-
   public getValues() {
     return this.model.getValues();
   }
 
-  public setValue(startValue:number, endValue:number) {
+  public setValues(startValue:number, endValue:number) {
     const { type, rangeStart } = this.config.getData();
     if (type === POINT) {
       this.model
@@ -96,6 +91,11 @@ class SliderObject implements SliderObjectType {
 
   public removeConfigChangeListener = (f: (oldConfig: UserConfigType, newConfig: UserConfigType)
   => void) => this.configChangeObserver.unsubscribe(f);
+
+  private reRender() {
+    this.view.render();
+    this.model.updateDirectly({});
+  }
 }
 
 export default sliderInst;

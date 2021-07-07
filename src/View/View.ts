@@ -34,14 +34,15 @@ class View implements ViewType {
   }
 
   public render() {
-    const { config, root } = this;
+    const { root, config } = this;
+    const { orient } = config.getData();
 
     const mainElement = document.createElement('div');
-    mainElement.className = `range-slider  js-range-slider  range-slider_orient_${config.orient}`;
+    mainElement.className = `range-slider  js-range-slider  range-slider_orient_${orient}`;
     this.element = mainElement;
 
-    this.scale = new Scale(config, mainElement, this.observer.broadcast);
     this.line = new Line(config, mainElement, this.observer.broadcast);
+    this.scale = new Scale(config, mainElement, this.observer.broadcast);
 
     this.tumblers = new Tumblers(config, this.line.element, this.observer.broadcast);
     this.indicator = new Indicator(config, this.line.element);
@@ -51,13 +52,12 @@ class View implements ViewType {
   }
 
   public updateView(data: DataForView) {
-    const { firstCoordinate, secondCoordinate } = data;
+    const { start: firstCoordinate, end: secondCoordinate } = data.coordinates;
+    const { start: startValue, end: endValue } = data.values;
 
-    this.tumblers.update(firstCoordinate, secondCoordinate);
-
+    this.tumblers.update(firstCoordinate, secondCoordinate, startValue, endValue);
     this.indicator.update(firstCoordinate, secondCoordinate);
-
-    this.scale.update(firstCoordinate, secondCoordinate);
+    this.scale.update(startValue, endValue);
   }
 }
 

@@ -23,42 +23,42 @@ class Scale {
   }
 
   private render = () => {
-    const { config } = this;
-    const numberOfIntervals = Math.ceil(config.rangeOffset / config.scaleInterval);
+    const {
+      orient, scaleInterval, rangeStart, rangeOffset, scale,
+    } = this.config.getData();
+
+    const numberOfIntervals = Math.ceil(rangeOffset / scaleInterval);
     const scaleElement = document.createElement('div');
 
-    scaleElement.className = `js-range-slider__scale range-slider__scale  range-slider__scale_orient_${config.orient}`;
+    scaleElement.className = `js-range-slider__scale range-slider__scale  range-slider__scale_orient_${orient}`;
 
-    scaleElement.append(this.createDivision(config.beginning));
+    scaleElement.append(this.createDivision(rangeStart));
     for (let i = 1; i < numberOfIntervals; i += 1) {
       if (i !== numberOfIntervals - 1 && numberOfIntervals !== 1) {
-        scaleElement.append(this.createDivision(i * config.scaleInterval + config.beginning));
+        scaleElement.append(this.createDivision(i * scaleInterval + rangeStart));
       } else {
-        const shrinkingDivision = this.createDivision(i * config.scaleInterval + config.beginning);
+        const shrinkingDivision = this.createDivision(i * scaleInterval + rangeStart);
         shrinkingDivision.style.flexShrink = '1';
         scaleElement.append(shrinkingDivision);
       }
     }
-    const lastDivision = this.createDivision(config.rangeOffset + config.beginning);
-    if (config.orient === VERTICAL) lastDivision.style.height = '0px';
+    const lastDivision = this.createDivision(rangeOffset + rangeStart);
+    if (orient === VERTICAL) lastDivision.style.height = '0px';
     else lastDivision.style.width = '0px';
     scaleElement.append(lastDivision);
 
-    if (!config.scale) scaleElement.style.display = 'none';
+    if (!scale) scaleElement.style.display = 'none';
     this.element = scaleElement;
     this.parent.append(this.element);
   };
 
-  public update(firstCoor: number, secondCoor:number) {
-    const { config } = this;
+  public update(startValue: number, endValue:number) {
     const scaleElement = this.element;
 
-    const firstValue = (config.rangeOffset / 100) * firstCoor + config.beginning;
-    const secondValue = (config.rangeOffset / 100) * secondCoor + config.beginning;
     scaleElement.querySelectorAll('.js-range-slider__scale-division').forEach((el) => {
       const elem = el as HTMLElement;
       const valueInDivision = +el.getAttribute('value');
-      if (valueInDivision >= firstValue && valueInDivision <= secondValue) {
+      if (valueInDivision >= startValue && valueInDivision <= endValue) {
         elem.classList.add('range-slider__scale-division_active');
       } else {
         elem.classList.remove('range-slider__scale-division_active');
@@ -67,7 +67,7 @@ class Scale {
   }
 
   private handlerDivisionClick = (event:MouseEvent) => {
-    const { orient } = this.config;
+    const { orient, type } = this.config.getData();
 
     const division = (<HTMLElement>event.target).closest('.js-range-slider__scale-division') as HTMLElement;
 
@@ -88,7 +88,7 @@ class Scale {
       ? 100 - (100 / (division.closest('.js-range-slider__scale') as HTMLElement).offsetHeight) * divisionPosition
       : (100 / (division.closest('.js-range-slider__scale') as HTMLElement).offsetWidth) * divisionPosition;
 
-    if (this.config.type === POINT || distanceToFirst >= distanceToSecond) {
+    if (type === POINT || distanceToFirst >= distanceToSecond) {
       this.callback(SCALE_CLICK, { endPosition: divisionValue });
     } else this.callback(SCALE_CLICK, { startPosition: divisionValue });
   };
@@ -96,7 +96,7 @@ class Scale {
   private handlerDivisionKeydown = (event:KeyboardEvent) => {
     if (event.code !== 'Enter') return;
 
-    const { orient } = this.config;
+    const { orient, type } = this.config.getData();
 
     const division = (<HTMLElement>event.target).closest('.js-range-slider__scale-division') as HTMLElement;
     const value = Number(division.getAttribute('value'));
@@ -114,23 +114,26 @@ class Scale {
     const distanceToFirst = Math.abs(divisionPosition - tumblersPositions[0]);
     const distanceToSecond = Math.abs(divisionPosition - tumblersPositions[1]);
 
-    if (this.config.type === POINT || distanceToFirst >= distanceToSecond) {
+    if (type === POINT || distanceToFirst >= distanceToSecond) {
       this.callback(SCALE_CLICK, { endPosition: value });
     } else this.callback(SCALE_CLICK, { startPosition: value });
   };
 
   private createDivision = (int:number) => {
-    const { config } = this;
-    const isList = Boolean(config.list.length);
+    const {
+      list, orient, scaleInterval, rangeOffset,
+    } = this.config.getData();
+
+    const isList = list.length;
 
     const division = document.createElement('span');
-    division.className = (`js-range-slider__scale-division range-slider__scale-division  range-slider__scale-division_orient_${config.orient}`);
+    division.className = (`js-range-slider__scale-division range-slider__scale-division  range-slider__scale-division_orient_${orient}`);
 
-    if (config.orient === VERTICAL) {
-      const normalizedHeight = Math.min((config.scaleInterval / config.rangeOffset) * 100, 100);
+    if (orient === VERTICAL) {
+      const normalizedHeight = Math.min((scaleInterval / rangeOffset) * 100, 100);
       division.style.height = `${normalizedHeight}%`;
     } else {
-      const normalizedWidth = Math.min((config.scaleInterval / config.rangeOffset) * 100, 100);
+      const normalizedWidth = Math.min((scaleInterval / rangeOffset) * 100, 100);
       division.style.width = `${normalizedWidth}%`;
     }
 
@@ -139,7 +142,7 @@ class Scale {
     const elementWithValue = document.createElement('span');
     elementWithValue.className = 'range-slider__scale-value js-range-slider__scale-value';
     elementWithValue.innerHTML = isList
-      ? config.list[int].toString()
+      ? list[int].toString()
       : int.toLocaleString();
     elementWithValue.tabIndex = 0;
     elementWithValue.addEventListener('click', this.handlerDivisionClick);

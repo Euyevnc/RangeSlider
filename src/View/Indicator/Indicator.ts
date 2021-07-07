@@ -15,20 +15,20 @@ class Indicator {
   }
 
   private render() {
-    const { config } = this;
+    const { orient } = this.config.getData();
 
     const indicatorElement = document.createElement('div');
-    indicatorElement.className = `range-slider__indicator  range-slider__indicator_orient_${config.orient}`;
+    indicatorElement.className = `range-slider__indicator  range-slider__indicator_orient_${orient}`;
 
     this.element = indicatorElement;
     this.parent.append(this.element);
   }
 
   public update(firstCoor: number, secondCoor: number) {
-    const { config } = this;
+    const { orient } = this.config.getData();
     const indicatorElement = this.element;
 
-    if (config.orient === VERTICAL) {
+    if (orient === VERTICAL) {
       indicatorElement.style.bottom = `${firstCoor}%`;
       indicatorElement.style.top = `${100 - secondCoor}%`;
     } else {

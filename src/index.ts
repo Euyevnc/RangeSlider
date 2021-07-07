@@ -8,7 +8,7 @@ import Observer from './Observer/Observer';
 
 const sliderInst = (function ($) {
   // eslint-disable-next-line no-param-reassign
-  $.fn.rangeSlider = function (options: ConfigType) {
+  $.fn.rangeSlider = function (options: UserConfigType) {
     const sliderObjects: Array<SliderObjectType> = [];
     this.each((i:number, elem:HTMLElement) => {
       sliderObjects.push(new SliderObject(elem, options));
@@ -22,80 +22,80 @@ const sliderInst = (function ($) {
 class SliderObject implements SliderObjectType {
   private root: HTMLElement;
 
-  #config: ConfigType;
+  private config: ConfigType;
 
-  #view: ViewType;
+  private view: ViewType;
 
-  #presenter: PresenterType;
+  private presenter: Presenter;
 
-  #model: ModelType;
+  private model: ModelType;
 
-  #configChangeObserver = new Observer();
+  private configChangeObserver = new Observer();
 
   public constructor(root:HTMLElement, options: UserConfigType) {
     this.root = root;
-    this.#config = new Config(options);
+    this.config = new Config(options);
 
-    this.#model = new Model(this.#config);
-    this.#view = new View(this.root, this.#config);
+    this.model = new Model(this.config);
+    this.view = new View(this.root, this.config);
 
-    this.#presenter = new Presenter(this.#view, this.#model);
-  }
+    this.presenter = new Presenter(this.view, this.model);
 
-  render() {
-    this.#view.render();
-    this.#model.updateDirectly({});
-  }
-
-  getValue() {
-    return this.#config.value;
-  }
-
-  setValue(startValue:number, endValue:number) {
-    if (this.#config.type === POINT) {
-      this.#model
-        .updateDirectly({ startPosition: this.#config.beginning, endPosition: startValue });
-    } else this.#model.updateDirectly({ startPosition: startValue, endPosition: endValue });
-  }
-
-  getConfig = () => {
-    const getters = Object.getOwnPropertyNames(Object.getPrototypeOf(this.#config));
-    const configClone = {};
-    getters.forEach((prop, index) => {
-      if (index !== 0) Object.defineProperty(configClone, prop, { value: this.#config[prop] });
+    this.addConfigChangeListener(() => {
+      this.rerender();
     });
 
-    return configClone;
-  };
-
-  addValuesUpdateListener = (f: (data: DataForView) => void) => {
-    this.#presenter.addValueUpdateCallback(f);
-  };
-
-  removeValuesUpdateListener = (f: (data: DataForView) => void) => {
-    this.#presenter.removeValueUpdateCallback(f);
-  };
-
-  changeConfig = (newConfig: UserConfigType) => {
-    const oldConfig = this.#config.step;
-
-    Object.keys(newConfig).forEach((key) => {
-      this.#config[key] = newConfig[key];
+    this.addConfigChangeListener((oldConfig: UserConfigType, newConfig: UserConfigType) => {
+      if (oldConfig.step !== newConfig.step) this.model.adaptValues();
     });
 
-    this.render();
+    const { start, end } = this.config.getData();
+    this.model.updateDirectly({
+      startPosition: start,
+      endPosition: end,
+    });
+  }
 
-    // if (stepBeforeChange !== this.#config.step) this.#model.adaptValues();
-    this.#configChangeObserver.broadcast(oldConfig, this.#configChangeObserver);
+  private rerender() {
+    this.view.render();
+    this.model.updateDirectly({});
+  }
+
+  public getValues() {
+    return this.model.getValues();
+  }
+
+  public setValue(startValue:number, endValue:number) {
+    const { type, rangeStart } = this.config.getData();
+    if (type === POINT) {
+      this.model
+        .updateDirectly({ startPosition: rangeStart, endPosition: startValue });
+    } else this.model.updateDirectly({ startPosition: startValue, endPosition: endValue });
+  }
+
+  public getConfig = () => this.config.getData();
+
+  public changeConfig = (config: UserConfigType) => {
+    const oldConfig = this.config.getData();
+    this.config.setData(config);
+    const newConfig = this.config.getData();
+
+    this.configChangeObserver.broadcast(oldConfig, newConfig);
   };
 
-  addConfigChangeListener = (f: (oldConfig: ConfigType, newConfig: ConfigType) => void) => {
-    this.#configChangeObserver.subscribe(f);
+  public addValuesUpdateListener = (f: (data: DataForView) => void) => {
+    this.model.addValuesUpdateListener(f);
   };
 
-  removeConfigChangeListener = (f: (oldConfig: ConfigType, newConfig: ConfigType) => void) => {
-    this.#configChangeObserver.unsubscribe(f);
+  public removeValuesUpdateListener = (f: (data: DataForView) => void) => {
+    this.model.removeValuesUpdateListener(f);
   };
+
+  public addConfigChangeListener = (f: (oldConfig: UserConfigType, newConfig: UserConfigType)
+  => void) => this.configChangeObserver.subscribe(f);
+
+  public removeConfigChangeListener = (f: (oldConfig: UserConfigType, newConfig: UserConfigType)
+  => void) => this.configChangeObserver.unsubscribe(f);
 }
 
 export default sliderInst;

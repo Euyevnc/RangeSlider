@@ -15,11 +15,6 @@ class Model implements ModelType {
   public constructor(options: ConfigType) {
     this.config = options;
     this.observer = new Observer();
-
-    this.updateDirectly({
-      startPosition: options.start,
-      endPosition: options.end,
-    });
   }
 
   public updateDirectly = (data: DataForModel) => {
@@ -34,8 +29,16 @@ class Model implements ModelType {
     this.update(this.processStep, data);
   };
 
+  public getValues() {
+    const { rangeStart } = this.config.getData();
+    return {
+      start: this.start + rangeStart,
+      end: this.end + rangeStart,
+    };
+  }
+
   public adaptValues = () => {
-    const { step, rangeOffset: range, type } = this.config;
+    const { step, rangeOffset: range, type } = this.config.getData();
     let adaptedEnd = this.end === range
       ? range
       : Math.min(range, Math.round(this.end / step) * step);
@@ -51,6 +54,14 @@ class Model implements ModelType {
     this.setValue({ start: adaptedStart, end: adaptedEnd });
     this.callTheBroadcast();
   };
+
+  public addValuesUpdateListener(f:(data: DataForView) => void) {
+    this.observer.subscribe(f);
+  }
+
+  public removeValuesUpdateListener(f:(data: DataForView) => void) {
+    this.observer.unsubscribe(f);
+  }
 
   private update = (process: Function, data: DataForModel):void => {
     const currentStart = this.start;
@@ -79,15 +90,15 @@ class Model implements ModelType {
   };
 
   private processValue = (data: { startPosition:number, endPosition:number }) => {
-    const { beginning, type, rangeOffset: range } = this.config;
+    const { rangeStart, type, rangeOffset: range } = this.config.getData();
 
     const { startPosition, endPosition } = data;
 
     const currentStart = this.start;
     const currentEnd = this.end;
 
-    let newStart = isNaN(startPosition) ? currentStart : (startPosition - beginning);
-    let newEnd = isNaN(endPosition) ? currentEnd : (endPosition - beginning);
+    let newStart = isNaN(startPosition) ? currentStart : (startPosition - rangeStart);
+    let newEnd = isNaN(endPosition) ? currentEnd : (endPosition - rangeStart);
 
     newEnd = type === POINT
       ? Math.max(0, Math.min(newEnd, range))
@@ -100,7 +111,7 @@ class Model implements ModelType {
   };
 
   private processPercent = (data: DataForModel) => {
-    const { rangeOffset: range, step } = this.config;
+    const { rangeOffset: range, step } = this.config.getData();
 
     const { startPosition, endPosition } = data;
 
@@ -117,7 +128,7 @@ class Model implements ModelType {
   };
 
   private processStep = (data: DataForModel) => {
-    const { step } = this.config;
+    const { step } = this.config.getData();
 
     const currentStart = this.start;
     const currentEnd = this.end;
@@ -144,7 +155,7 @@ class Model implements ModelType {
   };
 
   private accordinateTheCoordinates = (coordinates: Array<number>) => {
-    const { type, rangeOffset: range, step } = this.config;
+    const { type, rangeOffset: range, step } = this.config.getData();
 
     const [start, end] = coordinates;
 
@@ -171,28 +182,22 @@ class Model implements ModelType {
     };
   };
 
-  private convertToPercent = (value: number) => value / (this.config.rangeOffset / 100);
+  private convertToPercent = (value: number) => value / (this.config.getData().rangeOffset / 100);
 
-  private convertToValue = (percent: number) => percent / (100 / this.config.rangeOffset);
+  private convertToValue = (percent: number) => percent / (100 / this.config.getData().rangeOffset);
 
-  private setValue = (values: { start:number, end : number }) => {
+  private setValue = (values: Values) => {
     this.start = values.start;
     this.end = values.end;
-    this.config.value = this.config.list.length
-      ? [
-        this.config.list[values.start],
-        this.config.list[values.end],
-      ]
-      : [
-        (values.start + this.config.beginning).toLocaleString(),
-        (values.end + this.config.beginning).toLocaleString(),
-      ];
   };
 
   private callTheBroadcast = () => {
     this.observer.broadcast({
-      firstCoordinate: this.convertToPercent(this.start),
-      secondCoordinate: this.convertToPercent(this.end),
+      coordinates: {
+        start: this.convertToPercent(this.start),
+        end: this.convertToPercent(this.end),
+      },
+      values: this.getValues(),
     });
   };
 }

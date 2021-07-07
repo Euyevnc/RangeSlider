@@ -1,50 +1,37 @@
 type SliderObjectType = {
-  render: () => void;
-  getValue: () => Array<number|string>;
+  getValues: () => Values;
   setValue: (startValue?: number, endValue?: number) => void;
-  getConfig: () => any
+  getConfig: () => UserConfigType
 
   changeConfig: (config: UserConfigType) => void
 
-  addValuesUpdateListener: (f: (data: DataForView) => void) => void
-  removeValuesUpdateListener: (f: (data: DataForView) => void) => void
+  addValuesUpdateListener: (f:(data: DataForView) => void) => void
+  removeValuesUpdateListener: (f:(data: DataForView) => void) => void
 
-  addConfigChangeListener: (f: (oldConfig: ConfigType, newConfig: ConfigType) => void) => void
-  removeConfigChangeListener: (f: (oldConfig: ConfigType, newConfig: ConfigType) => void) => void
+  addConfigChangeListener: (f:
+  (oldConfig: UserConfigType, newConfig: UserConfigType) => void)
+  => void
+  removeConfigChangeListener: (f:
+  (oldConfig: UserConfigType, newConfig: UserConfigType) => void)
+  => void
 };
 
 type ConfigType = {
-  [index: string]: any;
-  type: 'range' | 'point';
-  orient: 'vertical' | 'horizontal';
-  cloud: 'always' | 'click' | 'none' ;
-
-  list: Array<number|string>;
-  rangeOffset: number;
-  beginning:number;
-  step: number;
-  scale: boolean;
-  scaleInterval: number;
-  value: Array<number | string>;
-
-  start: number;
-  end: number
+  getData: () => UserConfigType;
+  setData: (config: UserConfigType) => void;
 };
 
 type UserConfigType = {
-  [index: string]: any;
-
   type?: 'range' | 'point';
   orient?: 'vertical' | 'horizontal';
   cloud?: 'always' | 'click' | 'none' ;
 
   list?: Array<number|string>;
   rangeOffset?: number;
-  beginning?:number;
+  rangeStart?:number;
   step?: number;
   scale?: boolean;
   scaleInterval?: number;
-  value?: Array<number | string>;
 
   start?: number;
   end?: number
@@ -57,11 +44,12 @@ type ModelType = {
   updateFromStep: (data: DataForModel) => void;
 
   adaptValues: () => void;
-};
 
-type PresenterType = {
-  addValueUpdateCallback: (f: (data: DataForView) => void) => void
-  removeValueUpdateCallback: (f: (data: DataForView) => void) => void
+  getValues: () => Values
+
+  addValuesUpdateListener: (f:(data: DataForView) => void) => void
+  removeValuesUpdateListener: (f:(data: DataForView) => void) => void
+
 };
 
 type ViewType = {
@@ -78,11 +66,11 @@ type DataForModel = {
 };
 
 type DataForView = {
-  firstCoordinate:number;
-  secondCoordinate: number;
+  coordinates: Values,
+  values: Values;
 };
 
-type CallbackForView = (method: string, data: DataForModel) => void;
+type CallbackForView = (method: 'drag' | 'scaleClick' | 'tepping', data: DataForModel) => void;
 
 type CallbackForModel = (data: DataForView) => void;
 
@@ -91,6 +79,11 @@ type ObserverType = {
   subscribe: (subscriber: Function) => void;
   unsubscribe: (unsubscriber: Function) => void;
   broadcast: (args?: any) => void;
+};
+
+type Values = {
+  start: number;
+  end: number;
 };
 
 interface JQuery {

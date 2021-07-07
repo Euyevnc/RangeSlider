@@ -18,17 +18,17 @@ class Line {
   }
 
   private render() {
-    const { config } = this;
+    const { orient } = this.config.getData();
 
     const lineElement = document.createElement('div');
-    lineElement.className = `range-slider__line  range-slider__line_orient_${config.orient}`;
+    lineElement.className = `range-slider__line  range-slider__line_orient_${orient}`;
     lineElement.addEventListener('click', this.handlerLineClick);
     this.element = lineElement;
     this.parent.append(this.element);
   }
 
   private handlerLineClick = (event: MouseEvent) => {
-    const { orient, type } = this.config;
+    const { orient, type } = this.config.getData();
 
     const clickPosition = orient === VERTICAL
       ? event.clientY
@@ -40,7 +40,7 @@ class Line {
     const horizontalOffset = ((clickPosition - sliderZone.getBoundingClientRect().left)
       / sliderZone.getBoundingClientRect().width) * 100;
 
-    const offsetToTransfer = this.config.orient === VERTICAL
+    const offsetToTransfer = orient === VERTICAL
       ? verticalOffset
       : horizontalOffset;
 

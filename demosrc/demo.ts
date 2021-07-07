@@ -78,7 +78,7 @@ function connectThePanel(panelNode: JQuery, sliderObject: SliderObjectType) {
   panelNode.find("input[name='beginning']").on('change', (e) => {
     e.preventDefault();
     const value = Number((e.target as HTMLInputElement).value);
-    slider.changeConfig({ beginning: value });
+    slider.changeConfig({ rangeStart: value });
   });
 
   panelNode.find("input[name='range']").on('change', (e) => {
@@ -120,16 +120,16 @@ function connectThePanel(panelNode: JQuery, sliderObject: SliderObjectType) {
   });
 
   slider.addValuesUpdateListener(() => {
-    panelNode.find("input[name='first_pos']").prop('value', slider.getValue()[0]);
-    panelNode.find("input[name='second_pos']").prop('value', slider.getValue()[1]);
+    panelNode.find("input[name='first_pos']").prop('value', slider.getValues().start);
+    panelNode.find("input[name='second_pos']").prop('value', slider.getValues().end);
   });
 }
 
 function syncPanel(panelNode: JQuery, slider: SliderObjectType) {
   const config = slider.getConfig();
 
-  panelNode.find("[name='first_pos']").prop('value', slider.getValue()[0]);
-  panelNode.find("[name='second_pos']").prop('value', slider.getValue()[1]);
+  panelNode.find("[name='first_pos']").prop('value', slider.getValues().start);
+  panelNode.find("[name='second_pos']").prop('value', slider.getValues().end);
 
   if (!config.list.length) {
     panelNode.find("[name='list']").prop('value', '');
@@ -173,7 +173,7 @@ function syncPanel(panelNode: JQuery, slider: SliderObjectType) {
     panelNode.find("[name='interval']").prop('value', config.scaleInterval);
   }
 
-  panelNode.find("[name='beginning']").prop('value', config.beginning);
+  panelNode.find("[name='beginning']").prop('value', config.rangeStart);
   panelNode.find("[name='range']").prop('value', config.rangeOffset);
   panelNode.find("[name='step']").prop('value', config.step);
 }

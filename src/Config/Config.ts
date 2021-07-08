@@ -1,4 +1,3 @@
-/* eslint-disable no-restricted-globals */
 import {
   NONE, ALWAYS, CLICK,
   VERTICAL, HORIZONTAL, RANGE, POINT,
@@ -15,7 +14,7 @@ class Config implements ConfigType {
 
   private rangeOffset: number;
 
-  private rangeStart:number;
+  private rangeStart: number;
 
   private step: number;
 

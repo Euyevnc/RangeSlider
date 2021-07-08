@@ -10,7 +10,7 @@ import Line from './Line/Line';
 class View implements ViewType {
   public observer: ObserverType;
 
-  private root:HTMLElement;
+  private root: HTMLElement;
 
   private element: HTMLElement;
 

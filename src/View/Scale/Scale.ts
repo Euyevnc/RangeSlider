@@ -52,7 +52,7 @@ class Scale {
     this.parent.append(this.element);
   };
 
-  public update(startValue: number, endValue:number) {
+  public update(startValue: number, endValue: number) {
     const scaleElement = this.element;
 
     scaleElement.querySelectorAll('.js-range-slider__scale-division').forEach((el) => {
@@ -66,7 +66,7 @@ class Scale {
     });
   }
 
-  private handlerDivisionClick = (event:MouseEvent) => {
+  private handlerDivisionClick = (event: MouseEvent) => {
     const { orient, type } = this.config.getData();
 
     const division = (<HTMLElement>event.target).closest('.js-range-slider__scale-division') as HTMLElement;
@@ -93,7 +93,7 @@ class Scale {
     } else this.callback(SCALE_CLICK, { startPosition: divisionValue });
   };
 
-  private handlerDivisionKeydown = (event:KeyboardEvent) => {
+  private handlerDivisionKeydown = (event: KeyboardEvent) => {
     if (event.code !== 'Enter') return;
 
     const { orient, type } = this.config.getData();
@@ -119,7 +119,7 @@ class Scale {
     } else this.callback(SCALE_CLICK, { startPosition: value });
   };
 
-  private createDivision = (int:number) => {
+  private createDivision = (int: number) => {
     const {
       list, orient, scaleInterval, rangeOffset,
     } = this.config.getData();

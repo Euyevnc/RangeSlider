@@ -1,4 +1,3 @@
-/* eslint-disable no-restricted-globals */
 import { POINT } from '../consts';
 
 import Observer from '../Observer/Observer';
@@ -25,7 +24,7 @@ class Model implements ModelType {
     this.update(this.processPercent, data);
   };
 
-  public updateFromStride = (data:DataForModel) => {
+  public updateFromStride = (data: DataForModel) => {
     this.update(this.processStep, data);
   };
 
@@ -63,25 +62,25 @@ class Model implements ModelType {
     this.observer.unsubscribe(f);
   }
 
-  private update = (process: Function, data: DataForModel):void => {
+  private update = (process: Function, data: DataForModel): void => {
     const currentStart = this.start;
     const currentEnd = this.end;
 
-    const { newStart, newEnd } = process(data);
+    const { start, end } = process(data);
 
     switch (process) {
       case this.processValue:
         this.setValues({
-          start: newStart,
-          end: newEnd,
+          start,
+          end,
         });
         this.callTheBroadcast();
         break;
       default:
-        if (newStart !== currentStart || newEnd !== currentEnd) {
+        if (start !== currentStart || end !== currentEnd) {
           this.setValues({
-            start: newStart,
-            end: newEnd,
+            start,
+            end,
           });
           this.callTheBroadcast();
         }
@@ -89,7 +88,7 @@ class Model implements ModelType {
     }
   };
 
-  private processValue = (data: { startPosition:number, endPosition:number }) => {
+  private processValue = (data: { startPosition: number, endPosition: number }) => {
     const { rangeStart, type, rangeOffset: range } = this.config.getData();
 
     const { startPosition, endPosition } = data;
@@ -107,7 +106,7 @@ class Model implements ModelType {
       ? 0
       : Math.min(newEnd - 1, Math.max(0, newStart));
 
-    return { newStart, newEnd };
+    return { start: newStart, end: newEnd };
   };
 
   private processPercent = (data: DataForModel) => {
@@ -124,7 +123,7 @@ class Model implements ModelType {
       ? range
       : Math.round(valueOfEnd / step) * step;
 
-    return this.accordinateTheCoordinates([newStart, newEnd]);
+    return this.accordinateTheCoordinates({ start: newStart, end: newEnd });
   };
 
   private processStep = (data: DataForModel) => {
@@ -151,19 +150,19 @@ class Model implements ModelType {
       if (endPosition > 0) newEnd = Math.floor(currentEnd / step) * step + step * endPosition;
     }
 
-    return this.accordinateTheCoordinates([newStart, newEnd]);
+    return this.accordinateTheCoordinates({ start: newStart, end: newEnd });
   };
 
-  private accordinateTheCoordinates = (coordinates: Array<number>) => {
+  private accordinateTheCoordinates = (coordinates: Values) => {
     const { type, rangeOffset: range, step } = this.config.getData();
 
-    const [start, end] = coordinates;
+    const { start, end } = coordinates;
 
     const currentStart = this.start;
     const currentEnd = this.end;
 
-    let normalizedStart:number = isNaN(start) ? currentStart : Math.max(start, 0);
-    let normalizedEnd:number = isNaN(end) ? currentEnd : Math.min(end, range);
+    let normalizedStart: number = isNaN(start) ? currentStart : Math.max(start, 0);
+    let normalizedEnd: number = isNaN(end) ? currentEnd : Math.min(end, range);
 
     const maxStartValue = type === POINT
       ? 0
@@ -177,8 +176,8 @@ class Model implements ModelType {
     normalizedEnd = Math.max(normalizedEnd, minEndValue);
 
     return {
-      newStart: normalizedStart,
-      newEnd: normalizedEnd,
+      start: normalizedStart,
+      end: normalizedEnd,
     };
   };
 

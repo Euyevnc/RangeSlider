@@ -28,7 +28,7 @@ type UserConfigType = {
 
   list?: Array<number|string>;
   rangeOffset?: number;
-  rangeStart?:number;
+  rangeStart?: number;
   step?: number;
   scale?: boolean;
   scaleInterval?: number;
@@ -39,7 +39,7 @@ type UserConfigType = {
 
 type ModelType = {
   observer: ObserverType;
-  updateDirectly : (data: DataForModel) => void;
+  updateDirectly: (data: DataForModel) => void;
   updateFromPercent: (data: DataForModel) => void;
   updateFromStride: (data: DataForModel) => void;
 
@@ -47,8 +47,8 @@ type ModelType = {
 
   getValues: () => Values
 
-  addValuesUpdateListener: (f:(data: DataForView) => void) => void
-  removeValuesUpdateListener: (f:(data: DataForView) => void) => void
+  addValuesUpdateListener: (f: (data: DataForView) => void) => void
+  removeValuesUpdateListener: (f: (data: DataForView) => void) => void
 
 };
 

@@ -23,7 +23,7 @@ class Tumblers {
   private render = () => {
     const { orient, type } = this.config.getData();
 
-    const list:Array<HTMLElement> = [];
+    const list: Array<HTMLElement> = [];
 
     for (let i = 0; i < 2; i += 1) {
       const tumblerElement = document.createElement('div');
@@ -45,7 +45,7 @@ class Tumblers {
     });
   };
 
-  public update(firstCoor: number, secondCoor:number, startValue: number, endValue: number) {
+  public update(firstCoor: number, secondCoor: number, startValue: number, endValue: number) {
     const { orient } = this.config.getData();
 
     const firstEl = this.elements[0];
@@ -72,7 +72,7 @@ class Tumblers {
     this.updateClouds(startValue, endValue);
   }
 
-  private handleTumblerMousedown = (e:MouseEvent) => {
+  private handleTumblerMousedown = (e: MouseEvent) => {
     e.preventDefault();
     const { cloud: displayCloud } = this.config.getData();
 
@@ -100,7 +100,7 @@ class Tumblers {
     document.addEventListener('click', handlerDocumentClick, { capture: true, once: true });
   };
 
-  private handleTumblerFocus = (event:FocusEvent) => {
+  private handleTumblerFocus = (event: FocusEvent) => {
     const { cloud: displayCloud } = this.config.getData();
 
     const tumbler = (<HTMLElement>event.target);
@@ -113,7 +113,7 @@ class Tumblers {
     };
   };
 
-  private handlerTumblerKeydown = (event:KeyboardEvent) => {
+  private handlerTumblerKeydown = (event: KeyboardEvent) => {
     const { callback } = this;
     const { orient } = this.config.getData();
 
@@ -133,7 +133,7 @@ class Tumblers {
     }
   };
 
-  private handlerDocumentMove = (event:MouseEvent, isFirstTumbler: Boolean) => {
+  private handlerDocumentMove = (event: MouseEvent, isFirstTumbler: Boolean) => {
     const { orient } = this.config.getData();
 
     const sliderZone = this.elements[0].closest('.js-range-slider');
@@ -164,7 +164,7 @@ class Tumblers {
     return cloud;
   };
 
-  private updateClouds = (startValue:number, endValue:number) => {
+  private updateClouds = (startValue: number, endValue: number) => {
     const { elements } = this;
     const { list } = this.config.getData();
 

@@ -9,7 +9,7 @@ class Line {
 
   private callback: CallbackForView;
 
-  public constructor(option: ConfigType, parent:HTMLElement, callback: CallbackForView) {
+  public constructor(option: ConfigType, parent: HTMLElement, callback: CallbackForView) {
     this.config = option;
     this.parent = parent;
     this.callback = callback;

@@ -32,7 +32,7 @@ let newParams = {scaleInterval: 2500, origin: 2000, rangeOffset: 10000}
 slider.changeConfig(newParams)
 
 ```
-Выглядеть это будет примерно так:  
+Выглядеть это будет примерно так:
 ![demo](https://github.com/Euyevnc/RangeSlider/blob/master/readme_assets/readme.png)
 
 

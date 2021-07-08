@@ -10,7 +10,7 @@ const sliderInst = (function ($) {
   // eslint-disable-next-line no-param-reassign
   $.fn.rangeSlider = function (options: UserConfigType) {
     const sliderObjects: Array<SliderObjectType> = [];
-    this.each((i:number, elem:HTMLElement) => {
+    this.each((i: number, elem: HTMLElement) => {
       sliderObjects.push(new SliderObject(elem, options));
     });
 
@@ -32,7 +32,7 @@ class SliderObject implements SliderObjectType {
 
   private configChangeObserver = new Observer();
 
-  public constructor(root:HTMLElement, options: UserConfigType) {
+  public constructor(root: HTMLElement, options: UserConfigType) {
     this.root = root;
     this.config = new Config(options);
 
@@ -60,7 +60,7 @@ class SliderObject implements SliderObjectType {
     return this.model.getValues();
   }
 
-  public setValues(startValue:number, endValue:number) {
+  public setValues(startValue: number, endValue: number) {
     const { type, rangeStart } = this.config.getData();
     if (type === POINT) {
       this.model

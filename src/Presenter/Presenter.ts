@@ -5,7 +5,7 @@ class Presenter {
 
   private model: ModelType;
 
-  public constructor(view:ViewType, model:ModelType) {
+  public constructor(view: ViewType, model: ModelType) {
     this.view = view;
     this.model = model;
     this.connectLayers();

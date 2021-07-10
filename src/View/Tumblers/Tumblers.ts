@@ -121,9 +121,8 @@ class Tumblers {
     const isFirstTumbler = tumbler === this.elements[0];
 
     if ((event.key === 'ArrowDown' && orient === VERTICAL) || (event.key === 'ArrowLeft' && orient !== VERTICAL)) {
-      const obj = { endPosition: -1 };
       if (isFirstTumbler) callback(STRIDE, { startPosition: -1 });
-      else callback(STRIDE, obj);
+      else callback(STRIDE, { endPosition: -1 });
 
       event.preventDefault();
     } else if ((event.key === 'ArrowUp' && orient === VERTICAL) || (event.key === 'ArrowRight' && orient !== VERTICAL)) {

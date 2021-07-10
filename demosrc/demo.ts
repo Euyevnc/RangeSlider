@@ -10,26 +10,26 @@ function initDemo() {
     const panel1 = jQuery('.demonstration_order_first .demonstration__panel');
     const slider1 = jQuery('.demonstration_order_first .demonstration__container').rangeSlider({
       type: 'range', step: 1, scale: false, cloud: 'always', start: 20, end: 80,
-    }) as SliderObjectType;
+    });
 
     connectThePanel(panel1, slider1);
 
     const panel2 = jQuery('.demonstration_order_second .demonstration__panel');
     const slider2 = jQuery('.demonstration_order_second .demonstration__container').rangeSlider({
       type: 'point', beginning: 10, rangeOffset: 90, step: 5, scaleInterval: 20, scale: true, end: 50,
-    }) as SliderObjectType;
+    });
     connectThePanel(panel2, slider2);
 
     const panel3 = jQuery('.demonstration_order_third .demonstration__panel');
     const slider3 = jQuery('.demonstration_order_third .demonstration__container').rangeSlider({
       type: 'point', orient: 'vertical', beginning: 0, scaleInterval: 5, rangeOffset: 10, scale: true, end: 5,
-    }) as SliderObjectType;
+    });
     connectThePanel(panel3, slider3);
 
     const panel4 = jQuery('.demonstration_order_fourth .demonstration__panel');
     const slider4 = jQuery('.demonstration_order_fourth .demonstration__container').rangeSlider({
       type: 'range', list: ['ἄ', 'β', 'γ', 'λ', 'Ξ', 'ζ', 'π', 'θ', 'ψ'], cloud: 'none', scale: true, start: 3, end: 6,
-    }) as SliderObjectType;
+    });
     connectThePanel(panel4, slider4);
   });
 }

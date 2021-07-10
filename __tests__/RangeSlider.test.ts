@@ -1,10 +1,13 @@
+/* eslint-disable prefer-destructuring */
+/* eslint-disable @typescript-eslint/dot-notation */
+/* eslint-disable max-len */
 import '../src/index';
 
-const inputData = {
-  orient: 'horizontal', type: 'range', origin: 10, range: 100, start: 10, end: 30, step: 1, scale: true, scaleInterval: 20, cloud: 'test',
+const testData = {
+  orient: 'horizontal', type: 'range', rangeStart: 10, rangeOffset: 100, step: 1, scale: true, scaleInterval: 20, cloud: 'click',
 };
-const inputDataList = {
-  orient: 'vertical', type: 'point', scale: true, cloud: 'test', list: ['one', 'two', 'three', 'four', 'five'],
+const testDataList = {
+  orient: 'vertical', type: 'point', scale: true, cloud: 'none', list: ['one', 'two', 'three', 'four', 'five'],
 };
 
 document.body.innerHTML = '<div style="width:100px; height:50px"> </div>';
@@ -12,213 +15,171 @@ const node = jQuery('div');
 
 describe('Creation of the slider object', () => {
   test('it check that the slider object create correctly', () => {
-    const createdObject = node.rangeSlider(inputData);
+    const createdSlider = node.rangeSlider(testData);
 
-    expect(createdObject).toHaveProperty('model');
-    expect(createdObject).toHaveProperty('presenter');
-    expect(createdObject).toHaveProperty('view');
-    expect(createdObject).toHaveProperty('config');
+    const config = createdSlider.getConfig();
+
+    expect(config.orient).toBe('horizontal');
+    expect(config.type).toBe('range');
+    expect(config.scale).toBe(true);
+    expect(config.cloud).toBe('click');
   });
 
   test('it check the creation of object for list', () => {
-    const createdObject = node.rangeSlider(inputDataList);
-    expect(createdObject.config.origin).toEqual(0);
-    expect(createdObject.config.range).toEqual(inputDataList.list.length - 1);
-    expect(createdObject.config.step).toEqual(1);
+    const createdSlider = node.rangeSlider(testDataList);
+    const config = createdSlider.getConfig();
+    expect(config.rangeStart).toEqual(0);
+    expect(config.rangeOffset).toEqual(testDataList.list.length - 1);
+    expect(config.step).toEqual(1);
+    expect(config.type).toBe('point');
   });
 
   test('it check the correctness of the coordinates. if they are entered incorrectly the constructor should have formatted them', () => {
+    const { rangeOffset, rangeStart } = testData;
     for (let n = 0; n < 55; n += 1) {
-      const dataClone = { ...inputData };
-
-      const createdObject = node.rangeSlider(dataClone);
-      const start = Math.random() >= 0.5
+      const initStart = Math.random() >= 0.5
         ? Math.round(Math.random() * 100)
         : -Math.round(Math.random() * 100);
 
-      const end = Math.random() >= 0.5
+      const initEnd = Math.random() >= 0.5
         ? Math.round(Math.random() * 100)
         : -Math.round(Math.random() * 100);
-      createdObject.init(start, end);
-      const verStart = createdObject.getValue()[0] - dataClone.origin;
-      const verEnd = createdObject.getValue()[1] - dataClone.origin;
 
-      expect([start - dataClone.origin, 0, dataClone.range - 1]).toContain(verStart);
-      expect(verStart).toBeLessThan(verEnd);
-      expect(verStart).toBeGreaterThanOrEqual(0);
+      const createdSlider = node.rangeSlider({ ...testData, start: initStart, end: initEnd });
 
-      expect([end - dataClone.origin, dataClone.range, verStart + 1]).toContain(verEnd);
-      expect(verEnd).toBeGreaterThan(verStart);
-      expect(verEnd).toBeLessThanOrEqual(dataClone.range);
+      const { start, end } = createdSlider.getValues();
+
+      expect([initStart, rangeStart, end - 1]).toContain(start);
+      expect([initEnd, rangeOffset + rangeStart, rangeStart + 1]).toContain(end);
+
+      expect(start).toBeGreaterThanOrEqual(rangeStart);
+      expect(start).toBeLessThan(end);
+
+      expect(end).toBeGreaterThan(start);
+      expect(end).toBeLessThanOrEqual(rangeStart + rangeOffset);
     }
   });
 
-  test('it check the function of initialization and rendering of elements', () => {
-    const createdObject = node.rangeSlider(inputData);
+  test('it checks that the callbacks work correctly', () => {
+    const createdSlider = node.rangeSlider(testData);
 
-    expect(createdObject.view.element).not.toBeTruthy();
-    expect(createdObject.view.tumblers.elements).not.toBeTruthy();
-    expect(createdObject.view.line.element).not.toBeTruthy();
-    expect(createdObject.view.selected.element).not.toBeTruthy();
-    expect(createdObject.view.scale.element).not.toBeTruthy();
-    createdObject.init();
-    expect(createdObject.view.element).toBeTruthy();
-    expect(createdObject.view.tumblers.elements).toBeTruthy();
-    expect(createdObject.view.line.element).toBeTruthy();
-    expect(createdObject.view.selected.element).toBeTruthy();
-    expect(createdObject.view.scale.element).toBeTruthy();
+    const testValueCallback = jest.fn();
+    createdSlider.addValuesUpdateListener(testValueCallback);
+    createdSlider.setValues();
+    expect(testValueCallback).toBeCalled();
+
+    const testConfigCallback = jest.fn();
+    createdSlider.addConfigChangeListener(testConfigCallback);
+
+    createdSlider.changeConfig({ rangeOffset: 200 });
+    expect(testConfigCallback).toBeCalled();
   });
 
   test('it checks that the layers are connected correctly', () => {
-    // проверка закольцованности
-    const createdObject = node.rangeSlider(inputData);
+    const createdSlider = node.rangeSlider(testData);
 
-    createdObject.view.updateView = jest.fn();
-    const lastLink = createdObject.view.updateView;
+    const testViewUpdateCallback = jest.fn();
 
-    createdObject.init();
-    expect(lastLink).toBeCalled();
+    const view = (createdSlider as any)['view'];
 
-    // проверка того, что презентер пробрасывает данные
-    const createdObject2 = node.rangeSlider(inputData);
-    createdObject2.model.updateConfig = jest.fn();
-    const modelReceiver = createdObject2.model.updateConfig;
-
-    const testObject = { a: 'string', b: 55, c: true };
-    createdObject2.init();
-    createdObject2.presenter.reactToInteraction(testObject);
-    expect(modelReceiver).toHaveBeenCalledWith(testObject);
+    view.updateView = testViewUpdateCallback;
+    view.observer.broadcast('drag', { startPosition: 100500 });
+    expect(testViewUpdateCallback).toBeCalled();
   });
 });
 
 describe('Slider functioning', () => {
   describe('data processing', () => {
-    test('range: 100, step: 1, method: drag', () => {
-      const createdObject = node.rangeSlider(inputData);
-      createdObject.init();
-
-      createdObject.view.updateView = jest.fn();
-      const ViewUpdate = createdObject.view.updateView;
-
-      createdObject.presenter.reactToInteraction({ startPos: 25, endPos: 40, method: 'drag' });
-      expect(ViewUpdate).toBeCalledWith({ firCoor: 25, secCoor: 40 });
-      createdObject.presenter.reactToInteraction({ startPos: -10, endPos: 120, method: 'drag' });
-      expect(ViewUpdate).toBeCalledWith({ firCoor: 0, secCoor: 100 });
-    });
-
-    test('range: 100, step: 1, method: tepping', () => {
-      const createdObject = node.rangeSlider(inputData);
-      createdObject.init();
-
-      createdObject.view.updateView = jest.fn();
-      const ViewUpdate = createdObject.view.updateView;
-
-      createdObject.presenter.reactToInteraction({ startPos: 1, endPos: -1, method: 'tepping' });
-      expect(ViewUpdate).toBeCalledWith({ firCoor: 1, secCoor: 99 });
-
-      createdObject.presenter.reactToInteraction({ startPos: -1, endPos: -1, method: 'tepping' });
-      expect(ViewUpdate).toBeCalledWith({ firCoor: 0, secCoor: 98 });
-    });
-
-    test('range: 100, step: 1, method: scaleClick', () => {
-      const createdObject = node.rangeSlider(inputData);
-      createdObject.init();
-
-      createdObject.view.updateView = jest.fn();
-      const ViewUpdate = createdObject.view.updateView;
-
-      createdObject.presenter.reactToInteraction({ startPos: 60, method: 'scaleClick' });
-      expect(ViewUpdate).toBeCalledWith({ firCoor: 0, secCoor: 50 });
-
-      createdObject.presenter.reactToInteraction({ startPos: 20, method: 'scaleClick' });
-      expect(ViewUpdate).toBeCalledWith({ firCoor: 10, secCoor: 50 });
-    });
-
     test('range: 100, step: 1, method: direct', () => {
-      const createdObject = node.rangeSlider(inputData);
-      createdObject.init();
+      const createdSlider = node.rangeSlider(testData);
 
-      createdObject.view.updateView = jest.fn();
-      const ViewUpdate = createdObject.view.updateView;
+      const testValueCallback = jest.fn();
+      createdSlider.addValuesUpdateListener(testValueCallback);
 
-      createdObject.presenter.reactToInteraction({ startPos: 20, endPos: 70, method: 'direct' });
-      expect(ViewUpdate).toBeCalledWith({ firCoor: 10, secCoor: 60 });
+      createdSlider.setValues(20, 70);
+      expect(testValueCallback).toBeCalledWith({ coordinates: { start: 10, end: 60 }, values: { start: 20, end: 70 } });
 
-      createdObject.presenter.reactToInteraction({ startPos: 20, endPos: 5, method: 'direct' });
-      expect(ViewUpdate).toBeCalledWith({ firCoor: 10, secCoor: 60 });
+      createdSlider.setValues(93, 21);
+      expect(testValueCallback).toBeCalledWith({ coordinates: { start: 10, end: 11 }, values: { start: 20, end: 21 } });
     });
 
-    test('range: 60, step: 12, method: drag', () => {
-      const createdObject = node.rangeSlider(inputData);
-      createdObject.config.range = 60;
-      createdObject.config.step = 12;
-      createdObject.init();
+    test('range: 100, step: 1, method: drag', () => {
+      const createdSlider = node.rangeSlider(testData);
 
-      createdObject.view.updateView = jest.fn();
-      const ViewUpdate = createdObject.view.updateView;
-      createdObject.presenter.reactToInteraction({ startPos: 20, endPos: 50, method: 'drag' });
-      expect(ViewUpdate).toBeCalledWith({ firCoor: 20, secCoor: 60 });
-      createdObject.presenter.reactToInteraction({ endPos: 28, method: 'drag' });
-      expect(ViewUpdate).toBeCalledWith({ firCoor: 20, secCoor: 40 });
-      createdObject.presenter.reactToInteraction({ startPos: -12, method: 'drag' });
-      expect(ViewUpdate).toBeCalledWith({ firCoor: 0, secCoor: 40 });
-      createdObject.presenter.reactToInteraction({ endPos: 90, method: 'drag' });
-      expect(ViewUpdate).toBeCalledWith({ firCoor: 0, secCoor: 100 });
+      const view = (createdSlider as any)['view'];
+
+      const testValueCallback = jest.fn();
+      createdSlider.addValuesUpdateListener(testValueCallback);
+
+      view.observer.broadcast('drag', { startPosition: 25, endPosition: 40 });
+      expect(testValueCallback).toBeCalledWith({ coordinates: { start: 25, end: 40 }, values: { start: 35, end: 50 } });
+
+      view.observer.broadcast('drag', { startPosition: -10, endPosition: 120 });
+      expect(testValueCallback).toBeCalledWith({ coordinates: { start: 0, end: 100 }, values: { start: 10, end: 110 } });
     });
 
-    test('range: 60, step: 12, method: tepping', () => {
-      const createdObject = node.rangeSlider(inputData);
-      createdObject.config.range = 60;
-      createdObject.config.step = 12;
-      createdObject.init(10, 70);
+    test('range: 100, step: 1, method: stride', () => {
+      const createdSlider = node.rangeSlider(testData);
 
-      createdObject.view.updateView = jest.fn();
-      const ViewUpdate = createdObject.view.updateView;
+      const view = (createdSlider as any)['view'];
 
-      createdObject.presenter.reactToInteraction({ startPos: 1, endPos: -1, method: 'tepping' });
-      expect(ViewUpdate).toBeCalledWith({ firCoor: 20, secCoor: 80 });
+      const testValueCallback = jest.fn();
+      createdSlider.addValuesUpdateListener(testValueCallback);
 
-      createdObject.presenter.reactToInteraction({ startPos: 1, endPos: -1, method: 'tepping' });
-      expect(ViewUpdate).toBeCalledWith({ firCoor: 40, secCoor: 60 });
+      view.observer.broadcast('stride', { startPosition: 1, endPosition: 1 });
+      expect(testValueCallback).toBeCalledWith({ coordinates: { start: 1, end: 100 }, values: { start: 11, end: 110 } });
 
-      createdObject.presenter.reactToInteraction({ startPos: 2, method: 'tepping' });
-      expect(ViewUpdate).toBeCalledWith({ firCoor: 40, secCoor: 60 });
-
-      createdObject.presenter.reactToInteraction({ startPos: -1, endPos: 1, method: 'tepping' });
-      expect(ViewUpdate).toBeCalledWith({ firCoor: 20, secCoor: 80 });
+      view.observer.broadcast('stride', { startPosition: -2, endPosition: -1 });
+      expect(testValueCallback).toBeCalledWith({ coordinates: { start: 0, end: 99 }, values: { start: 10, end: 109 } });
     });
 
     test('range: 60, step: 12, method: scaleClick', () => {
-      const createdObject = node.rangeSlider(inputData);
-      createdObject.config.range = 60;
-      createdObject.config.step = 12;
-      createdObject.init();
+      const createdSlider = node.rangeSlider({ ...testData, rangeOffset: 60, step: 12 });
 
-      createdObject.view.updateView = jest.fn();
-      const ViewUpdate = createdObject.view.updateView;
+      const view = (createdSlider as any)['view'];
 
-      createdObject.presenter.reactToInteraction({ startPos: 22, method: 'scaleClick' });
-      expect(ViewUpdate).toBeCalledWith({ firCoor: 20, secCoor: 100 });
-      createdObject.presenter.reactToInteraction({ startPos: 58, method: 'scaleClick' });
-      expect(ViewUpdate).toBeCalledWith({ firCoor: 20, secCoor: 80 });
-      createdObject.presenter.reactToInteraction({ startPos: 34, method: 'scaleClick' });
-      expect(ViewUpdate).toBeCalledWith({ firCoor: 40, secCoor: 80 });
+      const testValueCallback = jest.fn();
+      createdSlider.addValuesUpdateListener(testValueCallback);
+
+      view.observer.broadcast('scaleClick', { startPosition: 20, endPosition: 50 });
+      expect(testValueCallback).toBeCalledWith({ coordinates: { start: 20, end: 60 }, values: { start: 22, end: 46 } });
+
+      view.observer.broadcast('scaleClick', { endPosition: 28 });
+      expect(testValueCallback).toBeCalledWith({ coordinates: { start: 20, end: 40 }, values: { start: 22, end: 34 } });
+
+      view.observer.broadcast('scaleClick', { startPosition: 0 });
+      expect(testValueCallback).toBeCalledWith({ coordinates: { start: 0, end: 40 }, values: { start: 10, end: 34 } });
+
+      view.observer.broadcast('scaleClick', { endPosition: 90 });
+      expect(testValueCallback).toBeCalledWith({ coordinates: { start: 0, end: 100 }, values: { start: 10, end: 70 } });
+    });
+
+    test('range: 60, step: 12, method: stride', () => {
+      const createdSlider = node.rangeSlider({ ...testData, rangeOffset: 60, step: 12 });
+
+      const view = (createdSlider as any)['view'];
+
+      const testValueCallback = jest.fn();
+      createdSlider.addValuesUpdateListener(testValueCallback);
+
+      view.observer.broadcast('stride', { startPosition: 1, endPosition: -1 });
+      expect(testValueCallback).toBeCalledWith({ coordinates: { start: 20, end: 80 }, values: { start: 22, end: 58 } });
+
+      view.observer.broadcast('stride', { startPosition: 2, endPosition: -1 });
+      expect(testValueCallback).toBeCalledWith({ coordinates: { start: 40, end: 60 }, values: { start: 34, end: 46 } });
     });
 
     test('range: 60, step: 12, method: direct', () => {
-      const createdObject = node.rangeSlider(inputData);
-      createdObject.config.range = 60;
-      createdObject.config.step = 12;
-      createdObject.init();
+      const createdSlider = node.rangeSlider({ ...testData, rangeOffset: 60, step: 12 });
 
-      createdObject.view.updateView = jest.fn();
-      const ViewUpdate = createdObject.view.updateView;
+      const testValueCallback = jest.fn();
+      createdSlider.addValuesUpdateListener(testValueCallback);
 
-      createdObject.presenter.reactToInteraction({ startPos: 35, endPos: 75, method: 'direct' });
-      expect(ViewUpdate).toBeCalledWith({ firCoor: (100 / 60) * 25, secCoor: 100 });
+      createdSlider.setValues(35, 75);
+      expect(testValueCallback).toBeCalledWith({ coordinates: { start: (100 / 60) * 25, end: 100 }, values: { start: 35, end: 70 } });
 
-      createdObject.presenter.reactToInteraction({ startPos: -20, endPos: 18, method: 'direct' });
-      expect(ViewUpdate).toBeCalledWith({ firCoor: 0, secCoor: (100 / 60) * 8 });
+      createdSlider.setValues(-20, 19);
+      expect(testValueCallback).toBeCalledWith({ coordinates: { start: 0, end: (100 / 60) * 9 }, values: { start: 10, end: 19 } });
     });
   });
 });

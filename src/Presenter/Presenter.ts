@@ -11,7 +11,8 @@ class Presenter {
     this.connectLayers();
   }
 
-  private reactToInteraction = (method: string, data: DataForModel) => {
+  private reactToInteraction: CallbackForView =
+  (method: typeof DRAG | typeof SCALE_CLICK | typeof STRIDE, data: DataForModel) => {
     switch (method) {
       case DRAG:
         this.model.updateFromPercent(data);
@@ -27,7 +28,7 @@ class Presenter {
     }
   };
 
-  private reactToUpdate = (data: DataForView) => {
+  private reactToUpdate: CallbackForModel = (data: DataForView) => {
     this.view.updateView(data);
   };
 

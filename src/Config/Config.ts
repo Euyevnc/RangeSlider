@@ -33,42 +33,7 @@ class Config implements ConfigType {
   }
 
   public getData() {
-    const configClone = {};
-    Object.defineProperties(configClone, {
-      type: {
-        value: this.type,
-      },
-      orient: {
-        value: this.orient,
-      },
-      list: {
-        value: this.list,
-      },
-      cloud: {
-        value: this.cloud,
-      },
-      scale: {
-        value: this.scale,
-      },
-      rangeStart: {
-        value: this.rangeStart,
-      },
-      scaleInterval: {
-        value: this.scaleInterval,
-      },
-      rangeOffset: {
-        value: this.rangeOffset,
-      },
-      step: {
-        value: this.step,
-      },
-      start: {
-        value: this.start,
-      },
-      end: {
-        value: this.end,
-      },
-    });
+    const configClone: UserConfigType = { ...this, list: [...this.list] };
     return configClone;
   }
 
@@ -121,13 +86,13 @@ class Config implements ConfigType {
         : INITIALS.list;
     }
 
-    this.start = start !== undefined
-      ? Math.min(this.rangeOffset + this.rangeStart, Math.max(this.rangeStart, Math.round(start)))
-      : this.start || INITIALS.start;
-
     this.end = end !== undefined
-      ? Math.min(this.rangeOffset + this.rangeStart, Math.max(this.rangeStart, Math.round(end)))
-      : this.end || INITIALS.end;
+      ? end
+      : this.end || this.rangeStart + this.rangeOffset;
+
+    this.start = start !== undefined
+      ? start
+      : this.start || this.rangeStart;
   }
 }
 

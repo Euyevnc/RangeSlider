@@ -99,7 +99,6 @@ class Scale {
     const { orient, type } = this.config.getData();
 
     const division = (<HTMLElement>event.target).closest('.js-range-slider__scale-division') as HTMLElement;
-    const value = Number(division.getAttribute('value'));
 
     const divisionPosition = orient === VERTICAL
       ? division.offsetTop + division.offsetHeight
@@ -107,16 +106,20 @@ class Scale {
 
     const tumblersPositions = orient === VERTICAL
       ? [...division.closest('.js-range-slider').querySelectorAll('.js-range-slider__tumbler')]
-        .map((tum) => (<HTMLElement>tum).offsetTop + (<HTMLElement>tum).offsetHeight)
+        .map((tum) => (<HTMLElement>tum).offsetTop)
       : [...division.closest('.js-range-slider').querySelectorAll('.js-range-slider__tumbler')]
-        .map((tum) => (<HTMLElement>tum).offsetLeft + (<HTMLElement>tum).offsetWidth / 2);
+        .map((tum) => (<HTMLElement>tum).offsetLeft);
 
     const distanceToFirst = Math.abs(divisionPosition - tumblersPositions[0]);
     const distanceToSecond = Math.abs(divisionPosition - tumblersPositions[1]);
 
+    const divisionValue = orient === VERTICAL
+      ? 100 - (100 / (division.closest('.js-range-slider__scale') as HTMLElement).offsetHeight) * divisionPosition
+      : (100 / (division.closest('.js-range-slider__scale') as HTMLElement).offsetWidth) * divisionPosition;
+
     if (type === POINT || distanceToFirst >= distanceToSecond) {
-      this.callback(SCALE_CLICK, { endPosition: value });
-    } else this.callback(SCALE_CLICK, { startPosition: value });
+      this.callback(SCALE_CLICK, { endPosition: divisionValue });
+    } else this.callback(SCALE_CLICK, { startPosition: divisionValue });
   };
 
   private createDivision = (int: number) => {

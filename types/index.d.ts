@@ -87,5 +87,5 @@ type Values = {
 };
 
 interface JQuery {
-  rangeSlider: (config : Object) => SliderObjectType | SliderObjectType[];
+  rangeSlider: (config : Object) => SliderObjectType;
 }

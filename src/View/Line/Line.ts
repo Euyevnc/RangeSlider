@@ -1,4 +1,4 @@
-import { DRAG, VERTICAL, POINT } from '../../consts';
+import { SCALE_CLICK, VERTICAL, POINT } from '../../consts';
 
 class Line {
   public element: HTMLElement;
@@ -56,8 +56,8 @@ class Line {
     const distanceToSecond = Math.abs(clickPosition - tumblersPositions[1]);
 
     if (type === POINT || distanceToFirst >= distanceToSecond) {
-      this.callback(DRAG, { endPosition: offsetToTransfer });
-    } else this.callback(DRAG, { startPosition: offsetToTransfer });
+      this.callback(SCALE_CLICK, { endPosition: offsetToTransfer });
+    } else this.callback(SCALE_CLICK, { startPosition: offsetToTransfer });
   };
 }
 

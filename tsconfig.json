@@ -28,7 +28,8 @@
   "include": [
     "src",
     "demosrc",
-    "types",    
+    "types",
+    "__tests__"    
   ],
   // "files": ["src/index.ts", "types/index.d.ts"],
 }

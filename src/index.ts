@@ -9,12 +9,8 @@ import Observer from './Observer/Observer';
 const sliderInst = (function ($) {
   // eslint-disable-next-line no-param-reassign
   $.fn.rangeSlider = function (options: UserConfigType) {
-    const sliderObjects: Array<SliderObjectType> = [];
-    this.each((i: number, elem: HTMLElement) => {
-      sliderObjects.push(new SliderObject(elem, options));
-    });
+    const sliderObjects: SliderObjectType = new SliderObject(this[0], options);
 
-    if (sliderObjects.length === 1) return sliderObjects[0];
     return sliderObjects;
   };
 }(jQuery));
@@ -61,10 +57,10 @@ class SliderObject implements SliderObjectType {
   }
 
   public setValues(startValue: number, endValue: number) {
-    const { type, rangeStart } = this.config.getData();
+    const { type } = this.config.getData();
     if (type === POINT) {
       this.model
-        .updateDirectly({ startPosition: rangeStart, endPosition: startValue });
+        .updateDirectly({ endPosition: startValue });
     } else this.model.updateDirectly({ startPosition: startValue, endPosition: endValue });
   }
 

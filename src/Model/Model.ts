@@ -170,7 +170,7 @@ class Model implements ModelType {
 
     const minEndValue = type === POINT
       ? 0
-      : Math.min((Math.floor(normalizedStart / step) * step + step), currentEnd);
+      : Math.min((Math.floor(maxStartValue / step) * step + step), currentEnd);
 
     normalizedStart = Math.min(normalizedStart, maxStartValue);
     normalizedEnd = Math.max(normalizedEnd, minEndValue);

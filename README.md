@@ -69,7 +69,7 @@ slider.changeConfig(newParams)
 | removeConfigChangeListener|  Удаляет ранее установленный коллбэк для обновления параметров слайдера |Функция, раннее переданная в removeConfigChangeListener|
 
 
-![UML-диаграммa](https://drive.google.com/file/d/1nYSpW9N7zwQJ2vJgMtDh5ux6BseQ3ryB/view?usp=sharing)
+[__UML-диаграммa__](https://drive.google.com/file/d/1nYSpW9N7zwQJ2vJgMtDh5ux6BseQ3ryB/view?usp=sharing)
 
 
 

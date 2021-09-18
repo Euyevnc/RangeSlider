@@ -32,6 +32,7 @@ class Tumblers {
 
       const cloud = this.createCloud();
       tumblerElement.append(cloud);
+      tumblerElement.addEventListener('touchstart', this.handlerTumblerTouchStart);
       tumblerElement.addEventListener('pointerdown', this.handleTumblerPointerDown);
       tumblerElement.addEventListener('keydown', this.handlerTumblerKeydown);
       tumblerElement.addEventListener('focus', this.handlerTumblerFocus);
@@ -72,6 +73,10 @@ class Tumblers {
     this.updateClouds(startValue, endValue);
   }
 
+  private handlerTumblerTouchStart = (event: TouchEvent) => {
+    event.preventDefault();
+  };
+
   private handleTumblerPointerDown = (e: PointerEvent) => {
     const { cloud: displayCloud } = this.config.getData();
 
@@ -86,18 +91,12 @@ class Tumblers {
       this.handlerDocumentMove(event, isFirstTumbler);
     };
 
-    const handlerTouchMove = (event: TouchEvent) => {
-      event.preventDefault();
-    };
-
     const handlerDocumentPointerUp = () => {
       if (displayCloud === CLICK) cloud.style.display = 'none';
       document.body.style.cursor = 'auto';
-      document.removeEventListener('touchmove', handlerTouchMove);
       document.removeEventListener('pointermove', handlerDocumentMove);
     };
 
-    document.addEventListener('touchmove', handlerTouchMove, { passive: false });
     document.addEventListener('pointermove', handlerDocumentMove);
     document.addEventListener('pointerup', handlerDocumentPointerUp, { capture: true, once: true });
   };

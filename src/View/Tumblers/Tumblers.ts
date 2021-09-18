@@ -32,9 +32,9 @@ class Tumblers {
 
       const cloud = this.createCloud();
       tumblerElement.append(cloud);
-      tumblerElement.addEventListener('mousedown', this.handleTumblerMousedown);
+      tumblerElement.addEventListener('pointerdown', this.handleTumblerPointerDown);
       tumblerElement.addEventListener('keydown', this.handlerTumblerKeydown);
-      tumblerElement.addEventListener('focus', this.handleTumblerFocus);
+      tumblerElement.addEventListener('focus', this.handlerTumblerFocus);
       if (type === POINT && i === 0) tumblerElement.style.display = 'none';
       list.push(tumblerElement);
     }
@@ -72,35 +72,37 @@ class Tumblers {
     this.updateClouds(startValue, endValue);
   }
 
-  private handleTumblerMousedown = (e: MouseEvent) => {
-    e.preventDefault();
+  private handleTumblerPointerDown = (e: PointerEvent) => {
     const { cloud: displayCloud } = this.config.getData();
 
     const tumbler = (e.target as HTMLElement).closest('.js-range-slider__tumbler');
     const cloud = tumbler.querySelector('.js-range-slider__cloud ') as HTMLElement;
 
     const isFirstTumbler = (tumbler === this.elements[0]);
-
-    if (displayCloud === CLICK) cloud.style.display = 'block';
     document.body.style.cursor = 'pointer';
+    if (displayCloud === CLICK) cloud.style.display = 'block';
 
-    const handlerDocumentMove = (event: MouseEvent) => {
+    const handlerDocumentMove = (event: PointerEvent) => {
       this.handlerDocumentMove(event, isFirstTumbler);
     };
 
-    const handlerDocumentClick = (event: MouseEvent) => {
+    const handlerTouchMove = (event: TouchEvent) => {
       event.preventDefault();
-      event.stopPropagation();
-      if (displayCloud === CLICK) cloud.style.display = 'none';
-      document.body.style.cursor = 'auto';
-      document.removeEventListener('mousemove', handlerDocumentMove);
     };
 
-    document.addEventListener('mousemove', handlerDocumentMove);
-    document.addEventListener('click', handlerDocumentClick, { capture: true, once: true });
+    const handlerDocumentPointerUp = () => {
+      if (displayCloud === CLICK) cloud.style.display = 'none';
+      document.body.style.cursor = 'auto';
+      document.removeEventListener('touchmove', handlerTouchMove);
+      document.removeEventListener('pointermove', handlerDocumentMove);
+    };
+
+    document.addEventListener('touchmove', handlerTouchMove, { passive: false });
+    document.addEventListener('pointermove', handlerDocumentMove);
+    document.addEventListener('pointerup', handlerDocumentPointerUp, { capture: true, once: true });
   };
 
-  private handleTumblerFocus = (event: FocusEvent) => {
+  private handlerTumblerFocus = (event: FocusEvent) => {
     const { cloud: displayCloud } = this.config.getData();
 
     const tumbler = (<HTMLElement>event.target);
@@ -123,7 +125,6 @@ class Tumblers {
     if ((event.key === 'ArrowDown' && orient === VERTICAL) || (event.key === 'ArrowLeft' && orient !== VERTICAL)) {
       if (isFirstTumbler) callback(STRIDE, { startPosition: -1 });
       else callback(STRIDE, { endPosition: -1 });
-
       event.preventDefault();
     } else if ((event.key === 'ArrowUp' && orient === VERTICAL) || (event.key === 'ArrowRight' && orient !== VERTICAL)) {
       if (isFirstTumbler) callback(STRIDE, { startPosition: 1 });
@@ -132,9 +133,8 @@ class Tumblers {
     }
   };
 
-  private handlerDocumentMove = (event: MouseEvent, isFirstTumbler: Boolean) => {
+  private handlerDocumentMove = (event: PointerEvent, isFirstTumbler: Boolean) => {
     const { orient } = this.config.getData();
-
     const sliderZone = this.elements[0].closest('.js-range-slider');
 
     const verticalOffset = ((sliderZone.getBoundingClientRect().bottom - event.clientY)

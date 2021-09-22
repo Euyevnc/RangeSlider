@@ -1,13 +1,15 @@
 import { VERTICAL } from '../../consts';
 
+import './indicator.scss';
+
 class Indicator {
   public element: HTMLElement;
 
   private parent: HTMLElement;
 
-  private config: ConfigType;
+  private config: RangeSliderConfig;
 
-  public constructor(option: ConfigType, parent: HTMLElement) {
+  public constructor(option: RangeSliderConfig, parent: HTMLElement) {
     this.config = option;
     this.parent = parent;
 

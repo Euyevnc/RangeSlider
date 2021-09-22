@@ -1,18 +1,23 @@
+import Observer from '../observer';
 import { DRAG, STRIDE, SCALE_CLICK } from '../consts';
 
-class Presenter {
-  private view: ViewType;
+class Presenter implements RangeSliderPresenter {
+  private view: RangeSliderView;
 
-  private model: ModelType;
+  private model: RangeSliderModel;
 
-  public constructor(view: ViewType, model: ModelType) {
+  public modelObserver: RangeSliderObserver;
+
+  public constructor(view: RangeSliderView, model: RangeSliderModel) {
     this.view = view;
     this.model = model;
+    this.modelObserver = new Observer();
+    this.modelObserver.subscribe(this.view.updateView);
     this.connectLayers();
   }
 
-  private reactToInteraction: CallbackForView =
-  (method: typeof DRAG | typeof SCALE_CLICK | typeof STRIDE, data: DataForModel) => {
+  private reactToInteraction: RangeSliderViewCallback =
+  (method: typeof DRAG | typeof SCALE_CLICK | typeof STRIDE, data: RangeSliderModelData) => {
     switch (method) {
       case DRAG:
         this.model.updateFromPercent(data);
@@ -28,14 +33,22 @@ class Presenter {
     }
   };
 
-  private reactToUpdate: CallbackForModel = (data: DataForView) => {
-    this.view.updateView(data);
+  private reactToUpdate: RangeSliderModelCallback = (data: RangeSliderViewData) => {
+    this.modelObserver.broadcast(data);
   };
 
   private connectLayers = () => {
-    this.model.observer.subscribe(this.reactToUpdate.bind(this));
-    this.view.observer.subscribe(this.reactToInteraction.bind(this));
+    this.model.observer.subscribe(this.reactToUpdate);
+    this.view.observer.subscribe(this.reactToInteraction);
   };
+
+  public addValuesUpdateListener(f:(data: RangeSliderViewData) => void) {
+    this.modelObserver.subscribe(f);
+  }
+
+  public removeValuesUpdateListener(f:(data: RangeSliderViewData) => void) {
+    this.modelObserver.unsubscribe(f);
+  }
 }
 
 export default Presenter;

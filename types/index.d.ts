@@ -1,27 +1,27 @@
-type SliderObjectType = {
-  getValues: () => Values;
+type RangeSlider = {
+  getValues: () => RangeSliderValues;
   setValues: (startValue?: number, endValue?: number) => void;
-  getConfig: () => UserConfigType
+  getConfig: () => RangeSliderUserConfig
 
-  changeConfig: (config: UserConfigType) => void
+  changeConfig: (config: RangeSliderUserConfig) => void
 
-  addValuesUpdateListener: (f:(data: DataForView) => void) => void
-  removeValuesUpdateListener: (f:(data: DataForView) => void) => void
+  addValuesUpdateListener: (f:(data: RangeSliderViewData) => void) => void
+  removeValuesUpdateListener: (f:(data: RangeSliderViewData) => void) => void
 
   addConfigChangeListener: (f:
-  (oldConfig: UserConfigType, newConfig: UserConfigType) => void)
+  (oldConfig: RangeSliderUserConfig, newConfig: RangeSliderUserConfig) => void)
   => void
   removeConfigChangeListener: (f:
-  (oldConfig: UserConfigType, newConfig: UserConfigType) => void)
+  (oldConfig: RangeSliderUserConfig, newConfig: RangeSliderUserConfig) => void)
   => void
 };
 
-type ConfigType = {
-  getData: () => UserConfigType;
-  setData: (config: UserConfigType) => void;
+type RangeSliderConfig = {
+  getData: () => RangeSliderUserConfig;
+  setData: (config: RangeSliderUserConfig) => void;
 };
 
-type UserConfigType = {
+type RangeSliderUserConfig = {
   type?: 'range' | 'point';
   orient?: 'vertical' | 'horizontal';
   cloud?: 'always' | 'click' | 'none' ;
@@ -37,55 +37,57 @@ type UserConfigType = {
   end?: number
 };
 
-type ModelType = {
-  observer: ObserverType;
-  updateDirectly: (data: DataForModel) => void;
-  updateFromPercent: (data: DataForModel) => void;
-  updateFromStride: (data: DataForModel) => void;
+type RangeSliderModel = {
+  observer: RangeSliderObserver;
+  updateDirectly: (data: RangeSliderModelData) => void;
+  updateFromPercent: (data: RangeSliderModelData) => void;
+  updateFromStride: (data: RangeSliderModelData) => void;
 
   adaptValues: () => void;
 
-  getValues: () => Values
-
-  addValuesUpdateListener: (f: (data: DataForView) => void) => void
-  removeValuesUpdateListener: (f: (data: DataForView) => void) => void
-
+  getValues: () => RangeSliderValues
 };
 
-type ViewType = {
-  observer: ObserverType;
+type RangeSliderView = {
+  observer: RangeSliderObserver;
 
   render: () => void;
 
-  updateView: (data: DataForView) => void;
+  updateView: (data: RangeSliderViewData) => void;
 };
 
-type DataForModel = {
-  startPosition?: number;
-  endPosition?: number;
+type RangeSliderPresenter = {
+  addValuesUpdateListener: (f:(data: RangeSliderViewData) => void) => void;
+  removeValuesUpdateListener: (f:(data: RangeSliderViewData) => void) => void
+
 };
 
-type DataForView = {
-  coordinates: Values,
-  values: Values;
-};
-
-type CallbackForView = (method: 'drag' | 'scaleClick' | 'stride', data: DataForModel) => void;
-
-type CallbackForModel = (data: DataForView) => void;
-
-type ObserverType = {
+type RangeSliderObserver = {
   observers: Array<Function>;
   subscribe: (subscriber: Function) => void;
   unsubscribe: (unsubscriber: Function) => void;
   broadcast: (args?: any) => void;
 };
 
-type Values = {
+type RangeSliderModelData = {
+  startPosition?: number;
+  endPosition?: number;
+};
+
+type RangeSliderViewData = {
+  coordinates: RangeSliderValues,
+  values: RangeSliderValues;
+};
+
+type RangeSliderViewCallback = (method: 'drag' | 'scaleClick' | 'stride', data: RangeSliderModelData) => void;
+
+type RangeSliderModelCallback = (data: RangeSliderViewData) => void;
+
+type RangeSliderValues = {
   start: number;
   end: number;
 };
 
 interface JQuery {
-  rangeSlider: (config : Object) => SliderObjectType;
+  rangeSlider: (config : Object) => RangeSlider;
 }

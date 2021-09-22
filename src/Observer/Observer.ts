@@ -1,4 +1,4 @@
-class Observer implements ObserverType {
+class Observer implements RangeSliderObserver {
   public observers: Array<Function>;
 
   public constructor() {

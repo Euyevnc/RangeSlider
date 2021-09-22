@@ -2,16 +2,22 @@ import {
   STRIDE, DRAG, POINT, VERTICAL, ALWAYS, CLICK,
 } from '../../consts';
 
+import './tumblers.scss';
+
 class Tumblers {
   public elements: HTMLElement[];
 
-  private config: ConfigType;
+  private config: RangeSliderConfig;
 
   private parent: HTMLElement;
 
-  private callback: CallbackForView;
+  private callback: RangeSliderViewCallback;
 
-  public constructor(option: ConfigType, parent: HTMLElement, callback: CallbackForView) {
+  public constructor(
+    option: RangeSliderConfig,
+    parent: HTMLElement,
+    callback: RangeSliderViewCallback,
+  ) {
     this.config = option;
     this.parent = parent;
 
@@ -173,8 +179,8 @@ class Tumblers {
       firstValue = list[startValue].toString();
       secondValue = list[endValue].toString();
     } else {
-      firstValue = startValue.toLocaleString();
-      secondValue = endValue.toLocaleString();
+      firstValue = startValue.toString();
+      secondValue = endValue.toString();
     }
 
     (elements[0].querySelector('.js-range-slider__cloud-value') as HTMLElement).innerText = firstValue;

@@ -1,6 +1,6 @@
 import { CLICK, HORIZONTAL, RANGE } from '../consts';
 
-const initials: UserConfigType = {
+const initials: RangeSliderUserConfig = {
   type: RANGE,
   orient: HORIZONTAL,
   cloud: CLICK,

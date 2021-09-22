@@ -2,20 +2,26 @@ import {
   POINT, VERTICAL, SCALE_CLICK,
 } from '../../consts';
 
+import './scale.scss';
+
 class Scale {
   public element: HTMLElement;
 
   private parent: HTMLElement;
 
-  private config: ConfigType;
+  private config: RangeSliderConfig;
 
   private divisions: Array<HTMLElement>;
 
-  private callback: CallbackForView;
+  private callback: RangeSliderViewCallback;
 
-  public constructor(option: ConfigType, parent: HTMLElement, callback: CallbackForView) {
-    this.config = option;
+  public constructor(
+    option: RangeSliderConfig,
+    parent: HTMLElement,
+    callback: RangeSliderViewCallback,
+  ) {
     this.parent = parent;
+    this.config = option;
     this.divisions = [];
     this.callback = callback;
 
@@ -140,13 +146,13 @@ class Scale {
       division.style.width = `${normalizedWidth}%`;
     }
 
-    division.setAttribute('value', `${int.toLocaleString()}`);
+    division.setAttribute('value', `${int.toString()}`);
 
     const elementWithValue = document.createElement('span');
     elementWithValue.className = 'range-slider__scale-value js-range-slider__scale-value';
     elementWithValue.innerHTML = isList
       ? list[int].toString()
-      : int.toLocaleString();
+      : int.toString();
     elementWithValue.tabIndex = 0;
     elementWithValue.addEventListener('click', this.handlerDivisionClick);
     elementWithValue.addEventListener('keydown', this.handlerDivisionKeydown);

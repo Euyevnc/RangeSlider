@@ -1,34 +1,33 @@
 import { POINT } from './consts';
-import View from './View/View';
-import Model from './Model/Model';
-import Presenter from './Presenter/Presenter';
-
-import Config from './Config/Config';
-import Observer from './Observer/Observer';
+import View from './view';
+import Model from './model';
+import Presenter from './presenter';
+import Config from './config';
+import Observer from './observer';
 
 const sliderInst = (function ($) {
   // eslint-disable-next-line no-param-reassign
-  $.fn.rangeSlider = function (options: UserConfigType) {
-    const sliderObjects: SliderObjectType = new SliderObject(this[0], options);
+  $.fn.rangeSlider = function (options: RangeSliderUserConfig) {
+    const sliderObjects = new SliderObject(this[0], options);
 
     return sliderObjects;
   };
 }(jQuery));
 
-class SliderObject implements SliderObjectType {
+class SliderObject implements RangeSlider {
   private root: HTMLElement;
 
-  private config: ConfigType;
+  private config: RangeSliderConfig;
 
-  private view: ViewType;
+  private view: RangeSliderView;
 
-  private presenter: Presenter;
+  private presenter: RangeSliderPresenter;
 
-  private model: ModelType;
+  private model: RangeSliderModel;
 
-  private configChangeObserver = new Observer();
+  private configObserver: Observer;
 
-  public constructor(root: HTMLElement, options: UserConfigType) {
+  public constructor(root: HTMLElement, options: RangeSliderUserConfig) {
     this.root = root;
     this.config = new Config(options);
 
@@ -36,12 +35,16 @@ class SliderObject implements SliderObjectType {
     this.view = new View(this.root, this.config);
 
     this.presenter = new Presenter(this.view, this.model);
+    this.configObserver = new Observer();
 
     this.addConfigChangeListener(() => {
       this.reRender();
     });
 
-    this.addConfigChangeListener((oldConfig: UserConfigType, newConfig: UserConfigType) => {
+    this.addConfigChangeListener((
+      oldConfig: RangeSliderUserConfig,
+      newConfig: RangeSliderUserConfig,
+    ) => {
       if (oldConfig.step !== newConfig.step) this.model.adaptValues();
     });
 
@@ -66,27 +69,31 @@ class SliderObject implements SliderObjectType {
 
   public getConfig = () => this.config.getData();
 
-  public changeConfig = (config: UserConfigType) => {
+  public changeConfig = (config: RangeSliderUserConfig) => {
     const oldConfig = this.config.getData();
     this.config.setData(config);
     const newConfig = this.config.getData();
 
-    this.configChangeObserver.broadcast(oldConfig, newConfig);
+    this.configObserver.broadcast(oldConfig, newConfig);
   };
 
-  public addValuesUpdateListener = (f: (data: DataForView) => void) => {
-    this.model.addValuesUpdateListener(f);
+  public addValuesUpdateListener = (f: (data: RangeSliderViewData) => void) => {
+    this.presenter.addValuesUpdateListener(f);
   };
 
-  public removeValuesUpdateListener = (f: (data: DataForView) => void) => {
-    this.model.removeValuesUpdateListener(f);
+  public removeValuesUpdateListener = (f: (data: RangeSliderViewData) => void) => {
+    this.presenter.removeValuesUpdateListener(f);
   };
 
-  public addConfigChangeListener = (f: (oldConfig: UserConfigType, newConfig: UserConfigType)
-  => void) => this.configChangeObserver.subscribe(f);
+  public addConfigChangeListener = (f: (
+    oldConfig: RangeSliderUserConfig,
+    newConfig: RangeSliderUserConfig)
+  => void) => this.configObserver.subscribe(f);
 
-  public removeConfigChangeListener = (f: (oldConfig: UserConfigType, newConfig: UserConfigType)
-  => void) => this.configChangeObserver.unsubscribe(f);
+  public removeConfigChangeListener = (f: (
+    oldConfig: RangeSliderUserConfig,
+    newConfig: RangeSliderUserConfig)
+  => void) => this.configObserver.unsubscribe(f);
 
   private reRender() {
     this.view.render();

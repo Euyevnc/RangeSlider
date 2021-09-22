@@ -1,15 +1,21 @@
 import { SCALE_CLICK, VERTICAL, POINT } from '../../consts';
 
+import './line.scss';
+
 class Line {
   public element: HTMLElement;
 
   private parent: HTMLElement;
 
-  private config: ConfigType;
+  private config: RangeSliderConfig;
 
-  private callback: CallbackForView;
+  private callback: RangeSliderViewCallback;
 
-  public constructor(option: ConfigType, parent: HTMLElement, callback: CallbackForView) {
+  public constructor(
+    option: RangeSliderConfig,
+    parent: HTMLElement,
+    callback: RangeSliderViewCallback,
+  ) {
     this.config = option;
     this.parent = parent;
     this.callback = callback;

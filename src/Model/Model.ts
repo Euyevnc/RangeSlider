@@ -1,30 +1,30 @@
 import { POINT } from '../consts';
 
-import Observer from '../Observer/Observer';
+import Observer from '../observer/Observer';
 
-class Model implements ModelType {
-  public observer: ObserverType;
+class Model implements RangeSliderModel {
+  public observer: RangeSliderObserver;
 
-  private config: ConfigType;
+  private config: RangeSliderConfig;
 
   private start: number;
 
   private end: number;
 
-  public constructor(options: ConfigType) {
+  public constructor(options: RangeSliderConfig) {
     this.config = options;
     this.observer = new Observer();
   }
 
-  public updateDirectly = (data: DataForModel) => {
+  public updateDirectly = (data: RangeSliderModelData) => {
     this.update(this.processValue, data);
   };
 
-  public updateFromPercent = (data: DataForModel) => {
+  public updateFromPercent = (data: RangeSliderModelData) => {
     this.update(this.processPercent, data);
   };
 
-  public updateFromStride = (data: DataForModel) => {
+  public updateFromStride = (data: RangeSliderModelData) => {
     this.update(this.processStep, data);
   };
 
@@ -50,47 +50,39 @@ class Model implements ModelType {
       else adaptedStart = Math.ceil(adaptedEnd / step) * step - step;
     }
 
-    this.setValues({ start: adaptedStart, end: adaptedEnd });
-    this.callTheBroadcast();
+    this.setValues({
+      start: adaptedStart,
+      end: adaptedEnd,
+    });
+    this.callTheBroadcast({
+      start: this.matchDecimalPart(this.start),
+      end: this.matchDecimalPart(this.end),
+    });
   };
 
-  public addValuesUpdateListener(f:(data: DataForView) => void) {
-    this.observer.subscribe(f);
-  }
-
-  public removeValuesUpdateListener(f:(data: DataForView) => void) {
-    this.observer.unsubscribe(f);
-  }
-
-  private update = (process: Function, data: DataForModel): void => {
+  private update = (process: Function, data: RangeSliderModelData): void => {
     const currentStart = this.start;
     const currentEnd = this.end;
 
-    const { start, end } = process(data);
+    let { start, end } = process(data);
 
-    switch (process) {
-      case this.processValue:
-        this.setValues({
-          start,
-          end,
-        });
-        this.callTheBroadcast();
-        break;
-      default:
-        if (start !== currentStart || end !== currentEnd) {
-          this.setValues({
-            start,
-            end,
-          });
-          this.callTheBroadcast();
-        }
-        break;
+    if (process === this.processValue) {
+      this.setValues({ start, end });
+      this.callTheBroadcast({ start: this.start, end: this.end });
+    } else if (start !== currentStart || end !== currentEnd) {
+      ({ start, end } = this.accordinateTheCoordinates({ start, end }));
+
+      this.setValues({ start, end });
+      this.callTheBroadcast({
+        start: this.matchDecimalPart(this.start),
+        end: this.matchDecimalPart(this.end),
+      });
     }
   };
 
   private processValue = (data: { startPosition: number, endPosition: number }) => {
     const { rangeStart, type, rangeOffset: range } = this.config.getData();
-
+    const minimalUnit = 1 / (10 ** this.stepDecimalPlace || 1);
     const { startPosition, endPosition } = data;
 
     const currentStart = this.start;
@@ -101,15 +93,15 @@ class Model implements ModelType {
 
     newEnd = type === POINT
       ? Math.max(0, Math.min(newEnd, range))
-      : Math.max(1, Math.min(newEnd, range));
+      : Math.max(minimalUnit, Math.min(newEnd, range));
     newStart = type === POINT
       ? 0
-      : Math.min(newEnd - 1, Math.max(0, newStart));
+      : Math.min(newEnd - minimalUnit, Math.max(0, newStart));
 
     return { start: newStart, end: newEnd };
   };
 
-  private processPercent = (data: DataForModel) => {
+  private processPercent = (data: RangeSliderModelData) => {
     const { rangeOffset: range, step } = this.config.getData();
 
     const { startPosition, endPosition } = data;
@@ -123,10 +115,10 @@ class Model implements ModelType {
       ? range
       : Math.round(valueOfEnd / step) * step;
 
-    return this.accordinateTheCoordinates({ start: newStart, end: newEnd });
+    return { start: newStart, end: newEnd };
   };
 
-  private processStep = (data: DataForModel) => {
+  private processStep = (data: RangeSliderModelData) => {
     const { step } = this.config.getData();
 
     const currentStart = this.start;
@@ -146,14 +138,13 @@ class Model implements ModelType {
     }
 
     if (endPosition) {
-      if (endPosition < 0) newEnd = Math.ceil(currentEnd / step) * step + step * endPosition;
-      if (endPosition > 0) newEnd = Math.floor(currentEnd / step) * step + step * endPosition;
+      if (endPosition < 0) newEnd = Math.ceil(currentEnd / step) * step - step;
+      if (endPosition > 0) newEnd = Math.floor(currentEnd / step) * step + step;
     }
-
-    return this.accordinateTheCoordinates({ start: newStart, end: newEnd });
+    return { start: newStart, end: newEnd };
   };
 
-  private accordinateTheCoordinates = (coordinates: Values) => {
+  private accordinateTheCoordinates = (coordinates: RangeSliderValues) => {
     const { type, rangeOffset: range, step } = this.config.getData();
 
     const { start, end } = coordinates;
@@ -164,41 +155,57 @@ class Model implements ModelType {
     let normalizedStart: number = isNaN(start) ? currentStart : Math.max(start, 0);
     let normalizedEnd: number = isNaN(end) ? currentEnd : Math.min(end, range);
 
+    console.log(normalizedEnd, 'normed End');
     const maxStartValue = type === POINT
       ? 0
       : Math.max((Math.ceil(normalizedEnd / step) * step - step), currentStart);
 
     const minEndValue = type === POINT
       ? 0
-      : Math.min((Math.floor(maxStartValue / step) * step + step), currentEnd);
+      : Math.min(maxStartValue + step, currentEnd);
 
+    console.log(Math.floor(maxStartValue / step) * step, maxStartValue);
     normalizedStart = Math.min(normalizedStart, maxStartValue);
     normalizedEnd = Math.max(normalizedEnd, minEndValue);
-
     return {
       start: normalizedStart,
       end: normalizedEnd,
     };
   };
 
-  private convertToPercent = (value: number) => value / (this.config.getData().rangeOffset / 100);
-
-  private convertToValue = (percent: number) => percent / (100 / this.config.getData().rangeOffset);
-
-  private setValues = (values: Values) => {
+  private setValues = (values: RangeSliderValues) => {
     this.start = values.start;
     this.end = values.end;
   };
 
-  private callTheBroadcast = () => {
+  private callTheBroadcast = ({ start, end }: RangeSliderValues) => {
+    const coordinates = {
+      start: this.convertToPercent(start),
+      end: this.convertToPercent(end),
+    };
+
     this.observer.broadcast({
-      coordinates: {
-        start: this.convertToPercent(this.start),
-        end: this.convertToPercent(this.end),
+      coordinates,
+      values: {
+        start,
+        end,
       },
-      values: this.getValues(),
     });
   };
+
+  private get stepDecimalPlace() {
+    const { step } = this.config.getData();
+    const decimalPart = step.toString().split('.')[1];
+    return decimalPart
+      ? decimalPart.length
+      : 0;
+  }
+
+  private matchDecimalPart = (number: number) => parseFloat(number.toFixed(this.stepDecimalPlace));
+
+  private convertToPercent = (value: number) => value / (this.config.getData().rangeOffset / 100);
+
+  private convertToValue = (percent: number) => percent / (100 / this.config.getData().rangeOffset);
 }
 
 export default Model;

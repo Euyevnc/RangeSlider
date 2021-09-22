@@ -34,7 +34,7 @@ function initDemo() {
   });
 }
 
-function connectThePanel(panelNode: JQuery, sliderObject: SliderObjectType) {
+function connectThePanel(panelNode: JQuery, sliderObject: RangeSlider) {
   const slider = sliderObject;
 
   const sync = syncPanel.bind(this, panelNode, sliderObject);
@@ -125,7 +125,7 @@ function connectThePanel(panelNode: JQuery, sliderObject: SliderObjectType) {
   });
 }
 
-function syncPanel(panelNode: JQuery, slider: SliderObjectType) {
+function syncPanel(panelNode: JQuery, slider: RangeSlider) {
   const config = slider.getConfig();
 
   panelNode.find("[name='first_pos']").prop('value', slider.getValues().start);

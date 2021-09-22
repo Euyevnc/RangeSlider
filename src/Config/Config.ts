@@ -5,7 +5,7 @@ import {
 
 import INITIALS from './initials';
 
-class Config implements ConfigType {
+class Config implements RangeSliderConfig {
   private type: typeof RANGE | typeof POINT;
 
   private orient: typeof HORIZONTAL | typeof VERTICAL;
@@ -28,16 +28,16 @@ class Config implements ConfigType {
 
   private end: number;
 
-  public constructor(initialData: UserConfigType) {
+  public constructor(initialData: RangeSliderUserConfig) {
     this.setData(initialData);
   }
 
   public getData() {
-    const configClone: UserConfigType = { ...this, list: [...this.list] };
+    const configClone: RangeSliderUserConfig = { ...this, list: [...this.list] };
     return configClone;
   }
 
-  public setData(config: UserConfigType) {
+  public setData(config: RangeSliderUserConfig) {
     const {
       type, list, orient, cloud, scale, rangeStart, scaleInterval, rangeOffset, step, start, end,
     } = config;
@@ -59,20 +59,18 @@ class Config implements ConfigType {
       : this.scale || INITIALS.scale;
 
     this.rangeStart = rangeStart !== undefined
-      ? Math.round(rangeStart)
+      ? rangeStart
       : (this.rangeStart || INITIALS.rangeStart);
 
+    this.step = Math.abs(step || this.step || INITIALS.step);
+
     this.rangeOffset = rangeOffset !== undefined
-      ? Math.max(1, Math.round(rangeOffset))
+      ? Math.max(this.step, Math.abs(rangeOffset))
       : (this.rangeOffset || INITIALS.rangeOffset);
 
     this.scaleInterval = scaleInterval !== undefined
-      ? Math.min(this.rangeOffset, Math.max(1, Math.round(scaleInterval)))
+      ? Math.max(this.step, Math.abs(scaleInterval))
       : (this.scaleInterval || INITIALS.scaleInterval);
-
-    this.step = step !== undefined
-      ? Math.min(this.rangeOffset, Math.max(1, Math.round(step)))
-      : (this.step || INITIALS.step);
 
     if (list && list.length) {
       this.list = list;

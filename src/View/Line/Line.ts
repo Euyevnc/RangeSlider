@@ -28,12 +28,12 @@ class Line {
 
     const lineElement = document.createElement('div');
     lineElement.className = `range-slider__line  range-slider__line_orient_${orient}`;
-    lineElement.addEventListener('click', this.handlerLineClick);
+    lineElement.addEventListener('pointerdown', this.handlerLinePointerDown);
     this.element = lineElement;
     this.parent.append(this.element);
   }
 
-  private handlerLineClick = (event: MouseEvent) => {
+  private handlerLinePointerDown = (event: MouseEvent) => {
     const { orient, type } = this.config.getData();
 
     const clickPosition = orient === VERTICAL

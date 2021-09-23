@@ -120,27 +120,22 @@ class Model implements RangeSliderModel {
 
   private processStep = (data: RangeSliderModelData) => {
     const { step } = this.config.getData();
+    const { startPosition, endPosition } = data;
 
     const currentStart = this.start;
     const currentEnd = this.end;
+	
+	const stepPerStart = this.matchDecimalPart(currentStart / step);
+	const stepPerEnd = this.matchDecimalPart(currentEnd / step);
 
-    const { startPosition, endPosition } = data;
+	const newStart = startPosition < 0 
+		? Math.ceil(stepPerStart) * step + step * startPosition
+		: Math.floor(stepPerStart) * step + step * startPosition;
 
-    let newStart: number;
-    let newEnd: number;
+	const newEnd = endPosition < 0 
+		? Math.ceil(stepPerEnd) * step + step * endPosition
+		: Math.floor(stepPerEnd) * step + step * endPosition;
 
-    if (startPosition) {
-      if (startPosition < 0) {
-        newStart = Math.ceil(currentStart / step) * step + step * startPosition;
-      } else if (startPosition > 0) {
-        newStart = Math.floor(currentStart / step) * step + step * startPosition;
-      }
-    }
-
-    if (endPosition) {
-      if (endPosition < 0) newEnd = Math.ceil(currentEnd / step) * step - step;
-      if (endPosition > 0) newEnd = Math.floor(currentEnd / step) * step + step;
-    }
     return { start: newStart, end: newEnd };
   };
 
@@ -155,18 +150,19 @@ class Model implements RangeSliderModel {
     let normalizedStart: number = isNaN(start) ? currentStart : Math.max(start, 0);
     let normalizedEnd: number = isNaN(end) ? currentEnd : Math.min(end, range);
 
-    console.log(normalizedEnd, 'normed End');
+	const stepPerStart = this.matchDecimalPart(normalizedStart/step);
+	const stepPerEnd = this.matchDecimalPart(normalizedEnd/step)
     const maxStartValue = type === POINT
       ? 0
-      : Math.max((Math.ceil(normalizedEnd / step) * step - step), currentStart);
+      : Math.max((Math.ceil(stepPerEnd) * step - step), currentStart)  ;
 
     const minEndValue = type === POINT
       ? 0
-      : Math.min(maxStartValue + step, currentEnd);
+      : Math.min((Math.floor(stepPerStart) * step + step), currentEnd);
 
-    console.log(Math.floor(maxStartValue / step) * step, maxStartValue);
     normalizedStart = Math.min(normalizedStart, maxStartValue);
     normalizedEnd = Math.max(normalizedEnd, minEndValue);
+	
     return {
       start: normalizedStart,
       end: normalizedEnd,

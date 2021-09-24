@@ -38,20 +38,20 @@ class Scale {
 
     scaleElement.className = `js-range-slider__scale range-slider__scale  range-slider__scale_orient_${orient}`;
 
-    scaleElement.append(this.createDivision(rangeStart));
-    for (let i = 1; i < numberOfIntervals; i += 1) {
-      if (i !== numberOfIntervals - 1 && numberOfIntervals !== 1) {
-        scaleElement.append(this.createDivision(i * scaleInterval + rangeStart));
+    for (let i = 0; i <= numberOfIntervals; i += 1) {
+      if (i === 0) {
+        const firstDivision = this.createDivision(rangeStart);
+        if (orient === VERTICAL) firstDivision.style.height = '0px';
+        else firstDivision.style.width = '0px';
+        scaleElement.append(firstDivision);
+      } else if (i === numberOfIntervals) {
+        const lastDivision = this.createDivision(rangeOffset + rangeStart);
+        lastDivision.style.flexShrink = '1';
+        scaleElement.append(lastDivision);
       } else {
-        const shrinkingDivision = this.createDivision(i * scaleInterval + rangeStart);
-        shrinkingDivision.style.flexShrink = '1';
-        scaleElement.append(shrinkingDivision);
+        scaleElement.append(this.createDivision(i * scaleInterval + rangeStart));
       }
     }
-    const lastDivision = this.createDivision(rangeOffset + rangeStart);
-    if (orient === VERTICAL) lastDivision.style.height = '0px';
-    else lastDivision.style.width = '0px';
-    scaleElement.append(lastDivision);
 
     if (!scale) scaleElement.style.display = 'none';
     this.element = scaleElement;
@@ -72,14 +72,14 @@ class Scale {
     });
   }
 
-  private handlerDivisionClick = (event: MouseEvent) => {
+  private handlerDivisionPointerDown = (event: PointerEvent) => {
     const { orient, type } = this.config.getData();
 
     const division = (<HTMLElement>event.target).closest('.js-range-slider__scale-division') as HTMLElement;
 
     const divisionPosition = orient === VERTICAL
-      ? division.offsetTop + division.offsetHeight
-      : division.offsetLeft;
+      ? division.offsetTop
+      : division.offsetLeft + division.offsetWidth;
 
     const tumblersPositions = orient === VERTICAL
       ? [...division.closest('.js-range-slider').querySelectorAll('.js-range-slider__tumbler')]
@@ -154,7 +154,7 @@ class Scale {
       ? list[int].toString()
       : int.toString();
     elementWithValue.tabIndex = 0;
-    elementWithValue.addEventListener('click', this.handlerDivisionClick);
+    elementWithValue.addEventListener('pointerdown', this.handlerDivisionPointerDown);
     elementWithValue.addEventListener('keydown', this.handlerDivisionKeydown);
 
     division.append(elementWithValue);

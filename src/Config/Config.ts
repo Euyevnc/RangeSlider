@@ -72,14 +72,16 @@ class Config implements RangeSliderConfig {
       ? Math.max(this.step, Math.abs(scaleInterval))
       : (this.scaleInterval || INITIALS.scaleInterval);
 
-    if (list && list.length) {
+    const usersList = list && list.length;
+    if (usersList) {
       this.list = list;
       this.rangeOffset = list.length - 1;
       this.rangeStart = 0;
       this.step = 1;
       this.scaleInterval = 1;
     } else {
-      this.list = (this.list && this.list.length)
+      const configList = this.list && this.list.length;
+      this.list = (configList)
         ? this.list
         : INITIALS.list;
     }

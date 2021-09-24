@@ -11,6 +11,8 @@ class Tumblers {
 
   private parent: HTMLElement;
 
+  private clouds: HTMLElement[];
+
   private callback: RangeSliderViewCallback;
 
   public constructor(
@@ -20,6 +22,7 @@ class Tumblers {
   ) {
     this.config = option;
     this.parent = parent;
+    this.clouds = [];
 
     this.callback = callback;
 
@@ -37,6 +40,7 @@ class Tumblers {
       tumblerElement.tabIndex = 0;
 
       const cloud = this.createCloud();
+      this.clouds.push(cloud);
       tumblerElement.append(cloud);
       tumblerElement.addEventListener('touchstart', this.handlerTumblerTouchStart);
       tumblerElement.addEventListener('pointerdown', this.handleTumblerPointerDown);
@@ -55,27 +59,22 @@ class Tumblers {
   public update(firstCoor: number, secondCoor: number, startValue: number, endValue: number) {
     const { orient } = this.config.getData();
 
-    const firstEl = this.elements[0];
-    const secondEl = this.elements[1];
+    const [firstTumbler, secondTumbler] = this.elements;
 
     if (orient === VERTICAL) {
-      firstEl.style.top = `${100 - firstCoor}%`;
-      secondEl.style.top = `${100 - secondCoor}%`;
+      firstTumbler.style.top = `${100 - firstCoor}%`;
+      secondTumbler.style.top = `${100 - secondCoor}%`;
     } else {
-      firstEl.style.left = `${firstCoor}%`;
-      secondEl.style.left = `${secondCoor}%`;
+      firstTumbler.style.left = `${firstCoor}%`;
+      secondTumbler.style.left = `${secondCoor}%`;
     }
 
-    if (firstCoor === 100) {
-      firstEl.style.zIndex = '11';
-      secondEl.style.zIndex = '12';
-    } else if (secondCoor === 100) {
-      firstEl.style.zIndex = '12';
-      secondEl.style.zIndex = '11';
+    if (secondCoor === 100) {
+      firstTumbler.style.zIndex = '2';
     } else {
-      firstEl.style.zIndex = '11';
-      secondEl.style.zIndex = '11';
+      firstTumbler.style.zIndex = '1';
     }
+
     this.updateClouds(startValue, endValue);
   }
 
@@ -170,7 +169,7 @@ class Tumblers {
 
   private updateClouds = (startValue: number, endValue: number) => {
     const { elements } = this;
-    const { list } = this.config.getData();
+    const { list, orient } = this.config.getData();
 
     let firstValue: string;
     let secondValue: string;
@@ -185,6 +184,27 @@ class Tumblers {
 
     (elements[0].querySelector('.js-range-slider__cloud-value') as HTMLElement).innerText = firstValue;
     (elements[1].querySelector('.js-range-slider__cloud-value') as HTMLElement).innerText = secondValue;
+
+    const [firstTumbler, secondTumbler] = this.elements;
+
+    const tumblerDistance = orient === VERTICAL
+      ? Math.abs(firstTumbler.offsetTop - secondTumbler.offsetTop)
+      : Math.abs(firstTumbler.offsetLeft - secondTumbler.offsetLeft);
+
+    const firstCloud = this.clouds[0];
+    const secondCloud = this.clouds[1];
+
+    const firstCloudSize = orient === VERTICAL
+      ? firstCloud.offsetHeight
+      : firstCloud.offsetWidth;
+    const secondCloudSize = orient === VERTICAL
+      ? secondCloud.offsetHeight
+      : secondCloud.offsetWidth;
+
+    if (tumblerDistance <= firstCloudSize) firstCloud.classList.add('range-slider__cloud_decentralized');
+    else firstCloud.classList.remove('range-slider__cloud_decentralized');
+    if (tumblerDistance <= secondCloudSize) secondCloud.classList.add('range-slider__cloud_decentralized');
+    else secondCloud.classList.remove('range-slider__cloud_decentralized');
   };
 }
 

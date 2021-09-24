@@ -43,7 +43,8 @@ class Model implements RangeSliderModel {
       : Math.min(range, Math.round(this.end / step) * step);
     let adaptedStart = Math.min(range, Math.round(this.start / step) * step);
 
-    if (adaptedStart === adaptedEnd && type !== POINT) {
+    const valuesAreIdentical = adaptedStart === adaptedEnd && type !== POINT;
+    if (valuesAreIdentical) {
       const distanceToStart = Math.abs(adaptedStart - this.start);
       const distanceToEnd = Math.abs(adaptedEnd - this.end);
       if (distanceToStart < distanceToEnd) adaptedEnd = Math.min(range, adaptedEnd + step);
@@ -124,17 +125,17 @@ class Model implements RangeSliderModel {
 
     const currentStart = this.start;
     const currentEnd = this.end;
-	
-	const stepPerStart = this.matchDecimalPart(currentStart / step);
-	const stepPerEnd = this.matchDecimalPart(currentEnd / step);
 
-	const newStart = startPosition < 0 
-		? Math.ceil(stepPerStart) * step + step * startPosition
-		: Math.floor(stepPerStart) * step + step * startPosition;
+    const stepPerStart = this.matchDecimalPart(currentStart / step);
+    const stepPerEnd = this.matchDecimalPart(currentEnd / step);
 
-	const newEnd = endPosition < 0 
-		? Math.ceil(stepPerEnd) * step + step * endPosition
-		: Math.floor(stepPerEnd) * step + step * endPosition;
+    const newStart = startPosition < 0
+      ? Math.ceil(stepPerStart) * step + step * startPosition
+      : Math.floor(stepPerStart) * step + step * startPosition;
+
+    const newEnd = endPosition < 0
+      ? Math.ceil(stepPerEnd) * step + step * endPosition
+      : Math.floor(stepPerEnd) * step + step * endPosition;
 
     return { start: newStart, end: newEnd };
   };
@@ -150,11 +151,12 @@ class Model implements RangeSliderModel {
     let normalizedStart: number = isNaN(start) ? currentStart : Math.max(start, 0);
     let normalizedEnd: number = isNaN(end) ? currentEnd : Math.min(end, range);
 
-	const stepPerStart = this.matchDecimalPart(normalizedStart/step);
-	const stepPerEnd = this.matchDecimalPart(normalizedEnd/step)
+    const stepPerStart = this.matchDecimalPart(normalizedStart / step);
+    const stepPerEnd = this.matchDecimalPart(normalizedEnd / step);
+
     const maxStartValue = type === POINT
       ? 0
-      : Math.max((Math.ceil(stepPerEnd) * step - step), currentStart)  ;
+      : Math.max((Math.ceil(stepPerEnd) * step - step), currentStart);
 
     const minEndValue = type === POINT
       ? 0
@@ -162,7 +164,7 @@ class Model implements RangeSliderModel {
 
     normalizedStart = Math.min(normalizedStart, maxStartValue);
     normalizedEnd = Math.max(normalizedEnd, minEndValue);
-	
+
     return {
       start: normalizedStart,
       end: normalizedEnd,

@@ -46,7 +46,10 @@ class Tumblers {
       tumblerElement.addEventListener('pointerdown', this.handleTumblerPointerDown);
       tumblerElement.addEventListener('keydown', this.handlerTumblerKeydown);
       tumblerElement.addEventListener('focus', this.handlerTumblerFocus);
-      if (type === POINT && i === 0) tumblerElement.style.display = 'none';
+
+      const isInvisible = type === POINT && i === 0;
+      if (isInvisible) tumblerElement.style.display = 'none';
+
       list.push(tumblerElement);
     }
 
@@ -126,11 +129,14 @@ class Tumblers {
     const tumbler = (<HTMLElement>event.target);
     const isFirstTumbler = tumbler === this.elements[0];
 
-    if ((event.key === 'ArrowDown' && orient === VERTICAL) || (event.key === 'ArrowLeft' && orient !== VERTICAL)) {
+    const decreaseAmount = (event.key === 'ArrowDown' && orient === VERTICAL) || (event.key === 'ArrowLeft' && orient !== VERTICAL);
+    const increaseAmount = (event.key === 'ArrowUp' && orient === VERTICAL) || (event.key === 'ArrowRight' && orient !== VERTICAL);
+
+    if (decreaseAmount) {
       if (isFirstTumbler) callback(STRIDE, { startPosition: -1 });
       else callback(STRIDE, { endPosition: -1 });
       event.preventDefault();
-    } else if ((event.key === 'ArrowUp' && orient === VERTICAL) || (event.key === 'ArrowRight' && orient !== VERTICAL)) {
+    } else if (increaseAmount) {
       if (isFirstTumbler) callback(STRIDE, { startPosition: 1 });
       else callback(STRIDE, { endPosition: 1 });
       event.preventDefault();
@@ -169,7 +175,7 @@ class Tumblers {
 
   private updateClouds = (startValue: number, endValue: number) => {
     const { elements } = this;
-    const { list, orient } = this.config.getData();
+    const { list, orient, type } = this.config.getData();
 
     let firstValue: string;
     let secondValue: string;
@@ -187,13 +193,14 @@ class Tumblers {
 
     const [firstTumbler, secondTumbler] = this.elements;
 
+    if (type === POINT) return;
+
     const tumblerDistance = orient === VERTICAL
       ? Math.abs(firstTumbler.offsetTop - secondTumbler.offsetTop)
       : Math.abs(firstTumbler.offsetLeft - secondTumbler.offsetLeft);
 
     const firstCloud = this.clouds[0];
     const secondCloud = this.clouds[1];
-
     const firstCloudSize = orient === VERTICAL
       ? firstCloud.offsetHeight
       : firstCloud.offsetWidth;

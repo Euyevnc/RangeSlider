@@ -67,12 +67,12 @@ class Model implements RangeSliderModel {
 
     let { start, end } = process(data);
 
+    const valuesIsUpdate = (start !== currentStart || end !== currentEnd);
     if (process === this.processValue) {
       this.setValues({ start, end });
       this.callTheBroadcast({ start: this.start, end: this.end });
-    } else if (start !== currentStart || end !== currentEnd) {
+    } else if (valuesIsUpdate) {
       ({ start, end } = this.accordinateTheCoordinates({ start, end }));
-
       this.setValues({ start, end });
       this.callTheBroadcast({
         start: this.matchDecimalPart(this.start),

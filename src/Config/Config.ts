@@ -42,15 +42,18 @@ class Config implements RangeSliderConfig {
       type, list, orient, cloud, scale, rangeStart, scaleInterval, rangeOffset, step, start, end,
     } = config;
 
-    this.type = (type === RANGE || type === POINT)
+    const isKnownType = (type === RANGE || type === POINT);
+    this.type = isKnownType
       ? type
       : (this.type || INITIALS.type);
 
-    this.orient = (orient === VERTICAL || orient === HORIZONTAL)
+    const isKnownOrient = (orient === VERTICAL || orient === HORIZONTAL);
+    this.orient = isKnownOrient
       ? orient
       : (this.orient || INITIALS.orient);
 
-    this.cloud = (cloud === NONE || cloud === ALWAYS || cloud === CLICK)
+    const isKnownCloudState = (cloud === NONE || cloud === ALWAYS || cloud === CLICK);
+    this.cloud = isKnownCloudState
       ? cloud
       : (this.cloud || INITIALS.cloud);
 

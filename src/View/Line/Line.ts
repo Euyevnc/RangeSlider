@@ -36,6 +36,7 @@ class Line {
   private handlerLinePointerDown = (event: MouseEvent) => {
     const { orient, type } = this.config.getData();
 
+    if ((event.target as HTMLElement).closest('.range-slider__tumbler')) return;
     const clickPosition = orient === VERTICAL
       ? event.clientY
       : event.clientX;
@@ -61,7 +62,8 @@ class Line {
     const distanceToFirst = Math.abs(clickPosition - tumblersPositions[0]);
     const distanceToSecond = Math.abs(clickPosition - tumblersPositions[1]);
 
-    if (type === POINT || distanceToFirst >= distanceToSecond) {
+    const callForLastTumbler = (type === POINT || distanceToFirst >= distanceToSecond);
+    if (callForLastTumbler) {
       this.callback(SCALE_CLICK, { endPosition: offsetToTransfer });
     } else this.callback(SCALE_CLICK, { startPosition: offsetToTransfer });
   };

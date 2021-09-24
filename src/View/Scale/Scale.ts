@@ -64,7 +64,9 @@ class Scale {
     scaleElement.querySelectorAll('.js-range-slider__scale-division').forEach((el) => {
       const elem = el as HTMLElement;
       const valueInDivision = +el.getAttribute('value');
-      if (valueInDivision >= startValue && valueInDivision <= endValue) {
+
+      const valueInRange = valueInDivision >= startValue && valueInDivision <= endValue;
+      if (valueInRange) {
         elem.classList.add('range-slider__scale-division_active');
       } else {
         elem.classList.remove('range-slider__scale-division_active');
@@ -94,7 +96,8 @@ class Scale {
       ? 100 - (100 / (division.closest('.js-range-slider__scale') as HTMLElement).offsetHeight) * divisionPosition
       : (100 / (division.closest('.js-range-slider__scale') as HTMLElement).offsetWidth) * divisionPosition;
 
-    if (type === POINT || distanceToFirst >= distanceToSecond) {
+    const callForLastTumbler = (type === POINT || distanceToFirst >= distanceToSecond);
+    if (callForLastTumbler) {
       this.callback(SCALE_CLICK, { endPosition: divisionValue });
     } else this.callback(SCALE_CLICK, { startPosition: divisionValue });
   };
@@ -123,7 +126,8 @@ class Scale {
       ? 100 - (100 / (division.closest('.js-range-slider__scale') as HTMLElement).offsetHeight) * divisionPosition
       : (100 / (division.closest('.js-range-slider__scale') as HTMLElement).offsetWidth) * divisionPosition;
 
-    if (type === POINT || distanceToFirst >= distanceToSecond) {
+    const callForLastTumbler = (type === POINT || distanceToFirst >= distanceToSecond);
+    if (callForLastTumbler) {
       this.callback(SCALE_CLICK, { endPosition: divisionValue });
     } else this.callback(SCALE_CLICK, { startPosition: divisionValue });
   };

@@ -84,8 +84,8 @@ type RangeSliderViewCallback = (method: 'drag' | 'scaleClick' | 'stride', data: 
 type RangeSliderModelCallback = (data: RangeSliderViewData) => void;
 
 type RangeSliderValues = {
-  start: number;
-  end: number;
+  start?: number;
+  end?: number;
 };
 
 interface JQuery {

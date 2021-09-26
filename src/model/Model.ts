@@ -29,10 +29,19 @@ class Model implements RangeSliderModel {
   };
 
   public getValues() {
-    const { rangeStart } = this.config.getData();
+    const { rangeStart, rangeOffset, step } = this.config.getData();
+    const { start, end } = this;
+    const maxDecimalPlace = Math.max(
+      (step.toString().split('.')[1]?.length || 0),
+      (rangeStart.toString().split('.')[1]?.length || 0),
+      (rangeOffset.toString().split('.')[1]?.length || 0),
+      (start.toString().split('.')[1]?.length || 0),
+      (end.toString().split('.')[1]?.length || 0),
+    );
+
     return {
-      start: this.start + rangeStart,
-      end: this.end + rangeStart,
+      start: +(this.start + rangeStart).toFixed(maxDecimalPlace),
+      end: +(this.end + rangeStart).toFixed(maxDecimalPlace),
     };
   }
 
@@ -52,12 +61,10 @@ class Model implements RangeSliderModel {
     }
 
     this.setValues({
-      start: adaptedStart,
-      end: adaptedEnd,
-    });
-    this.callTheBroadcast({
-      start: this.matchDecimalPart(this.start),
-      end: this.matchDecimalPart(this.end),
+      start: this.matchDecimalPart(adaptedStart),
+      end: adaptedEnd === range
+        ? adaptedEnd
+        : this.matchDecimalPart(adaptedEnd),
     });
   };
 
@@ -67,24 +74,23 @@ class Model implements RangeSliderModel {
 
     let { start, end } = process(data);
 
-    const valuesIsUpdate = (start !== currentStart || end !== currentEnd);
+    const valuesIsUpdated = (start !== currentStart || end !== currentEnd);
+
     if (process === this.processValue) {
       this.setValues({ start, end });
-      this.callTheBroadcast({ start: this.start, end: this.end });
-    } else if (valuesIsUpdate) {
+    } else if (valuesIsUpdated) {
       ({ start, end } = this.accordinateTheCoordinates({ start, end }));
-      this.setValues({ start, end });
-      this.callTheBroadcast({
-        start: this.matchDecimalPart(this.start),
-        end: this.matchDecimalPart(this.end),
+      this.setValues({
+        start,
+        end,
       });
     }
   };
 
   private processValue = (data: { startPosition: number, endPosition: number }) => {
     const { rangeStart, type, rangeOffset: range } = this.config.getData();
-    const minimalUnit = 1 / (10 ** this.stepDecimalPlace || 1);
     const { startPosition, endPosition } = data;
+    const minimalUnit = 1 / (10 ** this.stepDecimalPlace || 1);
 
     const currentStart = this.start;
     const currentEnd = this.end;
@@ -142,41 +148,48 @@ class Model implements RangeSliderModel {
 
   private accordinateTheCoordinates = (coordinates: RangeSliderValues) => {
     const { type, rangeOffset: range, step } = this.config.getData();
-
     const { start, end } = coordinates;
 
     const currentStart = this.start;
     const currentEnd = this.end;
 
-    let normalizedStart: number = isNaN(start) ? currentStart : Math.max(start, 0);
-    let normalizedEnd: number = isNaN(end) ? currentEnd : Math.min(end, range);
+    const actualStart = isNaN(start) ? currentStart : Math.max(start, 0);
+    const actualEnd = isNaN(end) ? currentEnd : Math.min(end, range);
 
-    const stepPerStart = this.matchDecimalPart(normalizedStart / step);
-    const stepPerEnd = this.matchDecimalPart(normalizedEnd / step);
+    const stepPerStart = this.matchDecimalPart(actualStart / step);
+    const stepPerEnd = this.matchDecimalPart(actualEnd / step);
 
     const maxStartValue = type === POINT
       ? 0
       : Math.max((Math.ceil(stepPerEnd) * step - step), currentStart);
-
     const minEndValue = type === POINT
       ? 0
       : Math.min((Math.floor(stepPerStart) * step + step), currentEnd);
 
-    normalizedStart = Math.min(normalizedStart, maxStartValue);
-    normalizedEnd = Math.max(normalizedEnd, minEndValue);
+    const normalizedStart = Math.min(actualStart, maxStartValue);
+    const normalizedEnd = Math.max(actualEnd, minEndValue);
 
-    return {
-      start: normalizedStart,
-      end: normalizedEnd,
-    };
+    const request: RangeSliderValues = {};
+    if (normalizedStart !== currentStart) request.start = this.matchDecimalPart(normalizedStart);
+    if (normalizedEnd !== currentEnd) {
+      request.end = normalizedEnd === range
+        ? normalizedEnd
+        : this.matchDecimalPart(normalizedEnd);
+    }
+    return request;
   };
 
   private setValues = (values: RangeSliderValues) => {
-    this.start = values.start;
-    this.end = values.end;
+    const { start, end } = values;
+    if (!isNaN(start)) this.start = start;
+    if (!isNaN(end)) this.end = end;
+
+    this.callTheBroadcast();
   };
 
-  private callTheBroadcast = ({ start, end }: RangeSliderValues) => {
+  private callTheBroadcast = () => {
+    const { start, end } = this;
+
     const coordinates = {
       start: this.convertToPercent(start),
       end: this.convertToPercent(end),
@@ -184,19 +197,14 @@ class Model implements RangeSliderModel {
 
     this.observer.broadcast({
       coordinates,
-      values: {
-        start,
-        end,
-      },
+      values: this.getValues(),
     });
   };
 
   private get stepDecimalPlace() {
     const { step } = this.config.getData();
     const decimalPart = step.toString().split('.')[1];
-    return decimalPart
-      ? decimalPart.length
-      : 0;
+    return decimalPart?.length || 0;
   }
 
   private matchDecimalPart = (number: number) => parseFloat(number.toFixed(this.stepDecimalPlace));

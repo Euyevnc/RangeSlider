@@ -93,14 +93,14 @@ class Tumblers {
 
     const isFirstTumbler = (tumbler === this.elements[0]);
     document.body.style.cursor = 'pointer';
-    if (displayCloud === CLICK) cloud.style.display = 'block';
+    if (displayCloud === CLICK) cloud.classList.remove('range-slider__cloud_invisible');
 
     const handlerDocumentMove = (event: PointerEvent) => {
       this.handlerDocumentMove(event, isFirstTumbler);
     };
 
     const handlerDocumentPointerUp = () => {
-      if (displayCloud === CLICK) cloud.style.display = 'none';
+      if (displayCloud === CLICK) cloud.classList.add('range-slider__cloud_invisible');
       document.body.style.cursor = 'auto';
       document.removeEventListener('pointermove', handlerDocumentMove);
     };
@@ -114,10 +114,10 @@ class Tumblers {
 
     const tumbler = (<HTMLElement>event.target);
     const cloud = tumbler.querySelector('.js-range-slider__cloud ') as HTMLElement;
-    if (displayCloud === CLICK) cloud.style.display = 'block';
+    if (displayCloud === CLICK) cloud.classList.remove('range-slider__cloud_invisible');
 
     tumbler.onblur = (e) => {
-      if (displayCloud === CLICK) cloud.style.display = 'none';
+      if (displayCloud === CLICK) cloud.classList.add('range-slider__cloud_invisible');
       (<HTMLElement>e.target).onblur = null;
     };
   };
@@ -169,7 +169,7 @@ class Tumblers {
     const elementWithValue = document.createElement('b');
     elementWithValue.className = 'js-range-slider__cloud-value range-slider__cloud-value';
     cloud.append(elementWithValue);
-    if (displayCloud !== ALWAYS) cloud.style.display = 'none';
+    if (displayCloud !== ALWAYS) cloud.classList.add('range-slider__cloud_invisible');
     return cloud;
   };
 

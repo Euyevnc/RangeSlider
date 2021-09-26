@@ -33,11 +33,16 @@ class Scale {
       orient, scaleInterval, rangeStart, rangeOffset, scale,
     } = this.config.getData();
 
-    const numberOfIntervals = Math.ceil(rangeOffset / scaleInterval);
+    const maxDecimalPlace = Math.max(
+      (scaleInterval.toString().split('.')[1]?.length || 0),
+      (rangeStart.toString().split('.')[1]?.length || 0),
+      (rangeOffset.toString().split('.')[1]?.length || 0),
+    );
+    const matchDecimalPart = (number: number) => +(number).toFixed(maxDecimalPlace);
+    const numberOfIntervals = Math.ceil(+(rangeOffset / scaleInterval).toFixed(5));
+
     const scaleElement = document.createElement('div');
-
     scaleElement.className = `js-range-slider__scale range-slider__scale  range-slider__scale_orient_${orient}`;
-
     for (let i = 0; i <= numberOfIntervals; i += 1) {
       if (i === 0) {
         const firstDivision = this.createDivision(rangeStart);
@@ -45,15 +50,15 @@ class Scale {
         else firstDivision.style.width = '0px';
         scaleElement.append(firstDivision);
       } else if (i === numberOfIntervals) {
-        const lastDivision = this.createDivision(rangeOffset + rangeStart);
+        const lastDivision = this.createDivision(matchDecimalPart(rangeOffset + rangeStart));
         lastDivision.style.flexShrink = '1';
         scaleElement.append(lastDivision);
       } else {
-        scaleElement.append(this.createDivision(i * scaleInterval + rangeStart));
+        scaleElement.append(this.createDivision(matchDecimalPart(i * scaleInterval + rangeStart)));
       }
     }
 
-    if (!scale) scaleElement.style.display = 'none';
+    if (!scale) scaleElement.classList.add('range-slider__scale_invisible');
     this.element = scaleElement;
     this.parent.append(this.element);
   };

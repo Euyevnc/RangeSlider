@@ -16,8 +16,7 @@ class Presenter implements RangeSliderPresenter {
     this.connectLayers();
   }
 
-  private reactToInteraction: RangeSliderViewCallback =
-  (method: typeof DRAG | typeof SCALE_CLICK | typeof STRIDE, data: RangeSliderModelData) => {
+  private reactToInteraction: RangeSliderViewCallback = (method, data) => {
     switch (method) {
       case DRAG:
         this.model.updateFromPercent(data);

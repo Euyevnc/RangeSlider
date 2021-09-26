@@ -1,6 +1,6 @@
 import { POINT } from '../consts';
 
-import Observer from '../observer/Observer';
+import Observer from '../observer';
 
 class Model implements RangeSliderModel {
   public observer: RangeSliderObserver;
@@ -71,7 +71,6 @@ class Model implements RangeSliderModel {
   private update = (process: Function, data: RangeSliderModelData): void => {
     const currentStart = this.start;
     const currentEnd = this.end;
-
     let { start, end } = process(data);
 
     const valuesIsUpdated = (start !== currentStart || end !== currentEnd);
@@ -90,22 +89,40 @@ class Model implements RangeSliderModel {
   private processValue = (data: { startPosition: number, endPosition: number }) => {
     const { rangeStart, type, rangeOffset: range } = this.config.getData();
     const { startPosition, endPosition } = data;
-    const minimalUnit = 1 / (10 ** this.stepDecimalPlace || 1);
+    const minDistance = type === POINT ? 0 : 1 / (10 ** this.stepDecimalPlace || 1);
+    // const minimalUnit = 1 / (10 ** this.stepDecimalPlace || 1);
 
     const currentStart = this.start;
     const currentEnd = this.end;
 
-    let newStart = isNaN(startPosition) ? currentStart : (startPosition - rangeStart);
-    let newEnd = isNaN(endPosition) ? currentEnd : (endPosition - rangeStart);
+    const actualStart = isNaN(startPosition)
+      ? currentStart
+      : minDistance && Math.max(0, (startPosition - rangeStart));
 
-    newEnd = type === POINT
-      ? Math.max(0, Math.min(newEnd, range))
-      : Math.max(minimalUnit, Math.min(newEnd, range));
-    newStart = type === POINT
-      ? 0
-      : Math.min(newEnd - minimalUnit, Math.max(0, newStart));
+    const actualEnd = isNaN(endPosition)
+      ? currentEnd
+      : Math.min((endPosition - rangeStart), range);
 
-    return { start: newStart, end: newEnd };
+    let normalizedEnd;
+    let normalizedStart;
+    const startIsPrioritized = !isNaN(startPosition) && !isNaN(endPosition);
+
+    if (startIsPrioritized) {
+      normalizedStart = Math.min(actualStart, this.matchDecimalPart(range - minDistance));
+      normalizedEnd = Math.max(actualEnd, this.matchDecimalPart(normalizedStart + minDistance));
+    } else {
+      normalizedStart = actualStart === currentStart
+        ? null
+        : minDistance && Math.min(actualStart, actualEnd - minDistance);
+      normalizedEnd = actualEnd === currentEnd
+        ? null
+        : Math.max(actualEnd, Math.min(actualStart + minDistance, range));
+    }
+
+    return {
+      start: normalizedStart,
+      end: normalizedEnd,
+    };
   };
 
   private processPercent = (data: RangeSliderModelData) => {
@@ -148,41 +165,54 @@ class Model implements RangeSliderModel {
 
   private accordinateTheCoordinates = (coordinates: RangeSliderValues) => {
     const { type, rangeOffset: range, step } = this.config.getData();
+    const minDistance = type === POINT ? 0 : step;
     const { start, end } = coordinates;
 
     const currentStart = this.start;
     const currentEnd = this.end;
 
-    const actualStart = isNaN(start) ? currentStart : Math.max(start, 0);
+    const actualStart = isNaN(start) ? currentStart : minDistance && Math.max(start, 0);
     const actualEnd = isNaN(end) ? currentEnd : Math.min(end, range);
 
-    const stepPerStart = this.matchDecimalPart(actualStart / step);
-    const stepPerEnd = this.matchDecimalPart(actualEnd / step);
+    let normalizedEnd;
+    let normalizedStart;
+    const startIsPrioritized = !isNaN(start) && !isNaN(end);
 
-    const maxStartValue = type === POINT
-      ? 0
-      : Math.max((Math.ceil(stepPerEnd) * step - step), currentStart);
-    const minEndValue = type === POINT
-      ? 0
-      : Math.min((Math.floor(stepPerStart) * step + step), currentEnd);
+    if (startIsPrioritized) {
+      normalizedStart = Math.min(actualStart,
+        Math.ceil(this.matchDecimalPart(range / step)) * step - minDistance);
+      normalizedEnd = Math.max(actualEnd,
+        this.matchDecimalPart(normalizedStart / step) * step + minDistance);
+    } else {
+      const stepPerStart = this.matchDecimalPart(actualStart / step);
+      const stepPerEnd = this.matchDecimalPart(actualEnd / step);
 
-    const normalizedStart = Math.min(actualStart, maxStartValue);
-    const normalizedEnd = Math.max(actualEnd, minEndValue);
+      const maxStartValue = minDistance
+        && Math.max((Math.ceil(stepPerEnd) * step - minDistance), currentStart);
 
-    const request: RangeSliderValues = {};
-    if (normalizedStart !== currentStart) request.start = this.matchDecimalPart(normalizedStart);
-    if (normalizedEnd !== currentEnd) {
-      request.end = normalizedEnd === range
-        ? normalizedEnd
-        : this.matchDecimalPart(normalizedEnd);
+      const minEndValue = minDistance
+        && Math.min((Math.floor(stepPerStart) * step + minDistance), currentEnd);
+
+      normalizedStart = actualStart === currentStart
+        ? null
+        : this.matchDecimalPart(Math.min(actualStart, maxStartValue));
+
+      normalizedEnd = actualEnd === currentEnd
+        ? null
+        : (Math.max(actualEnd, minEndValue) === range && range)
+          || this.matchDecimalPart(Math.max(actualEnd, minEndValue));
     }
-    return request;
+    return {
+      start: normalizedStart,
+      end: normalizedEnd,
+    };
   };
 
   private setValues = (values: RangeSliderValues) => {
     const { start, end } = values;
-    if (!isNaN(start)) this.start = start;
-    if (!isNaN(end)) this.end = end;
+
+    if (start != null) this.start = start;
+    if (end != null) this.end = end;
 
     this.callTheBroadcast();
   };

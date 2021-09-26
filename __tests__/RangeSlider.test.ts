@@ -79,9 +79,9 @@ describe('Creation of the slider object', () => {
     const createdSlider = node.rangeSlider(testData);
 
     const testViewUpdateCallback = jest.fn();
+    createdSlider.addValuesUpdateListener(testViewUpdateCallback);
 
     const view = (createdSlider as any)['view'];
-
     view.updateView = testViewUpdateCallback;
     view.observer.broadcast('drag', { startPosition: 100500 });
     expect(testViewUpdateCallback).toBeCalled();

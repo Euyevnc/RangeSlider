@@ -50,7 +50,7 @@ describe('Creation of the slider object', () => {
       const { start, end } = createdSlider.getValues();
 
       expect([initStart, rangeStart, end - 1]).toContain(start);
-      expect([initEnd, rangeOffset + rangeStart, rangeStart + 1]).toContain(end);
+      expect([initEnd, rangeOffset + rangeStart, start + 1]).toContain(end);
 
       expect(start).toBeGreaterThanOrEqual(rangeStart);
       expect(start).toBeLessThan(end);
@@ -99,8 +99,8 @@ describe('Slider functioning', () => {
       createdSlider.setValues(20, 70);
       expect(testValueCallback).toBeCalledWith({ coordinates: { start: 10, end: 60 }, values: { start: 20, end: 70 } });
 
-      createdSlider.setValues(93, 21);
-      expect(testValueCallback).toBeCalledWith({ coordinates: { start: 10, end: 11 }, values: { start: 20, end: 21 } });
+      createdSlider.setValues(21, 10);
+      expect(testValueCallback).toBeCalledWith({ coordinates: { start: 11, end: 12 }, values: { start: 21, end: 22 } });
     });
 
     test('range: 100, step: 1, method: drag', () => {
@@ -166,7 +166,7 @@ describe('Slider functioning', () => {
       expect(testValueCallback).toBeCalledWith({ coordinates: { start: 20, end: 80 }, values: { start: 22, end: 58 } });
 
       view.observer.broadcast('stride', { startPosition: 2, endPosition: -1 });
-      expect(testValueCallback).toBeCalledWith({ coordinates: { start: 40, end: 60 }, values: { start: 34, end: 46 } });
+      expect(testValueCallback).toBeCalledWith({ coordinates: { start: 60, end: 80 }, values: { start: 46, end: 58 } });
     });
 
     test('range: 60, step: 12, method: direct', () => {
